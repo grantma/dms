@@ -1,0 +1,27 @@
+dms, the DNS Management System
+
+This code comprises the dmsdmd DNS management daemon, zone_tool, dyndns_tool,
+the Python 3 dms modules, and associated SQL schemas and management shell
+scripts.
+
+See INSTALL for installation instructions.
+
+Programming kindly sponsored by Voyager Internet Ltd, http://www.voyager.co.nz/
+
+Released under GPL v3 or later.  See COPYING.
+
+Dms is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+at your option) any later version.
+
+Dms is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with dms.  If not, see <http://www.gnu.org/licenses/>.
+
+Matthew Grant <matthewgrant5@gmail.com> Sun, 14 Jul 2013 21:18:00 +1200
+
