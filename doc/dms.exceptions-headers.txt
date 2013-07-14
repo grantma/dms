@@ -1,0 +1,1259 @@
+Help on module dms.exceptions in dms:
+
+NAME
+    dms.exceptions - Exceptions module for the DMS
+
+CLASSES
+    core.wsgi.jsonrpc_server.BaseJsonRpcError(builtins.Exception)
+        DMSError
+            BadInitialZoneName
+            BinaryFileError
+            ConfigBatchHoldFailed
+            DBReadOnlyError
+            IncrementalUpdateNotInTrialRun
+            IncrementalUpdatesDisabled
+            InvalidDomainName
+                ReverseNamesNotAccepted
+            InvalidHmacType
+            LoginIdError
+                LoginIdFormatError
+                LoginIdInvalidError
+            MultipleReferencesFound
+            NoPreviousLabelParseError
+            NoReferenceFound
+            NoReplicaSgFound
+            NoSecTagsExist
+            NoSgFound
+            NoZoneSecTagsFound
+            NoZonesFound
+            ReferenceDoesNotExist
+            ReferenceExists
+            ReferenceFormatError
+            ReferenceStillUsed
+            ReplicaSgExists
+            RestoreNamedDbError
+                NamedConfWriteError
+                NamedStillRunning
+                DmsdmdStillRunning
+                PidFileAccessError
+                PidFileValueError
+                ZoneFileWriteError
+            RrQueryDomainError
+            SOASerialError
+                SOASerialArithmeticError
+                SOASerialCandidateIgnored
+                SOASerialOcclusionError
+                SOASerialPublishedError
+                SOASerialRangeError
+                SOASerialTypeError
+            SecTagPermissionDenied
+            ServerError
+                NoServerFound
+                NoServerFoundByAddress
+                ServerAddressExists
+                ServerExists
+                ServerNotDisabled
+            ServerSmFailure
+            SgExists
+            SgMultipleResults
+            SgNameRequired
+            SgStillUsed
+                SgStillHasServers
+                SgStillHasZones
+            UpdateError
+                DynDNSUpdateError
+                    DynDNSCantReadKeyError
+                NoSuchZoneOnServerError
+            UpdateTypeAlreadyQueued
+            UpdateTypeRequired
+            ZiIdSyntaxError
+                ZiIdAdjStringSyntaxError
+                ZiIdDdMmYyyySyntaxError
+                ZiIdDdSlashMmSyntaxError
+                ZiIdHhMmSyntaxError
+                ZiIdIsoDateSyntaxError
+                ZiIdTimeAmountSyntaxError
+                ZiIdTimeUnitSyntaxError
+            ZiInUse
+            ZiParseError
+                HostnameZiParseError
+                TtlZiParseError
+            ZiTextParseError
+            ZoneAdminPrivilegeNeeded
+            ZoneBeingCreated
+            ZoneCfgItem
+                ZoneCfgItemNotFound
+                ZoneCfgItemValueError
+            ZoneDisabled
+            ZoneExists
+            ZoneHasNoSOARecord
+            ZoneHasNoZi
+            ZoneMultipleResults
+            ZoneNameUndefined
+            ZoneNoAltSgForSwap
+            ZoneNotDeleted
+            ZoneNotDisabled
+            ZoneNotDnssecEnabled
+            ZoneNotFound
+                ZiNotFound
+                ZoneNotFoundByZoneId
+            ZoneNotPublished
+            ZoneParseError
+                BadNameOwnerError
+                BadNameRdataError
+                DirectiveParseError
+                    HostnameParseError
+                    TtlInWrongPlace
+                    TtlParseError
+                GenerateNotSupported
+                IncludeNotSupported
+                InvalidUpdateOperation
+                LabelNotInDomain
+                Not7ValuesSOAParseError
+                PrivilegeNeeded
+                    AdminPrivilegeNeeded
+                    HelpdeskPrivilegeNeeded
+                RRNoTypeGiven
+                RdataParseError
+                RropNotSupported
+                SOASerialMustBeInteger
+                UnhandledClassError
+                UnhandledTypeError
+                UpdateTypeNotSupported
+                ZoneError
+                    DuplicateRecordInZone
+                    ZoneAlreadyHasSOARecord
+                    ZoneCNAMEExists
+                    ZoneCNAMELabelExists
+                    ZoneCheckIntegrityNoGlue
+                    ZoneHasNoNSRecord
+                    ZoneSOARecordNotAtApex
+            ZoneSearchPatternError
+                OnlyOneLoneWildcardValid
+                ReferenceMustBeGiven
+            ZoneSecTagDoesNotExist
+                ZoneSecTagConfigError
+            ZoneSecTagExists
+            ZoneSecTagStillUsed
+            ZoneSmFailure
+                ActiveZoneExists
+                CancelEditLockFailure
+                EditLockFailure
+                TickleEditLockFailure
+                UpdateZoneFailure
+                ZoneFilesStillExist
+            ZoneTTLNotSetError
+    
+    class ActiveZoneExists(ZoneSmFailure)
+     |  Another zone instance is active - this one cannot be activated.
+     |  
+     |  JSONRPC Error:      -69
+     |  JSONRPC data keys:  'name'          - domain name
+     |  JSONRPC data keys:  'event_message' - event message
+     |  JSONRPC data keys:  'event_results' - event results object
+     |  
+    
+    class AdminPrivilegeNeeded(PrivilegeNeeded)
+     |  Administrative privilege is needed to set this RR field
+     |  
+     |  JSONRPC Error:      -26
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class BadInitialZoneName(DMSError)
+     |  Name of the Zone can not be determined.
+     |  
+     |  JSONRPC Error:      -55
+     |  JSONRPC data keys:  'file_name'   - file name being loaded.
+     |  
+    
+    class BadNameOwnerError(ZoneParseError)
+     |  Owner name of an A AAAA or MX record is not a valid hostname
+     |  
+     |  JSONRPC Error:      -13
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |                      'label_thing'       - thing given as RR label
+     |  
+    
+    class BadNameRdataError(ZoneParseError)
+     |  Name in the rdata of a record is not a valid hostname
+     |  
+     |  JSONRPC Error:      -14
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |                      'rdata_thing'   - bad RDATA of RR
+     |                      'bad_name'      - bad hostname in RDATA
+     |  
+    
+    class BinaryFileError(DMSError)
+     |  Trying to load a binary file.
+     |  
+     |  JSONRPC Error:      -39
+     |  JSONRPC data keys:  'file_name'   - file name
+     |  
+    
+    class CancelEditLockFailure(ZoneSmFailure)
+     |  For a DMI, can't clear edit_lock for zone.
+     |  
+     |  JSONRPC Error:      -33
+     |  JSONRPC data keys:  'name'          - domain name
+     |  JSONRPC data keys:  'event_message' - Cancel Event Message
+     |  JSONRPC data keys:  'event_results' - Event results object
+     |  
+    
+    class ConfigBatchHoldFailed(DMSError)
+     |  Configuration SM Failed to enter CONFIG_HOLD for batch zone creation
+     |  
+     |  JSONRPC Error:      -56
+     |  
+    
+    class DBReadOnlyError(DMSError)
+     |  Database is in Read Only mode.
+     |  
+     |  JSONRPC Error: - 122
+     |  JSONRPC data keys: 'exc_msg'  - original exception message
+     |  
+    
+    class DMSError(core.wsgi.jsonrpc_server.BaseJsonRpcError)
+     |  Base DMS Error Exception
+     |  
+     |  JSONRPC Error: JSONRPC_INTERNAL_ERROR
+     |  
+    
+    class DirectiveParseError(ZoneParseError)
+    
+    class DuplicateRecordInZone(ZoneError)
+     |  Zone already has a record for this.
+     |  
+     |  JSONRPC Error:      -20
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class DynDNSCantReadKeyError(DynDNSUpdateError)
+     |  Can't read in configured TSIG for Dynamic DNS update
+     |  
+     |  JSONRPC Error: -5
+     |  JSONRPC data keys: 'name'  - None
+     |  
+    
+    class DynDNSUpdateError(UpdateError)
+     |  Error during update of zone
+     |  
+     |  JSONRPC Error: -4
+     |  JSONRPC data keys: 'name'  - domain name
+     |  
+    
+    class EditLockFailure(ZoneSmFailure)
+     |  For a DMI, can't obtain an edit_lock for zone.
+     |  
+     |  JSONRPC Error:      -34
+     |  JSONRPC data keys:  'name'          - domain name
+     |  JSONRPC data keys:  'event_message' - Lock Event Message
+     |  JSONRPC data keys:  'event_results' - Event results object
+     |  
+    
+    class GenerateNotSupported(ZoneParseError)
+     |  Our zone parser does not support the $GENERATE statement
+     |  
+     |  JSONRPC Error:      -54
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class HelpdeskPrivilegeNeeded(PrivilegeNeeded)
+     |  Help desk privilege is needed to set this RR field
+     |  
+     |  JSONRPC Error:      -27
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class HostnameParseError(DirectiveParseError)
+     |  Hostname parse error while parsing zone file.
+     |  
+     |  JSONRPC Error:      -51
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class HostnameZiParseError(ZiParseError)
+     |  Zi related SOA mname or rname value error.
+     |  
+     |  JSONRPC Error:      -48
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'zi_field'  - ZI field where error found
+     |                      'value'     - value in error
+     |  
+    
+    class IncludeNotSupported(ZoneParseError)
+     |  Our zone parser does not support the $INCLUDE statement
+     |  
+     |  JSONRPC Error:      -50
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class IncrementalUpdateNotInTrialRun(DMSError)
+     |  Error in Incremental Update mechanism.  Update mechanism not in
+     |  Trial Run Mode.
+     |  
+     |  JSONRPC Error:      JSON_RPC_INTERNAL_ERROR
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class IncrementalUpdatesDisabled(DMSError)
+     |  Incremental Updates are disabled for this zone.
+     |  
+     |  JSONRPC Error:      -90
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class InvalidDomainName(DMSError)
+     |  Domain name is invalid.
+     |  
+     |  JSONRPC Error:      -89
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class InvalidHmacType(DMSError)
+     |  Invalid Hmac type given
+     |  
+     |  JSONRPC Error:      -96
+     |  JSONRPC data keys: 'hmac_type'      - Given hmac type
+     |  
+    
+    class InvalidUpdateOperation(ZoneParseError)
+     |  RR type is one we don't handle.
+     |  
+     |  JSONRPC Error:      -83
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class LabelNotInDomain(ZoneParseError)
+     |  FQDN Label outside of domain
+     |  
+     |  JSONRPC Error:      -12
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |                      'label_thing'       - thing given as RR label
+     |  
+    
+    class LoginIdError(DMSError)
+     |  DMS Error class to cover login_id exceptions
+     |  
+    
+    class LoginIdFormatError(LoginIdError)
+     |  A login_id can only consist of the characters '-_a-zA-Z0-9.@', 
+     |  and must start with a letter or numeral.  It also must be less than
+     |  512 characters long.
+     |  
+     |  JSONRPC Error:      -124
+     |  JSONRPC data keys:  'login_id'  - login_id
+     |                      'error'     - error message
+     |  
+    
+    class LoginIdInvalidError(LoginIdError)
+     |  A login_id must be given, and be less than 512 characters long.
+     |  
+     |  JSONRPC Error:      -125
+     |  JSONRPC data keys:  'error'     - error message
+     |  
+    
+    class MultipleReferencesFound(DMSError)
+     |  Multiple references were found 
+     |  
+     |  JSONRPC Error:      -68
+     |  JSONRPC data keys:  'reference'   - reference code
+     |  
+    
+    class NamedConfWriteError(RestoreNamedDbError)
+     |  Can't write named.conf sections
+     |  
+     |  JSONRPCError:       -113
+     |  JSONRPC data keys:  'name'  - domain name
+     |                      'internal_error' - error that occured
+     |  
+    
+    class NamedStillRunning(RestoreNamedDbError)
+     |  Named is still running
+     |  
+     |  JSONRPCError:       -108
+     |  JSONRPC data keys:  'rndc_status_exit_code' - exit code from 'rndc status'
+     |  
+    
+    class DmsdmdStillRunning(RestoreNamedDbError)
+     |  Dmsdmd is still running
+     |  
+     |  JSONRPCError:       -109
+     |  JSONRPC data keys:  dmsdmd_pid - dmsdmd PID
+     |  
+    
+    class NoPreviousLabelParseError(DMSError)
+     |  No Previous Label seen. - This should not be reached in code
+     |  
+     |  JSONRPC Error:     -7
+     |  JSONRPC data keys:  'name'  - domain name
+     |  
+    
+    class NoReferenceFound(DMSError)
+     |  No Reference found.
+     |  
+     |  JSONRPC Error:      -67
+     |  JSONRPC data keys:  'reference'   - reference code
+     |  
+    
+    class NoReplicaSgFound(DMSError)
+     |  For a DMI, Master SG not found
+     |  
+     |  JSONRPC Error:      -128
+     |  
+    
+    class NoSecTagsExist(DMSError)
+     |  No zone security tags found for this domain. 
+     |  
+     |  JSONRPC Error:      -45
+     |  
+    
+    class NoServerFound(ServerError)
+     |  Server does not exist
+     |  
+     |  JSONRPC Error:      -75
+     |  JSONRPC data keys:  'server_name'      - server name
+     |  
+    
+    class NoServerFoundByAddress(ServerError)
+     |  Server does not exist
+     |  
+     |  JSONRPC Error:      -76
+     |  JSONRPC data keys:  'address'      - server address
+     |  
+    
+    class NoSgFound(DMSError)
+     |  For a DMI, requested SG not found
+     |  
+     |  JSONRPC Error:      -59
+     |  JSONRPC data keys:  'sg_name'      - SG name
+     |  
+    
+    class NoSuchZoneOnServerError(UpdateError)
+     |  No zone found in DNS server 
+     |  
+     |  JSONRPC Error: -6
+     |  JSONRPC data keys:  'name'      - zone name
+     |                      'server'    - server hostname/address
+     |                      'port'      - server port
+     |  
+     |  This exception only occurs internally in dmsdmd, and dyndns_tool. It is
+     |  not returned at all over HTTP JSON RPC.
+     |  
+    
+    class NoZoneSecTagsFound(DMSError)
+     |  No zone security tags found for this domain. 
+     |  
+     |  JSONRPC Error:      -44
+     |  JSONRPC data keys:  'name'   - domain name
+     |  
+    
+    class NoZonesFound(DMSError)
+     |  For a DMI, can't find the requested zones.
+     |  
+     |  JSONRPC Error:      -32
+     |  JSONRPC data keys:  'name_pattern'  - wildcard name pattern
+     |  
+    
+    class Not7ValuesSOAParseError(ZoneParseError)
+     |  7 fields were not supplied as required by RFC 1035
+     |  
+     |  JSONRPC Error:      -10
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |                      'num_soa_rdata_values' - number of SOA fields given
+     |  
+    
+    class OnlyOneLoneWildcardValid(ZoneSearchPatternError)
+     |  Only one lone '*' or '%' for zone search pattern is valid
+     |  
+     |  JSONRPC Error:      -98
+     |  JSONRPC data keys:  'search_pattern'    - Zone search pattern
+     |  
+    
+    class PidFileAccessError(RestoreNamedDbError)
+     |  PID file format error
+     |  
+     |  JSONRPCError:       -111
+     |  JSONRPC data keys:  pid_file - PID file name
+     |                      exception - Value Error Exception
+     |  
+    
+    class PidFileValueError(RestoreNamedDbError)
+     |  PID file format error
+     |  
+     |  JSONRPCError:       -110
+     |  JSONRPC data keys:  pid_file - PID file name
+     |                      exception - Value Error Exception
+     |  
+    
+    class PrivilegeNeeded(ZoneParseError)
+     |  Privilege is needed to set this RR field
+     |  
+     |  JSONRPC Error:      JSONRPC_INTERNAL_ERROR
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class RRNoTypeGiven(ZoneParseError)
+     |  RR has no type given.
+     |  
+     |  JSONRPC Error:      -97
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class RdataParseError(ZoneParseError)
+     |  Somewhere in the rdata processing (probably within dnspython)
+     |  sense could not be made of the data
+     |  
+     |  JSONRPC Error:      -24
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |                      'rdata_thing'       - given invalid RDATA
+     |  
+    
+    class ReferenceDoesNotExist(DMSError)
+     |  Reference does not exist. 
+     |  
+     |  JSONRPC Error:      -65
+     |  JSONRPC data keys:  'reference'   - reference code
+     |  
+    
+    class ReferenceExists(DMSError)
+     |  Trying to create a reference that already exists.
+     |  
+     |  JSONRPC Error:      -64
+     |  JSONRPC data keys:  'reference'   - reference code
+     |  
+    
+    class ReferenceFormatError(DMSError)
+     |  A reference can only consist of the characters '-_a-zA-Z0-9.@', 
+     |  and must start with a letter or numeral.  It also must be less than
+     |  1024 characters long.
+     |  
+     |  JSONRPC Error:      -82
+     |  JSONRPC data keys:  'reference' - reference name
+     |                      'error'     - error message
+     |  
+    
+    class ReferenceMustBeGiven(ZoneSearchPatternError)
+     |  When giving a zone search pattern, a reference must be given
+     |  
+     |  JSONRPC Error:      -99
+     |  JSONRPC data keys:  'search_pattern'    - Zone search pattern
+     |  
+    
+    class ReferenceStillUsed(DMSError)
+     |  Reference is still in use 
+     |  
+     |  JSONRPC Error:      -66
+     |  JSONRPC data keys:  'reference'   - reference code
+     |  
+    
+    class ReplicaSgExists(DMSError)
+     |  A master SG already exists
+     |  
+     |  JSONRPC Error:      -114
+     |  JSONRPC data keys:  'sg_name'          - SG name
+     |                      'replica_sg_name'   - master SG name
+     |  
+    
+    class RestoreNamedDbError(DMSError)
+     |  Subclass for Errors relating to restore_named_db DR functionality
+     |  
+    
+    class ReverseNamesNotAccepted(InvalidDomainName)
+     |  Reverse domain names are generated from CIDR network names.
+     |  
+     |  JSONRPC Error:      -91
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class RrQueryDomainError(DMSError)
+     |  For query an RR, domain cannot start with '.'
+     |  
+     |  JSONRPC Error:      -81
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class RropNotSupported(ZoneParseError)
+     |  Our zone parser does not support the RROP: RR flag in edit mode
+     |  
+     |  JSONRPC Error:      -85
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class SOASerialArithmeticError(SOASerialError)
+     |  SOA Serial Arithmetic Error.  Possibly due to memory corruption.
+     |  
+     |  JSONRPC Error: -3
+     |  JSONRPC data keys: 'name'  - domain name
+     |  
+    
+    class SOASerialCandidateIgnored(SOASerialError)
+     |  Proposed SOA Serial Candidate ignored.
+     |  
+     |  JSONRPC Error: -118
+     |  JSONRPC data keys: 'name'  - domain name
+     |  
+    
+    class SOASerialError(DMSError)
+     |  Ancestor for all SOA Serial arithmetic errors
+     |  
+    
+    class SOASerialMustBeInteger(ZoneParseError)
+     |  SOA serial number must be an integer value.
+     |  
+     |  JSONRPC Error:      -11
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |                      'soa_serial_thing'  - thing given as SOA serial no.
+     |  
+    
+    class SOASerialOcclusionError(SOASerialError)
+     |  SOA Serial Occlusion Error.  SOA serial as recorded in database is
+     |  maximum of current SOA serial value in master DNS server.
+     |  
+     |  JSONRPC Error: -115
+     |  
+    
+    class SOASerialPublishedError(SOASerialError)
+     |  SOA Serial Published Error.  SOA serial number update is the same as
+     |  published value in database.
+     |  
+     |  JSONRPC Error: -116
+     |  
+    
+    class SOASerialRangeError(SOASerialError)
+     |  SOA Serial Number is out of range must be > 0 and <= 2**32 -1.
+     |  
+     |  JSONRPC Error: -120
+     |  JSONRPC data keys: 'name'  - domain name
+     |  
+    
+    class SOASerialTypeError(SOASerialError)
+     |  SOA Serial Number must be an integer.
+     |  
+     |  JSONRPC Error: -121
+     |  JSONRPC data keys: 'name'  - domain name
+     |  
+    
+    class SecTagPermissionDenied(DMSError)
+     |  Operations on security tags can only be done with Admin privilege
+     |  
+     |  JSONRPC Error:      -46
+     |  JSONRPC data keys:  'sectag_label'   - security tag label
+     |  
+    
+    class ServerAddressExists(ServerError)
+     |  Server with the given address exists
+     |  
+     |  JSONRPC Error:      -77
+     |  JSONRPC data keys:  'address'      - server address
+     |  
+    
+    class ServerError(DMSError)
+     |  Ancestor class for server functions, saves code.
+     |  
+    
+    class ServerExists(ServerError)
+     |  Server already exists
+     |  
+     |  JSONRPC Error:      -74
+     |  JSONRPC data keys:  'server_name'      - server name
+     |  
+    
+    class ServerNotDisabled(ServerError)
+     |  Server must be disabled for operation to proeceed.
+     |  
+     |  JSONRPC Error:      -78
+     |  JSONRPC data keys:  'server_name'      - server name
+     |  
+    
+    class ServerSmFailure(DMSError)
+     |  Server SM Failure - synchronous execution of the Server SM
+     |  was not successful.
+     |  
+     |  JSONRPC Error: -79
+     |  JSONRPC data keys:  'server_name'    - server name
+     |  JSONRPC data keys:  'event_message' - Event Message
+     |  JSONRPC data keys:  'event_results' - Event results object
+     |  
+    
+    class SgExists(DMSError)
+     |  For a DMI, SG already exists
+     |  
+     |  JSONRPC Error:      -72
+     |  JSONRPC data keys:  'sg_name'      - SG name
+     |  
+    
+    class SgMultipleResults(DMSError)
+     |  For a DMI, search for one requested SG found multiple entities
+     |  
+     |  JSONRPC Error:      -58
+     |  JSONRPC data keys:  'sg_name'      - SG name
+     |  
+    
+    class SgNameRequired(DMSError)
+     |  SG Name is required for this configuration parameter
+     |  
+     |  JSONRPC Error:      -63
+     |  JSONRPC data keys:  'config_key'      - config parameter key
+     |  
+    
+    class SgStillHasServers(SgStillUsed)
+     |  For a DMI, attempted deletion, SG still has servers
+     |  
+     |  JSONRPC Error:      -95
+     |  JSONRPC data keys:  'sg_name'      - SG name
+     |  
+    
+    class SgStillHasZones(SgStillUsed)
+     |  For a DMI, attempted deletion, SG still has zones
+     |  
+     |  JSONRPC Error:      -73
+     |  JSONRPC data keys:  'sg_name'      - SG name
+     |  
+    
+    class SgStillUsed(DMSError)
+     |  Container class for SG Deleteion errors
+     |  
+    
+    class TickleEditLockFailure(ZoneSmFailure)
+     |  Can't tickle the edit lock timeout event due to an incorrect
+     |  edit_lock_token
+     |  
+     |  JSONRPC Error:      -35
+     |  JSONRPC data keys:  'name'          - domain name
+     |  JSONRPC data keys:  'event_message' - Timeout Event Message
+     |  JSONRPC data keys:  'event_results' - Event results object
+     |  
+    
+    class TtlInWrongPlace(DirectiveParseError)
+     |  $TTL not at top of zone file.
+     |  
+     |  JSONRPC Error:      -53
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class TtlParseError(DirectiveParseError)
+     |  Hostname parse error while parsing zone file.
+     |  
+     |  JSONRPC Error:      -52
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class TtlZiParseError(ZiParseError)
+     |  Zi related ttl value error.
+     |  
+     |  JSONRPC Error:      -49
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'zi_field'  - ZI field where error found
+     |                      'value'     - value in error
+     |  
+    
+    class UnhandledClassError(ZoneParseError)
+     |  Unhandled class for record - we only ever do IN
+     |  
+     |  JSONRPC Error:      -8
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class UnhandledTypeError(ZoneParseError)
+     |  RR type is one we don't handle.
+     |  
+     |  JSONRPC Error:      -9
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class UpdateError(DMSError)
+     |  Error during update of zone
+     |  
+     |  JSONRPC Error: -2
+     |  JSONRPC data keys: 'name'  - domain name
+     |  
+    
+    class UpdateTypeAlreadyQueued(DMSError)
+     |  An update of the given type is already queued for the zone
+     |  
+     |  JSONRPC Error:      -86
+     |  JSONRPC data keys:  'name'          - domain name
+     |                      'update_type'   - update type
+     |  
+    
+    class UpdateTypeNotSupported(ZoneParseError)
+     |  Our zone parser does not support the $UPDATE_TYPE statement in edit mode
+     |  
+     |  JSONRPC Error:      -84
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class UpdateTypeRequired(DMSError)
+     |  An update_type is required parameter for an incremental update.
+     |  
+     |  JSONRPC Error:      -87
+     |  JSONRPC data keys:  'name'          - domain name
+     |  
+    
+    class UpdateZoneFailure(ZoneSmFailure)
+     |  Can't update zone as it is locked.
+     |  
+     |  JSONRPC Error:      -35
+     |  JSONRPC data keys:  'name'          - domain name
+     |  JSONRPC data keys:  'event_message' - Timeout Event Message
+     |  JSONRPC data keys:  'event_results' - Event results object
+     |  JSONRPC data keys:  'zi_id' -         ID of saved ZI
+     |  
+    
+    class ZiIdAdjStringSyntaxError(ZiIdSyntaxError)
+     |  ZI id adjustment sub string has invalid syntax.
+     |  
+     |  JSONRPC Error:      -101
+     |  JSONRPC data keys:  'zi_id'     - given zi_id string
+     |  
+    
+    class ZiIdDdMmYyyySyntaxError(ZiIdSyntaxError)
+     |  ZI id sub string has an invalid DD/MM/YYYY date.
+     |  
+     |  JSONRPC Error:      -106
+     |  JSONRPC data keys:  'zi_id'     - given zi_id string
+     |  
+    
+    class ZiIdDdSlashMmSyntaxError(ZiIdSyntaxError)
+     |  ZI id sub string has an invalid DD/MM date.
+     |  
+     |  JSONRPC Error:      -105
+     |  JSONRPC data keys:  'zi_id'     - given zi_id string
+     |  
+    
+    class ZiIdHhMmSyntaxError(ZiIdSyntaxError)
+     |  ZI id sub string has an invalid HH:MM time.
+     |  
+     |  JSONRPC Error:      -104
+     |  JSONRPC data keys:  'zi_id'     - given zi_id string
+     |  
+    
+    class ZiIdIsoDateSyntaxError(ZiIdSyntaxError)
+     |  ZI id sub string has an invalid YYYY-MM-DD date.
+     |  
+     |  JSONRPC Error:      -107
+     |  JSONRPC data keys:  'zi_id'     - given zi_id string
+     |  
+    
+    class ZiIdSyntaxError(DMSError)
+     |  ZI id given has invalid syntax.
+     |  
+     |  JSONRPC Error:      -100
+     |  JSONRPC data keys:  'zi_id'     - given zi_id string
+     |  
+    
+    class ZiIdTimeAmountSyntaxError(ZiIdSyntaxError)
+     |  ZI id sub string has invalid time amount.
+     |  
+     |  JSONRPC Error:      -103
+     |  JSONRPC data keys:  'zi_id'     - given zi_id string
+     |  
+    
+    class ZiIdTimeUnitSyntaxError(ZiIdSyntaxError)
+     |  ZI id sub string has an invalid time unit specifier.
+     |  
+     |  JSONRPC Error:      -102
+     |  JSONRPC data keys:  'zi_id'     - given zi_id string
+     |  
+    
+    class ZiInUse(DMSError)
+     |  Trying to delete a zi that is currently published.
+     |  
+     |  JSONRPC Error:      -38
+     |  JSONRPC data keys:  'name'        - domain name
+     |  
+    
+    class ZiNotFound(ZoneNotFound)
+     |  For a DMI, can't find the requested zi.
+     |  
+     |  JSONRPC Error:      -30
+     |  JSONRPC data keys:  'name'      - domain name
+     |  JSONRPC data keys:  'zi_id'     - Zone Instance ID
+     |                                      (can be None/Null)
+     |  
+    
+    class ZiParseError(DMSError)
+     |  Zi related SOA/TTL data error.
+     |  
+     |  JSONRPC Error:      JSONRPC_INTERNAL_ERROR
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'zi_field'  - ZI field where error found
+     |                      'value'     - value in error
+     |  
+    
+    class ZiTextParseError(DMSError)
+     |  Parse Error.  The zone file text input as zi_text
+     |  must be of a valid format
+     |  
+     |  JSONRPC Error:      -126
+     |  JSONRPC data keys:  'parse_error'        - error message
+     |                      'name'               - domain name
+     |                      'lineno'             - line number
+     |                      'col'                - column
+     |                      'marked_iinput_line' - input line with marked error
+     |  
+    
+    class ZoneAdminPrivilegeNeeded(DMSError)
+     |  DMI has not been assigned the privilege required to edit this zone.
+     |  
+     |  JSONRPC Error:      -127
+     |  JSONRPC data keys:  'name'          - domain name
+     |  
+    
+    class ZoneAlreadyHasSOARecord(ZoneError)
+     |  Zone already has an SOA record.
+     |  
+     |  JSONRPC Error:      -15
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class ZoneBeingCreated(DMSError)
+     |  A zone in the creation process can not be deleted or undeleted
+     |  
+     |  JSONRPC Error:      -62
+     |  JSONRPC data keys:  'name'          - domain name
+     |  JSONRPC data keys:  'event_message' - event message
+     |  JSONRPC data keys:  'event_results' - event results object
+     |  
+    
+    class ZoneCNAMEExists(ZoneError)
+     |  Zone already has a CNAME using this label.
+     |  
+     |  JSONRPC Error:      -18
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class ZoneCNAMELabelExists(ZoneError)
+     |  Zone already has a CNAME using this label.
+     |  
+     |  JSONRPC Error:      -19
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class ZoneCfgItem(DMSError)
+    
+    class ZoneCfgItemNotFound(ZoneCfgItem)
+     |  An item with the given key name can not be found in the zone_cfg table
+     |  
+     |  JSONRPC Error:      -61
+     |  JSONRPC data keys:  'key'      - item key name
+     |  
+    
+    class ZoneCfgItemValueError(ZoneCfgItem)
+     |  An item with the given key name can not be interpolated from its string
+     |  
+     |  This can happen for string -> boolean conversions
+     |  
+     |  JSONRPC Error:      -71
+     |  JSONRPC data keys:  'key'      - item key name
+     |  JSONRPC data keys:  'value'    - item value
+     |  
+    
+    class ZoneCheckIntegrityNoGlue(ZoneError)
+     |  Record in zone does not have valid in zone glue
+     |  
+     |  JSONRPC Error:      -21
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class ZoneDisabled(DMSError)
+     |  Zone disabled. Can't do operation.
+     |  
+     |  JSONRPC Error:      -88
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class ZoneError(ZoneParseError)
+     |  Zone related resource record error.
+     |  
+     |  JSONRPC Error:      JSONRPC_INTERNAL_ERROR
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class ZoneExists(DMSError)
+     |  Trying to create a zone that already exists
+     |  
+     |  JSONRPC Error:      -36
+     |  JSONRPC data keys:  'name'        - domain name
+     |  
+    
+    class ZoneFileWriteError(RestoreNamedDbError)
+     |  Can't write zone file
+     |  
+     |  JSONRPCError:       -112
+     |  JSONRPC data keys:  'name'  - domain name
+     |                      'internal_error' - error that occured
+     |  
+    
+    class ZoneFilesStillExist(ZoneSmFailure)
+     |  Can't destroy/nuke a zone as its zone files still exist
+     |  
+     |  JSONRPC Error:      -70
+     |  JSONRPC data keys:  'name'          - domain name
+     |  JSONRPC data keys:  'event_message' - Event Message
+     |  JSONRPC data keys:  'event_results' - Event results object
+     |  
+    
+    class ZoneHasNoNSRecord(ZoneError)
+     |  Zone has No NS records.
+     |  
+     |  JSONRPC Error:      -23
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class ZoneHasNoSOARecord(DMSError)
+     |  Zone has No SOA record.
+     |  
+     |  JSONRPC Error:      -22
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class ZoneHasNoZi(DMSError)
+     |  For a Zone, no ZI has no candidate or published ZI
+     |  
+     |  JSONRPC Error: - 92
+     |  JSONRPC data keys: 'name'  - domain name
+     |  
+    
+    class ZoneMultipleResults(DMSError)
+     |  For a DMI, search for one requested zone found multiple entities
+     |  
+     |  JSONRPC Error:      -57
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class ZoneNameUndefined(DMSError)
+     |  Name of the Zone can not be determined.
+     |  
+     |  JSONRPC Error:      -47
+     |  JSONRPC data keys:  'file_name'   - file name being loaded.
+     |  
+    
+    class ZoneNoAltSgForSwap(DMSError)
+     |  Zone idoes not have an alternate SG for swapping
+     |  
+     |  JSONRPC Error:      -123
+     |  JSONRPC data keys:  'name'          - domain name
+     |  
+    
+    class ZoneNotDeleted(DMSError)
+     |  Trying to destroy a zone that is active
+     |  
+     |  JSONRPC Error:      -37
+     |  JSONRPC data keys:  'name'        - domain name
+     |  
+    
+    class ZoneNotDisabled(DMSError)
+     |  Zone disabled. Can't do operation.
+     |  
+     |  JSONRPC Error:      -94
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class ZoneNotDnssecEnabled(DMSError)
+     |  Zone is not DNSSEC enabled.
+     |  
+     |  JSONRPC Error:      -60
+     |  JSONRPC data keys:  'name'          - domain name
+     |  
+    
+    class ZoneNotFound(DMSError)
+     |  For a DMI, can't find the requested zone.
+     |  
+     |  JSONRPC Error:      -28
+     |  JSONRPC data keys:  'name'      - domain name
+     |  
+    
+    class ZoneNotFoundByZoneId(ZoneNotFound)
+     |  For a DMI, can't find the requested zone.
+     |  
+     |  JSONRPC Error:      -29
+     |  JSONRPC data keys:  'zone_id'      - Zone ID
+     |  
+    
+    class ZoneNotPublished(DMSError)
+     |  Zone Not Published.  Can't poke DNS server.
+     |  
+     |  JSONRPC Error: -117
+     |  JSONRPC data keys: 'name'  - domain name
+     |  
+    
+    class ZoneParseError(DMSError)
+     |  Parent class for zi RR errors
+     |  
+     |  JSONRPC Error:      JSONRPC_INTERNAL_ERROR
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class ZoneSOARecordNotAtApex(ZoneError)
+     |  Zone already has an SOA record.
+     |  
+     |  JSONRPC Error:      -16
+     |  JSONRPC data keys:  'name'      - domain name
+     |                      'rr_data'   - RR data from zi, Not RDATA!
+     |                      'rr_groups_index'   - index into rr_groups array.
+     |                      'rrs_index'         - index of RR in rrs of
+     |                                              rr_groups
+     |  
+    
+    class ZoneSearchPatternError(DMSError)
+     |  Given zone search pattern is invalid
+     |  
+    
+    class ZoneSecTagConfigError(ZoneSecTagDoesNotExist)
+     |  Zone security tag for DMS server does not exist. 
+     |  
+     |  JSONRPC Error:      -42
+     |  JSONRPC data keys:  'sectag_label'   - security tag label
+     |  
+    
+    class ZoneSecTagDoesNotExist(DMSError)
+     |  Zone security tag does not exist. 
+     |  
+     |  JSONRPC Error:      -41
+     |  JSONRPC data keys:  'sectag_label'   - security tag label
+     |  
+    
+    class ZoneSecTagExists(DMSError)
+     |  Trying to create a security tag that already exists.
+     |  
+     |  JSONRPC Error:      -40
+     |  JSONRPC data keys:  'sectag_label'   - security tag label
+     |  
+    
+    class ZoneSecTagStillUsed(DMSError)
+     |  Zone security tag is still in use 
+     |  
+     |  JSONRPC Error:      -43
+     |  JSONRPC data keys:  'sectag_label'   - security tag label
+     |  
+    
+    class ZoneSmFailure(DMSError)
+     |  Zone SM Failure - synchronous execution of the Zone SM
+     |  was not successful.
+     |  
+     |  JSONRPC Error: -80
+     |  JSONRPC data keys:  'name'          - domain name
+     |  JSONRPC data keys:  'event_message' - Event Message
+     |  JSONRPC data keys:  'event_results' - Event results object
+     |  
+    
+    class ZoneTTLNotSetError(DMSError)
+     |  The zone ttl needs to be set in the RR database row
+     |  
+     |  JSONRPC Error: -1
+     |  JSONRPC data keys: 'rr_id'  - Resource Record ID
+     |  

@@ -1,0 +1,28 @@
+[DEFAULT]
+run_as_user = dmsdmd
+db_user = dms
+db_name = dms
+
+##  Blah comment
+
+[dmsdmd]
+daemon_canary = blau
+#log_level = DEBUG
+#debug_mark = true
+
+[zone_tool]
+# zone_tool needs password  and db_host to run if user not in pg_ident.conf
+db_host = ip6-localhost
+db_password = ScoobyDoo
+# edit timeout in minutes
+#edit_lock_timeout = 2
+
+[mod_wsgi]
+# Settings specific to mod_wsgi scripts
+#jsonrpc_error_stack_trace = True
+
+[admin_dms.wsgi]
+#jsonrpc_error_stack_trace = True
+
+
+

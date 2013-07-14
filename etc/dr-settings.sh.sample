@@ -1,0 +1,56 @@
+# Settings file for dr-scripts and Net24 PG database scripts
+
+# DR Partner server host name
+# ie default dms_start_as_replica master
+# This is the exact DNS/host name which you have to replicate from 
+DR_PARTNER="dms-dr.foo.bar.net"
+
+# Settings to move pg_xlog when replicating or creating a DB 
+DBMOVEXLOG=false
+DBALTXLOGDIR="/srv/postgresql"
+
+# BIND9 named extra options
+#BIND9_EXTRA_OPTIONS=""
+
+# BIND9 DR replica options we use it to set number of CPUs for example
+#BIND9_DR_SERVER_OPTIONS="-n 1"
+
+# Enable the DMS JSON RPC over http API server in apache.  Takes true/false
+DMSWSGI=true
+
+# Dummy loop back interface with DR IP address(es) attached.  Quagga is used 
+# to propagate host routes based on the interface.  Multiple addresses can
+# be configured on the device.  The scripts take the device up and down as
+# required. The addresses need to be configured properly in the system
+# interface configuration, but the interfaces should not be marked to be
+# activated on boot.  If this variable is blank, nothing is done.
+DMSDRIF=""
+
+# zone_tool update_rrs settings.  Uses a CNAME based template.
+# Following is a flag to turn it on or off
+DMSDRDNS=true
+
+# If not defined or empty, the following is set to the hostname
+DMS_MASTER=""
+
+DMS_FAILOVER_DOMAIN="failover.foo.bar.net."
+
+DMS_WSGI_LABEL="dms-server"
+
+DMS_WSGI_TTL="30s"
+
+DMS_UPDATE_RRS_TEMPLATE='
+$ORIGIN @@DMS_FAILOVER_DOMAIN@@
+$UPDATE_TYPE wsgi-failover
+;!RROP:UPDATE_RRTYPE
+@@DMS_WSGI_LABEL@@  @@DMS_WSGI_TTL@@  IN      CNAME      @@DMS_MASTER@@
+'
+
+# Should not have to change settings below here
+#----------------------------------------------
+
+# PostgresQL version used
+PGVERSION="9.1"
+
+# PstgresQL catalog cluster name
+PGCLUSTER="dms"

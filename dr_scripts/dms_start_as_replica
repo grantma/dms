@@ -1,0 +1,450 @@
+#!/bin/sh
+#
+# Copyright (c) Matthew Grant <matthewgrant5@gmail.com> 2006-2013
+#               Net24 Limited, Christchurch, New Zealand 2011-2012
+#       and     Voyager Internet Ltd, New Zealand, 2012-2013
+#
+#    This file is part of py-magcode-core.
+#
+#    Py-magcode-core is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU  General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Py-magcode-core is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU  General Public License for more details.
+#
+#    You should have received a copy of the GNU  General Public License
+#    along with py-magcode-core.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+PGVERSION="9.1"
+PGCLUSTER="dms"
+PGPASSWORDFILE="/etc/dms/pgpassfile"
+BIND9DYNAMICDIR="/var/lib/bind/dynamic"
+PROGNAME="`basename $0`"
+
+APACHE2_DEFAULT="/etc/default/apache2"
+BIND9_EXTRA_OPTIONS=""
+BIND9_DR_SERVER_OPTIONS=""
+BIND9_DEFAULT="/etc/default/bind9"
+DMSDMD_DEFAULT="/etc/default/dmsdmd"
+DMS_CRONTAB="/etc/cron.d/dms-core"
+RSYSLOG_PGSQL="/etc/rsyslog.d/pgsql.conf"
+NETSCRIPT_NETWORK="/etc/netscript/network.conf"
+
+SETTINGSFILE="/etc/dms/dr-settings.sh"
+
+# Read in settings
+[ -f "$SETTINGSFILE" ] && . "$SETTINGSFILE"
+
+# Settings that depend on configuration file
+PGDATADIR="/var/lib/postgresql/${PGVERSION}/${PGCLUSTER}"
+PGPIDFILE="/var/run/postgresql/${PGVERSION}-${PGCLUSTER}.pid"
+PGETCDIR="/etc/postgresql/${PGVERSION}/${PGCLUSTER}"
+RECOVERYCONF="${PGDATADIR}/recovery.conf"
+
+NAMEDPIDFILE="/var/run/named/named.pid"
+
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+
+# Pad out BIND9 options stuff
+if [ -n "$BIND9_EXTRA_OPTIONS" ] ; then
+	BIND9_EXTRA_OPTIONS="$BIND9_EXTRA_OPTIONS "
+fi
+if [ -n "$BIND9_DR_SERVER_OPTIONS" ] ; then
+	BIND9_DR_SERVER_OPTIONS="$BIND9_DR_SERVER_OPTIONS "
+fi
+
+do_dms_wsgi () {
+	case $DMSWSGI in
+	[Tt]rue|[Yy]es|[Oo]n|1)
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
+}
+
+fix_up_apache2_default () {
+	if ! do_dms_wsgi; then
+		return 0
+	fi
+	if ! egrep -q '^#?[[:space:]]*exit.*$' $APACHE2_DEFAULT; then
+		local EXIT_STUFF='
+# Exit inserted to turn off apache2 for DMS
+#exit 0
+'		
+		echo "$EXIT_STUFF" >> $APACHE2_DEFAULT
+	fi
+}
+
+do_dms_drif () {
+	[ -n "$DMSDRIF" ] && return 0	
+	# if DMSDRIF var empty, don't do anything
+	return 1
+}
+
+get_pgport () {
+	grep '^port' $PGETCDIR/postgresql.conf | perl -pe 's/^.* (\d+)\s*.*$/$1/' || true
+}
+
+check_with_user () {
+	if [ $1 -le 0 ]; then
+		if [ -z "$2" ]; then
+			echo -n "Operation will destroy all data."
+		else
+			echo -n "$2"
+		fi
+		echo -n " Proceed? (y/N)"
+		read ANS
+		case $ANS in
+		y|Y)
+			# Proceeding
+			;;
+		*)
+			exit 1
+			;;
+		esac
+	fi
+}
+
+dms_prepare_binddata_usage () {
+	echo "Usage: [-f] $PROGNAME" 1>&2
+	exit 1
+}
+
+dms_prepare_binddata () {
+	local FORCE=0
+	OPTIND=1
+	while getopts fh F; do
+		case $F in
+		h)
+			dms_prepare_binddata_usage
+			;;
+		f)
+			FORCE=1
+			;;
+		\?)	
+			dms_prepare_binddata_usage
+			;;
+		esac
+	done	
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		dms_prepare_binddata_usage
+	fi
+	set -e
+	check_if_named_running
+	check_with_user $FORCE "Operation will destroy bind9 .jnl files." 
+	# Remove journal files and chown zone files so that DR replica 
+	# secondary will update zone files
+	# * is needed in following ls - watch it!  Its to detect if files
+ 	# exist in the directory
+	if ls -1 ${BIND9DYNAMICDIR}/* > /dev/null 2>&1; then 
+		find ${BIND9DYNAMICDIR}/ -name '*.jnl' -print0 | xargs -n 10000 -0 rm -f
+		find ${BIND9DYNAMICDIR}/ -type f -print0 | xargs -n 10000 -0 chown bind:dmsdmd
+		find ${BIND9DYNAMICDIR}/ -type f -print0 | xargs -n 10000 -0 chmod 644
+	fi
+}
+
+turn_on_replica_services () {
+	set -x
+	if do_dms_drif; then
+		perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
+		# Extra line to deal with how humans can twiddle...
+		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
+	fi
+	do_dms_wsgi && perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
+	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
+	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
+	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
+	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c \/etc\/bind\/named-dr-replica.conf\"/" -i $BIND9_DEFAULT
+	set +x
+}
+
+dms_start_as_replica_usage () {
+	echo "$PROGNAME: [-f] [master-server]" 1>&2
+	exit 1
+}
+
+dms_start_as_replica () {
+	local FORCE=0
+	OPTIND=1
+	while getopts fh F; do
+		case $F in
+		h)
+			dms_start_as_replica_usage
+			;;
+		f)
+			FORCE=1
+			;;
+		\?)	
+			dms_start_as_replica_usage
+			;;
+		esac
+	done	
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 1 -a $# -ne 0 ]; then
+		dms_start_as_replica_usage
+	fi;
+
+	if [ -n "$1" ]; then
+		local MASTER_SERVER="$1"
+	elif [ -n "$DR_PARTNER" ]; then
+		local MASTER_SERVER="$DR_PARTNER"
+	else
+		echo "$PROGNAME: No master server given to replicate from." 1>&2
+		exit 2
+	fi
+
+	set -e
+	check_if_pgsql_running
+	echo "$PROGNAME: Will replicate from '$MASTER_SERVER'"
+	check_with_user $FORCE
+	fix_up_apache2_default
+	echo "$PROGNAME: replicating from '$MASTER_SERVER'"
+	dms_pg_basebackup -f "$MASTER_SERVER"
+	dms_prepare_binddata -f
+	dms_write_recovery_conf "$MASTER_SERVER"
+	do_dms_drif && ifdown $DMSDRIF
+	do_dms_wsgi && invoke-rc.d apache2 stop
+	invoke-rc.d dmsdmd stop
+	turn_on_replica_services
+	invoke-rc.d postgresql start
+	invoke-rc.d bind9 start
+}
+
+
+dms_promote_replica_usage () {
+	echo "Usage: $PROGNAME" 1>&2
+	exit 1
+}
+
+dms_promote_replica () {
+	
+	if [ $# -ne 0 ]; then
+		dms_promote_replica_usage
+	fi;
+
+	set -e
+	fix_up_apache2_default
+	pg_ctlcluster $PGVERSION $PGCLUSTER promote
+	set -x
+	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
+	set +x
+	invoke-rc.d rsyslog restart
+	set -x
+	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
+	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind\"/" -i $BIND9_DEFAULT
+	set +x
+	invoke-rc.d bind9 restart
+	# Settle time
+	sleep 7
+	invoke-rc.d dmsdmd start
+	set -x
+	zone_tool write_rndc_conf
+	zone_tool reconfig_all
+	perl -pe 's/^#+(.*zone_tool vacuum_all)$/\1/' -i $DMS_CRONTAB
+	do_dms_wsgi && perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
+	set +x
+	if do_dms_wsgi; then
+		invoke-rc.d apache2 start
+	fi
+	do_dms_drif && set -x && perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
+	set +x
+	do_dms_drif && netscript ifup $DMSDRIF
+	# dms_update_wsgi_dns done in dmsdmd init script
+}
+
+dms_master_down_usage () {
+	echo "Usage: $PROGNAME" 1>&2
+	exit 1
+}
+
+dms_master_down () {
+
+	if [ $# -ne 0 ]; then
+		dms_master_down_usage
+	fi;
+
+	set -e
+	fix_up_apache2_default
+	do_dms_drif && netscript ifdown $DMSDRIF
+	if do_dms_wsgi; then
+		invoke-rc.d apache2 stop
+	fi
+	set -x
+	if do_dms_drif; then
+		perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
+		# Extra line to deal with how humans can twiddle...
+		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK
+	fi
+	do_dms_wsgi && perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
+	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
+	set +x
+	# Settle time
+	sleep 5
+	invoke-rc.d dmsdmd stop
+	invoke-rc.d bind9 stop
+	set -x
+	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
+	set +x
+	invoke-rc.d rsyslog restart
+	invoke-rc.d postgresql stop
+	set -x
+	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
+	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c \/etc\/bind\/named-dr-replica.conf\"/" -i $BIND9_DEFAULT
+
+}
+
+dms_master_up_usage () {
+	echo "Usage: $PROGNAME" 1>&2
+	exit 1
+}
+
+dms_master_up () {
+
+	if [ $# -ne 0 ]; then
+		dms_master_down_usage
+	fi;
+
+	set -e
+	fix_up_apache2_default
+	set -x
+	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
+	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind\"/" -i $BIND9_DEFAULT
+	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
+	set +x
+	invoke-rc.d postgresql start
+	invoke-rc.d rsyslog restart
+	invoke-rc.d bind9 start
+	sleep 3
+	invoke-rc.d dmsdmd start
+	# Settle time
+	sleep 5
+	set -x
+	zone_tool write_rndc_conf
+	zone_tool reconfig_all
+	perl -pe 's/^#+(.*zone_tool vacuum_all)$/\1/' -i $DMS_CRONTAB
+	do_dms_wsgi && perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
+	set +x
+	if do_dms_wsgi; then
+		invoke-rc.d apache2 start
+	fi
+	do_dms_drif && set -x && perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
+	set +x
+	do_dms_drif && netscript ifup $DMSDRIF
+	dms_update_wsgi_dns
+
+}
+
+do_dms_drdns () {
+	case $DMSDRDNS in
+	[Tt]rue|[Yy]es|[Oo]n|1)
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
+}
+
+
+dms_update_wsgi_dns_usage () {
+	echo "Usage: $PROGNAME" 1>&2
+	exit 1
+}
+
+
+dms_update_wsgi_dns () {
+	local DMS_SERVER
+
+	if [ $# -ne 0 ]; then
+		dms_update_wsgi_dns_usage
+	fi;
+
+	set -e
+
+	if ! do_dms_drdns; then
+		exit 0
+	fi
+
+	# Fill in update template
+	if [ -z "$DMS_MASTER" ]; then
+		DMS_SERVER="`hostname -f`."
+	else
+		DMS_SERVER="$DMS_MASTER"
+	fi
+	if echo "${DMS_FAILOVER_DOMAIN}" | grep -q '[^.]$'; then
+		DMS_FAILOVER_DOMAIN="${DMS_FAILOVER_DOMAIN}."
+	fi
+	local UPDATE_TEXT="`echo "$DMS_UPDATE_RRS_TEMPLATE" | \
+		perl -pe "s/\@\@DMS_MASTER\@\@/${DMS_SERVER}/g" |\
+		perl -pe "s/\@\@DMS_FAILOVER_DOMAIN\@\@/${DMS_FAILOVER_DOMAIN}/g" |\
+		perl -pe "s/\@\@DMS_WSGI_LABEL\@\@/${DMS_WSGI_LABEL}/g" |\
+		perl -pe "s/\@\@DMS_WSGI_TTL\@\@/${DMS_WSGI_TTL}/g"`"
+
+	echo "$UPDATE_TEXT" | zone_tool update_rrs -
+}
+
+
+check_if_pgsql_running () {
+
+	if [ -f $PGPIDFILE ] && kill -0 `cat $PGPIDFILE` > /dev/null 2>&1; then
+		echo 1>&2
+		echo "  `basename $0`: postgresql is active - already master or replica?" 1>&2
+		echo 1>&2
+		exit 123
+	fi
+}
+
+check_if_named_running () {
+
+	if [ -f $NAMEDPIDFILE ] && kill -0 `cat $NAMEDPIDFILE` > /dev/null 2>&1; then
+		echo 1>&2
+		echo "  `basename $0`: named is active - already master or replica?" 1>&2
+		echo 1>&2
+		exit 123
+	fi
+}
+
+# bail out if we are not root
+if [ "`id -un`" != "root" ] ; then
+        echo 1>&2
+        echo "  `basename $0`: you must be root to run this command." 1>&2
+        echo 1>&2
+        exit 1
+fi
+
+
+case $PROGNAME in
+        dms_start_as_replica)
+		dms_start_as_replica "$@"
+		;;
+	dms_prepare_binddata)
+		dms_prepare_binddata "$@"
+		;;
+	dms_update_wsgi_dns)
+		dms_update_wsgi_dns "$@"
+		;;
+	dms_promote_replica)
+		dms_promote_replica "$@"
+		;;
+	dms_master_down)
+		dms_master_down "$@"
+		;;
+	dms_master_up)
+		dms_master_up "$@"
+		;;
+	*)
+		echo "$PROGNAME: Blowing up !@#$^%#&" 1>&2
+		exit 123
+		;;
+esac
+

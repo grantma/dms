@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# Copyright (c) Net24 Limited, Christchurch, New Zealand 2011-2012
+#       and     Voyager Internet Ltd, New Zealand, 2012-2013
+#
+#    This file is part of py-magcode-core.
+#
+#    Py-magcode-core is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU  General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Py-magcode-core is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU  General Public License for more details.
+#
+#    You should have received a copy of the GNU  General Public License
+#    along with py-magcode-core.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+usage () {
+	echo 1>&2
+	echo "  Usage: dns-createzonekeys <domain-name>" 1>&2
+	echo 1>&2
+	echo "  Can only be run as root" 1>&2
+        echo 1>&2	
+	exit 1
+}
+
+if [ $# -ne 1 -o "$1" = '-h' ]; then
+	usage
+fi
+#
+# bail out if we are not root
+if [ "`id -un`" != "root" ] ; then
+        echo 1>&2
+        echo "  `basename $0`: you must be root to run this command." 1>&2
+        echo 1>&2
+        exit 1
+fi
+
+DOMAIN=`echo "$1" | perl -pe 's/^(\S+)\.$/\1/'`
+
+set -e
+# Random device
+RAND_DEV="/dev/random"
+#RAND_DEV="/dev/ttyS1"
+# For Debian
+NAMEDB_DIR="/var/lib/bind"
+# For FreeBSD
+#NAMEDB_DIR="/etc/namedb"
+cd $NAMEDB_DIR
+set -x
+rm -f ${NAMEDB_DIR}/keys/K${DOMAIN}.*
+rm -f ${NAMEDB_DIR}/ds/${DOMAIN}
+dnssec-keygen -3 -r $RAND_DEV -f KSK -K "${NAMEDB_DIR}/keys" "$DOMAIN"
+dnssec-dsfromkey -2 ${NAMEDB_DIR}/keys/K${DOMAIN}.*.key > "$NAMEDB_DIR/ds/${DOMAIN}"
+dnssec-keygen -3 -r $RAND_DEV -K "${NAMEDB_DIR}/keys" "${DOMAIN}"
+set +x
+chown bind:dmsdmd $NAMEDB_DIR/keys/*
+chmod 640 $NAMEDB_DIR/keys/*.private
+# Force rsync of keys if zone not created yet.
+if [ -e "$NAMEDB_DIR/dynamic/${DOMAIN}" ]; then
+	zone_tool reconfig_replica_sg
+fi
+

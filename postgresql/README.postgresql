@@ -1,0 +1,41 @@
+Postgresql Setup
+----------------
+
+1) Make sure your environment is setup so that Postgresql will select
+   your preferred character encoding when creating its initial database.
+   Run:
+   
+   dpkg-reconfigure locales
+
+   to set this up if /etc/environment does not exist. Also check that the
+   LANG environment variable in the shell is set.  You may have to log out
+   and log back in, or restart your terminal session.
+
+2) Install Posgresql, at least version 8.1, from the 
+   postgresql-8.1 package.  You can find this up at:
+
+   deb     http://people.debian.org/~mpitt/packages/sarge-backports   /
+
+3) Create a seperate database cluster for the administration 
+   database.  Call it exim4_bind for compatibility with the rest of the 
+   example configuration.  
+
+   pg_createcluster 8.1 exim4_bind
+   
+   If  this the second cluster to the main one, the port for this cluster
+   will be 5433.  Otherwise, the connect strings will have to be 
+   altered to use a port number which can be found in the postgresql.conf 
+   file  in /etc/postgresql/8.1/<cluster>.
+
+3) copy pg_hba.conf and pg_ident.conf into /etc/postgresql/8.1/exim4_bind (or 
+   appropriate cluster directory).
+
+4) Edit /etc/postgresql/8.1/exim4_bind/pg_ident.conf, and set USER to an 
+   account name that you can load the database from.
+
+5) Run psql -p 5433 -f exim4_bind-schema-pg81.sql to load the database 
+   schema.  The port argument can be used to select the database cluster.
+
+NOTE:  Postgresql connect strings are in /etc/spamassassin/sql.conf,
+       for exim4, and in the   for zope.
+

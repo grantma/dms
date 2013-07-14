@@ -1,0 +1,69 @@
+#!/bin/bash
+#
+# Copyright (c) Net24 Limited, Christchurch, New Zealand 2011-2012
+#       and     Voyager Internet Ltd, New Zealand, 2012-2013
+#
+#    This file is part of py-magcode-core.
+#
+#    Py-magcode-core is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU  General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Py-magcode-core is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU  General Public License for more details.
+#
+#    You should have received a copy of the GNU  General Public License
+#    along with py-magcode-core.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+usage () {
+	echo 1>&2
+	echo "  Usage: dns-recreateds <domain-name>|<*>" 1>&2
+	echo 1>&2
+	echo "  Can only be run as root" 1>&2
+        echo 1>&2	
+	exit 1
+}
+
+do_de_ds () {
+       	dnssec-dsfromkey -2 $1 > "${NAMEDB_DIR}/ds/${2}";
+}
+
+
+set -e
+if [ $# -ne 1 -o "$1" = '-h' ]; then
+	usage
+fi
+#
+# bail out if we are not root
+if [ "`id -un`" != "root" ] ; then
+        echo 1>&2
+        echo "  `basename $0`: you must be root to run this command." 1>&2
+        echo 1>&2
+        exit 1
+fi
+
+if [ "$1" != "*" ]; then
+	DOMAIN=`echo "$1" | perl -pe 's/^(\S+)\.$/\1/'`
+else
+	DOMAIN='*'
+fi
+
+# For Debian
+NAMEDB_DIR="/var/lib/bind"
+# For FreeBSD
+#NAMEDB_DIR="/etc/namedb"
+cd $NAMEDB_DIR
+
+for K in ${NAMEDB_DIR}/keys/K${DOMAIN}*.key; do
+	if ! grep -q 'IN[[:space:]]\+DNSKEY[[:space:]]\+257' "${K}"; then
+		# Only create DS records for KSK key files
+		continue
+	fi
+	set -x
+	dnssec-dsfromkey -2 "$K" > "$NAMEDB_DIR/ds/${DOMAIN}";
+	set +x
+done

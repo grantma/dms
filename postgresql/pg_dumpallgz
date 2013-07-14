@@ -1,0 +1,143 @@
+#!/usr/bin/python3
+#
+# Copyright (c) Net24 Limited, Christchurch, New Zealand 2011-2012
+#       and     Voyager Internet Ltd, New Zealand, 2012-2013
+#
+#    This file is part of py-magcode-core.
+#
+#    Py-magcode-core is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU  General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Py-magcode-core is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU  General Public License for more details.
+#
+#    You should have received a copy of the GNU  General Public License
+#    along with py-magcode-core.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+from __future__ import print_function
+import pwd
+import sys
+import os
+import os.path
+import grp
+from subprocess import Popen
+from subprocess import PIPE
+
+
+# For setproctitle() further down - a nice to have for admin and ps
+try:
+    from setproctitle import setproctitle
+    setproctitle_support = True
+except ImportError:
+    setproctitle_support = False
+process_name = os.path.basename(sys.argv[0])
+if setproctitle_support:
+    setproctitle(process_name)
+
+if os.geteuid() != 0:
+    print("%s: you must be root to run this command." % process_name,
+            file=sys.stderr)
+    sys.exit(os.EX_NOPERM)
+
+# Check arguments - we need to intercept the -f and --file arguments for gzip
+# output
+pgdumpall_argv = ['pg_dumpall']
+pgdumpall_argv.extend(sys.argv[1:])
+file_seen = 0
+filename = None
+skip_next = False
+for arg in pgdumpall_argv[1:]:
+    if skip_next:
+        skip_next = False
+        continue
+    if arg == '-f' or arg == '--f':
+        f_place = pgdumpall_argv.index(arg)
+        try:
+            filename = pgdumpall_argv[f_place+1]
+        except IndexError:
+            print("%s: expecting file name after -f" % process_name,
+                    file=sys.stderr)
+            sys.exit(os.EX_USAGE)
+        file_seen += 1
+        pgdumpall_argv.pop(f_place)
+        pgdumpall_argv.pop(f_place)
+        skip_next = True
+    elif arg.startswith('--file'):
+        f_place = pgdumpall_argv.index(arg)
+        feq_place = arg.find('=')
+        if feq_place == -1:
+            try:
+                filename = pgdumpall_argv[f_place+1]
+            except IndexError:
+                print("%s: expecting file name after --file" % process_name,
+                        file=sys.stderr)
+                sys.exit(os.EX_USAGE)
+            pgdumpall_argv.pop(f_place)
+            pgdumpall_argv.pop(f_place)
+            skip_next = True
+        else:
+            filename = arg[feq_place+1:]
+            pgdumpall_argv.pop(f_place)
+        file_seen += 1
+# That's all folks...
+if file_seen > 1:
+    print("%s: multiple file arguments given - aborting" % process_name,
+            file=sys.stderr)
+    sys.exit(os.EX_USAGE)
+if filename == '':
+    print("%s: filename can't be empty string." % process_name,
+            file=sys.stderr)
+    sys.exit(os.EX_USAGE)
+
+# Open output file
+sqlgz_file = None
+if filename:
+    try:
+        sqlgz_file = open(filename, 'wb')
+    except (OSError, IOError) as exc:
+        print("%s: %s - %s" % (process_name, exc.filename, exc.strerror),
+                file=sys.stderr)
+        sys.exit(os.EX_OSFILE)
+
+# change down to postgres user
+pw_user = pwd.getpwnam('postgres')
+if not pw_user:
+    pw_user = pwd.getpwnam('pgsql')
+if not pw_user:
+    print("%s: PGSQL system user does not exist." % process_name, 
+            file=sys.stderr)
+    sys.exit(os.EX_NOUSER)
+# Drop privilege
+try:
+    pw_dir = pw_user.pw_dir if pw_user.pw_dir else '/' 
+    os.chdir(pw_dir)
+except (OSError, IOError) as exc:
+    print("%s: can't chdir to %s - %s" % (process_name, pw_dir, exc.strerror),
+            file=sys.stderr)
+    sys.exit(os.EX_OSFILE)
+try:
+    # This call only exists in Python 2.7+ and 3.2+
+    os.initgroups(pw_user.pw_name, pw_user.pw_gid)
+except AttributeError:
+    pass
+os.setregid(pw_user.pw_gid, pw_user.pw_gid)
+os.setreuid(pw_user.pw_uid, pw_user.pw_uid)
+
+# Run processes
+
+p_pgdumpall = Popen(pgdumpall_argv, stdout=PIPE)
+p_gzip = Popen(['gzip', '-c'], stdin=p_pgdumpall.stdout, stdout=sqlgz_file)
+p_pgdumpall.stdout.close()
+exit_code = p_pgdumpall.wait()
+if exit_code and sqlgz_file:
+    # Make gzips of nothing zero length!
+    sqlgz_file.truncate(0)
+if sqlgz_file:
+    sqlgz_file.close()
+sys.exit(exit_code)
+

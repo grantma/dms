@@ -1,0 +1,3 @@
+{ "jsonrpc": "2.0", "id": "3", "method": "show_zone",
+ 	"params": {"name":"jasonkang.com."} }
+

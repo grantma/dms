@@ -1,0 +1,6 @@
+server %(server_name)s {
+	addresses { %(address)s port 953; };
+	key "remote-key";
+};
+
+

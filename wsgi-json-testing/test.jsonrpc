@@ -1,0 +1,23 @@
+[
+{ "jsonrpc": "2.0", "id": "1", "method": "list_zone",
+	 "params": {"names": ["anathoth.net."] } },
+{ "jsonrpc": "2.0", "id": "2", "method": "list_zi",
+ 	"params": {"name": "anathoth.net."} },
+{ "jsonrpc": "2.0", "id": "2", "method": "list_zone",
+ 	"params": {"names": ["anathoth.org."]} },
+{ "jsonrpc": "2.0", "id": "3", "method": "edit_zone",
+	"params": {"name": "anathoth.net.", 
+	"login_id": "0000@BLAH-NZ"} },
+{ "jsonrpc": "2.0", "id": "2", "method": "list_zone",
+ 	"params": {"names": ["foo.bar.net."] } },
+{ "jsonrpc": "2.0", "id": "2", "method": "list_zone",
+ 	"params": {"names":["foo.bar.net."] } },
+{ "jsonrpc": "2.0", "id": "2", "method": "list_zone",
+ 	"params": {"names": ["foo.bar.net."]} },
+{ "jsonrpc": "2.0", "id": "2", "method": "list_zone",
+ 	"params": {"names": ["foo.bar.net."] } },
+{ "jsonrpc": "2.0", "id": "2", "method": "list_zone",
+ 	"params": {"names": ["foo.bar.net."]} },
+{ "jsonrpc": "2.0", "id": "2", "method": "list_zone",
+ 	"params": {"names": ["foo.bar.net."]} }
+]

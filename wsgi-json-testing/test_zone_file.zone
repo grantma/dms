@@ -1,0 +1,58 @@
+$TTL 24h
+$ORIGIN anathoth.net.
+
+;
+; Zone:       anathoth.net.
+; Reference:  BLAH-NZ
+; zi_id:      11098
+; zi_ctime:   Wed Mar 14 15:20:29 2012
+; zi_mtime:   Thu Jul 12 14:43:15 2012
+; zi_ptime:   Thu Jul 12 14:43:15 2012
+;
+
+
+;| Apex resource records for anathoth.net.
+;!REF:BLAH-NZ
+@                       IN      SOA             ( ns1.foo.bar.net. ;Master NS
+                                                soa.foo.bar.net. ;RP email
+                                                2012031400   ;Serial yyyymmddnn
+                                                7200         ;Refresh
+                                                7200         ;Retry
+                                                604800       ;Expire
+                                                600          ;Minimum/Ncache
+                                                )           
+                        IN      NS              ns2.foo.bar.net.
+                        IN      NS              ns1.foo.bar.net.
+
+
+;| Hosts
+shalom-ext              IN      AAAA            2001:470:f012:2::2
+shalom-fw               IN      AAAA            2001:470:c:2e6::2
+shalom-svc              IN      AAAA            2001:470:f012:2::1
+
+
+;| Internal zone lacing
+internal                IN      DS              18174 7 2 c42492db9def5ca9403d26f175247dfe86d913da4bedfc7d629f5e57d6669feb
+                        IN      NS              ns1.internal
+                        IN      NS              ns2.internal
+;# When did this start happening?
+ns1.internal            IN      AAAA            fd14:828:ba69:1:21c:f0ff:fefa:f3c0
+ns2.internal            IN      AAAA            fd14:828:ba69:2::2
+
+
+;| Name server records
+ns1                     IN      A               203.79.116.183
+                        IN      AAAA            2001:470:f012:2::2
+ns2                     IN      A               111.65.238.10
+                        IN      AAAA            2001:470:c:110e::2
+ns3                     IN      A               111.65.238.11
+                        IN      AAAA            2001:470:66:23::2
+
+
+;| Web site Urls
+@                       IN      A               203.79.116.183
+                        IN      AAAA            2001:470:f012:2::2
+www                     IN      CNAME           @
+
+
+

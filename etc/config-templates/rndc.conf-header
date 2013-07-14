@@ -1,0 +1,10 @@
+include "/etc/bind/rndc-local.key";
+include "/etc/bind/rndc-remote.key";
+
+options {
+	default-key "rndc-key";
+	default-server ::1;
+	default-port 953;
+};
+
+

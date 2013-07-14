@@ -1,0 +1,44 @@
+#!/bin/sh
+
+#
+# PROVIDE: dmsdmd
+# REQUIRE: LOGIN named postgresql
+# KEYWORD: shutdown
+#
+# Define these dmsdmd_* variables in one of these files:
+#	/etc/rc.conf
+#	/etc/rc.conf.local
+#	/etc/rc.conf.d/racoon
+#
+# DO NOT CHANGE THESE DEFAULT VALUES HERE
+
+. /etc/rc.subr
+
+name="dmsdmd"
+rcvar=dmsdmd_enable
+
+load_rc_config $name
+
+dmsdmd_enable=${dmsdmd_enable:-"NO"}		# Disable by default
+dmsdmd_create_dirs=${dmsdmd_create_dirs:-"NO"}	# Create $required_dirs
+#dmsdmd_flags=""				# Flags to racoon program
+
+command="/usr/local/sbin/${name}"
+procname="dmsdmd"
+command_interpreter="python3.2"
+pidfile="/var/run/dms/${name}.pid"
+
+start_precmd="${name}_prestart"
+
+required_files="/usr/local/etc/dms/dms.conf"
+required_dirs="/var/run/dms"
+
+dmsdmd_prestart()
+{
+	if checkyesno "${name}_create_dirs"; then
+		/bin/mkdir -p $required_dirs
+		chown dmsdmd:dmsdmd $required_dirs
+	fi
+}
+
+run_rc_command "$1"

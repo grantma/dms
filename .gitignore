@@ -1,0 +1,26 @@
+# Ignore these pythonisms
+__pycache__/
+*.pyc
+# Vim backup file
+*.swp
+log/
+var/
+dnspython-tests/
+/zone_tool~*
+# Passwords can be found in here - we don't woant to commit them!
+etc/dms.conf
+etc/rsync-slave-password
+# Apache config
+etc/vhost-dms-freebsd
+# Don't archive python build directory
+build
+# Stuff in debian we should not worry about
+/debian/dms-core/
+/debian/dms-dr/
+/debian/dms-wsgi/
+/debian/dms/
+/debian/tmp/
+/debian/*.debhelper*
+/debian/*.substvars
+/debian/files
+

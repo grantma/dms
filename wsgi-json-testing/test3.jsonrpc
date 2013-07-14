@@ -1,0 +1,3 @@
+{ "jsonrpc": "2.0", "id": "1", "method": "create_zone",
+	 "params": {"name": "blamo.org.", "login_id": "gerty-was-a-warrior", 
+		"reference": "gerty-was-a-warrior@BLAH-NZ" } }

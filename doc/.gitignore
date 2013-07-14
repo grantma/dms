@@ -1,0 +1,4 @@
+# pgdesigner file backups
+*.ini.bak
+*snapshot.ini
+.~lock*

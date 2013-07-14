@@ -1,0 +1,685 @@
+#!/bin/bash
+#
+# Copyright (c) Net24 Limited, Christchurch, New Zealand 2011-2012
+#       and     Voyager Internet Ltd, New Zealand, 2012-2013
+#
+#    This file is part of py-magcode-core.
+#
+#    Py-magcode-core is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU  General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Py-magcode-core is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU  General Public License for more details.
+#
+#    You should have received a copy of the GNU  General Public License
+#    along with py-magcode-core.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+set -e
+
+PROGNAME="`basename $0`"
+DBNAME="dms"
+DBADMIN="root"
+PGCLUSTER="dms"
+PGVERSION="9.1"
+PGPASSWORDFILE="/etc/dms/pgpassfile"
+DBREPLICA="ip6-localhost"
+DBLIBDIR="/usr/local/share/dms/postgresql"
+VARDIR="/var/lib/dms/postgresql"
+DBDUMPDIR="/var/backups"
+DBSCHEMA="dms-schema-pg91.sql"
+DBSEEDDATA="dms-init-pg91.sql"
+DBALTXLOGDIR="/srv/postgresql"
+DBMOVEXLOG=false
+SETTINGSFILE="/etc/dms/dr-settings.sh"
+
+# Read in settings
+[ -f "$SETTINGSFILE" ] && . "$SETTINGSFILE"
+
+# Settings that depend on settings file
+PGETCDIR="/etc/postgresql/$PGVERSION/$PGCLUSTER"
+PGDATADIR="/var/lib/postgresql/$PGVERSION/$PGCLUSTER"
+PGPIDFILE="/var/run/postgresql/${PGVERSION}-${PGCLUSTER}.pid"
+DBDUMPFILE="postgresql-${PGVERSION}-${PGCLUSTER}.sql.gz"
+RECOVERYCONF="${PGDATADIR}/recovery.conf"
+
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
+
+do_createdb () {
+	pg_createcluster "$PGVERSION" "$PGCLUSTER"
+	echo "$PROGNAME: copying PG config files - DB admin is '${DBADMIN}'..."
+	local PORT=`get_pgport`
+	perl -pe "s/\@\@CLUSTER\@\@/$PGCLUSTER/g" <  $DBLIBDIR/postgresql.conf | perl -pe "s/\@\@PORT\@\@/$PORT/g" > $PGETCDIR/postgresql.conf
+	perl -pe "s/\@\@USER\@\@/$DBADMIN/g" <  $DBLIBDIR/pg_ident.conf > $PGETCDIR/pg_ident.conf
+	sha1sum $PGETCDIR/pg_ident.conf > $VARDIR/pg_ident.conf.sha1sum
+	perl -pe "s~\@\@REPLICA\@\@~$DBREPLICA~g" <  $DBLIBDIR/pg_hba.conf > $PGETCDIR/pg_hba.conf
+	sha1sum $PGETCDIR/pg_hba.conf > $VARDIR/pg_hba.conf.sha1sum
+	if do_mv_xlog; then
+		echo "$PROGNAME: moving PG xlog to '$DBALTXLOGDIR/$PGVERSION/$PGCLUSTER'..."
+		do_move_xlog
+	fi
+	echo "$PROGNAME: starting DB cluster ${PGCLUSTER}..."
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" start
+	echo "$PROGNAME: creating databases on cluster ${PGCLUSTER}..."
+	su - postgres -c "psql -p `get_pgport` -f $DBLIBDIR/$DBSCHEMA > /dev/null"
+	su - postgres -c "psql -p `get_pgport` -f $DBLIBDIR/$DBSEEDDATA  $DBNAME > /dev/null"
+}
+
+do_dropdb () {
+        echo "$PROGNAME: dropping cluster ${PGCLUSTER}..."
+	pg_dropcluster --stop-server "$PGVERSION" "$PGCLUSTER"
+}
+
+do_changeuser () {
+	local FORCE="$1"
+	local SHA1SUMFILE="$VARDIR/pg_ident.conf.sha1sum"
+
+	echo "$PROGNAME: setting DB admin to '${DBADMIN}'..."
+	if [ $FORCE -lt 1 ]; then 
+		if [ ! -r $SHA1SUMFILE ]; then
+			echo "$PROGNAME: $SHA1SUMFILE does not exist." 1>&2
+                        echo "$PROGNAME: use -f to force." 1>&2
+			exit 2
+		fi  
+		if ! sha1sum --status -c $SHA1SUMFILE; then
+			echo "$PROGNAME: $PGCLUSTER pg_ident.conf manually altered - exiting." 1>&2
+			echo "$PROGNAME: use -f to force." 1>&2
+			exit 1
+		fi
+	fi
+	perl -pe "s/\@\@USER\@\@/$DBADMIN/g" <  $DBLIBDIR/pg_ident.conf > $PGETCDIR/pg_ident.conf
+	sha1sum $PGETCDIR/pg_ident.conf > $SHA1SUMFILE
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" reload
+}
+
+do_changereplica () {
+	local FORCE="$1"
+	local SHA1SUMFILE="$VARDIR/pg_hba.conf.sha1sum"
+
+	echo "$PROGNAME: setting DB replica to '${DBREPLICA}'..."
+	if [ $FORCE -lt 1 ]; then 
+		if [ ! -r $SHA1SUMFILE ]; then
+			echo "$PROGNAME: $SHA1SUMFILE does not exist." 1>&2
+                        echo "$PROGNAME: use -f to force." 1>&2
+			exit 2
+		fi  
+		if ! sha1sum --status -c $SHA1SUMFILE; then
+			echo "$PROGNAME: $PGCLUSTER pg_hba.conf manually altered - exiting." 1>&2
+			echo "$PROGNAME: use -f to force." 1>&2
+			exit 1
+		fi
+	fi
+	# Add missing mask to a host address
+	if echo "$DBREPLICA" | egrep -q '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+		DBREPLICA="${DBREPLICA}/32"
+	fi
+	if echo "$DBREPLICA" | egrep -q '^[0-9a-fA-F:]+:[0-9a-fA-F:]*$'; then
+		DBREPLICA="${DBREPLICA}/128"
+	fi
+	perl -pe "s~\@\@REPLICA\@\@~$DBREPLICA~g" <  $DBLIBDIR/pg_hba.conf > $PGETCDIR/pg_hba.conf
+	sha1sum $PGETCDIR/pg_hba.conf > $SHA1SUMFILE
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" reload
+}
+
+check_root () {
+	if [ "`id -u`" != '0' ]; then
+		echo "$PROGNAME: only root can run this program." 1>&2
+		exit 1
+	fi
+}
+
+get_pgport () {
+	grep '^port' $PGETCDIR/postgresql.conf | perl -pe 's/^.* (\d+)\s*.*$/$1/' || true
+}
+
+admindb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-fhr] [-u user]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+admindb_vusage () {
+	local BLAH="
+         -f        force setting of the database admin user
+         -h        print this help
+         -r        set the database replica address 
+         -u        set the database admin user
+
+"
+
+	admindb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+admindb () {
+	check_root
+	local SETUSER=0
+	local SETREPLICA=0
+	local FORCE=0
+	OPTIND=1
+	while getopts fhr:u: F; do
+		case $F in
+		f)
+			FORCE=1
+			;;
+		h)
+			admindb_vusage
+			exit 1
+			;;
+		r)
+			SETREPLICA=1
+			DBREPLICA="$OPTARG"
+			;;
+		u)
+			SETUSER=1
+			DBADMIN="$OPTARG" 
+			;;
+		\?)
+			admindb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 -o $SETUSER -eq 0 -a $SETREPLICA -eq 0 ]; then
+		admindb_usage
+		exit 1
+	fi
+
+	if [ $SETUSER -ge 1 ]; then
+		do_changeuser "$FORCE"
+	fi
+	if [ $SETREPLICA -ge 1 ]; then
+		do_changereplica "$FORCE"
+	fi
+}
+
+
+createdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-hf] [-u DB-admin] 
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+createdb_vusage () {
+	local BLAH="
+         -h        print this help
+         -f        force drop of existing database before creating
+         -u        set database administrator ID
+
+"
+
+	createdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+createdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts hfu: F; do
+		case $F in
+		f)	
+			FORCE=1
+			;;
+		h)
+			createdb_vusage
+			exit 1
+			;;
+		u)
+			DBADMIN="$OPTARG" 
+			;;
+		\?)
+			createdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		createdb_usage
+		exit 1
+	fi
+
+	if [ -e "$PGDATADIR" ]; then
+		if [ $FORCE -lt 1 ]; then
+			echo "$PROGNAME: database cluster exists - aborting" 1>&2
+			exit 2
+		else
+			do_dropdb
+		fi
+	fi
+	
+	do_createdb
+}
+
+dropdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-hf]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+dropdb_vusage () {
+	local BLAH="
+         -h        print this help
+         -f        force drop of existing database
+
+"
+
+	dropdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+dropdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts hf F; do
+		case $F in
+		f)	
+			FORCE=1
+			;;
+		h)
+			dropdb_vusage
+			exit 1
+			;;
+		\?)
+			dropdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		dropdb_usage
+		exit 1
+	fi
+
+	if [ $FORCE -lt 1 ]; then
+		echo "$PROGNAME: must give -f argument to drop the database" 1>&2
+		exit 1
+	fi
+	
+	do_dropdb
+}
+
+dumpdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-hf]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+dumpdb_vusage () {
+	local BLAH="
+         -h        print this help
+         -f        force drop of existing database
+
+"
+
+	dumpdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+dumpdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts hf F; do
+		case $F in
+		h)
+			dumpdb_vusage
+			exit 1
+			;;
+		\?)
+			dumpdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		dumpdb_usage
+		exit 1
+	fi
+
+	local PORT=`get_pgport`
+	if [ -z "$PORT" ]; then
+		echo "$PROGNAME: can't obtain port number - database configuration?" 1>&2
+	       exit 2	
+	fi
+	# Save anyone from just reading the dump files...
+	umask 077
+	savelog -nlq $DBDUMPDIR/$DBDUMPFILE
+	pg_dumpallgz -p "$PORT" -c -f $DBDUMPDIR/$DBDUMPFILE
+}
+
+
+sqldb () {
+	export PGPORT=`get_pgport`
+	export PGDATABASE="$DBNAME"
+	export PGUSER="pgsql"
+	exec psql "$@"
+} 
+
+
+check_if_pgsql_running () {
+
+	if [ -f $PGPIDFILE ] && kill -0 `cat $PGPIDFILE` > /dev/null 2>&1; then
+		echo 1>&2
+		echo "  `basename $0`: postgresql is active - already master or replica?" 1>&2
+		echo 1>&2
+		exit 123
+	fi
+}
+
+check_with_user () {
+	if [ $1 -le 0 ]; then
+		if [ -z "$2" ]; then
+			echo -n "Operation will destroy all DB data."
+		else
+			echo -n "$2"
+		fi
+		echo -n " Proceed? (y/N)"
+		read ANS
+		case $ANS in
+		y|Y)
+			# Proceeding
+			;;
+		*)
+			exit 1
+			;;
+		esac
+	fi
+}
+
+do_write_recovery_conf () {
+	local PORT=`get_pgport`
+	if [ -z "$PORT" ]; then
+		echo "$PROGNAME: can't obtain port number - database configuration?" 1>&2
+	       exit 2	
+	fi
+	RUSER_PASSWORD=`cat "$PGPASSWORDFILE" | grep "${1}:.*:ruser:.*$" | perl -pe "s/^${1}:\S+:\S+:ruser:(\S+)$/\1/"`
+	echo "primary_conninfo = 'host=${1} port=${PORT} user=ruser password=${RUSER_PASSWORD}'
+standby_mode = on
+" > $RECOVERYCONF
+	chown postgres:postgres $RECOVERYCONF
+	chmod 600 $RECOVERYCONF
+}
+
+
+write_recovery_conf_usage () {
+	echo "$PROGNAME: [master-server]" 1>&2
+	exit 1
+}
+
+write_recovery_conf () {
+	check_root
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			write_recovery_conf_usage
+			;;
+		\?)	
+			write_recovery_conf_usage
+			;;
+		esac
+	done	
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 1 -a $# -ne 0 ]; then
+		write_recovery_conf_usage
+	fi
+	if [ -n "$1" ]; then
+		local MASTER_SERVER="$1"
+	elif [ -n "$DR_PARTNER" ]; then
+		local MASTER_SERVER="$DR_PARTNER"
+	else
+		echo "$PROGNAME: No master server given to replicate from." 1>&2
+		exit 2
+	fi
+
+	set -e
+	check_if_pgsql_running
+	do_write_recovery_conf "$MASTER_SERVER"
+}
+
+do_mv_xlog () {
+	case $DBMOVEXLOG in
+	[Tt]rue|[Yy]es|[Oo]n|1)
+		return 0
+		;;
+	*)
+		return 1
+		;;
+	esac
+}
+
+do_move_xlog () {
+	local XLOGDIR="$DBALTXLOGDIR/$PGVERSION/$PGCLUSTER"
+	
+	if [ -L "$PGDATADIR/pg_xlog" ]; then
+		return 0
+	fi
+	if [ ! -e "$XLOGDIR" ]; then
+		mkdir -p "$XLOGDIR"
+	fi
+	chown -R postgres:postgres "$DBALTXLOGDIR/$PGVERSION"
+	chmod 700 "$XLOGDIR"
+	if [ -e "$XLOGDIR/pg_xlog" ]; then
+		rm -rf "$XLOGDIR/pg_xlog"
+	fi
+	mv "$PGDATADIR/pg_xlog" "$XLOGDIR"
+	ln -snf "$XLOGDIR/pg_xlog" "$PGDATADIR"
+}
+
+move_xlog_usage () {
+	echo :"$PROGNAME: [-f]" 1>&2
+	exit 1 
+}
+
+move_xlog () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts fh F; do
+		case $F in
+		h)
+			move_xlog_usage
+			;;
+		f)
+			FORCE=1
+			;;
+		\?)	
+			move_xlog_usage
+			;;
+		esac
+	done	
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		move_xlog_usage
+	fi
+
+	set -e
+	check_if_pgsql_running
+	check_with_user $FORCE "Operation will move pg_xlog dir and symlink it."
+	do_move_xlog 
+}
+
+pg_basebackup_usage () {
+	echo "$PROGNAME: [-f] [master-server]" 1>&2
+	exit 1
+}
+
+do_pg_basebackup () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts fh F; do
+		case $F in
+		h)
+			pg_basebackup_usage
+			;;
+		f)
+			FORCE=1
+			;;
+		\?)	
+			pg_basebackup_usage
+			;;
+		esac
+	done	
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 1 -a $# -ne 0 ]; then
+		pg_basebackup_usage
+	fi
+	if [ -n "$1" ]; then
+		local MASTER_SERVER="$1"
+	elif [ -n "$DR_PARTNER" ]; then
+		local MASTER_SERVER="$DR_PARTNER"
+	else
+		echo "$PROGNAME: No master server given to replicate from." 1>&2
+		exit 2
+	fi
+
+	set -e
+	check_if_pgsql_running
+	check_with_user $FORCE
+	rm -rf ${PGDATADIR}/*
+	# Do su postgres stuff in subshell, cd 
+	( cd ~postgres && PGPASSFILE="$PGPASSWORDFILE" su -mc "pg_basebackup -h ${MASTER_SERVER} -U ruser --no-password --xlog --progress --pgdata $PGDATADIR" postgres )
+}
+
+promotedb_usage () {
+	echo "Usage: [-f] $PROGNAME" 1>&2
+	exit 1
+}
+
+promotedb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts fh F; do
+		case $F in
+		h)
+			promotedb_usage
+			;;
+		f)
+			FORCE=1
+			;;
+		\?)	
+			promotedb_usage
+			;;
+		esac
+	done	
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		promotedb_usage
+	fi;
+
+	set -e
+	check_with_user $FORCE "Operation will promote cluster to master server."
+	pg_ctlcluster $PGVERSION $PGCLUSTER promote
+}
+
+replicadb_usage () {
+	echo "Usage: $PROGNAME" 1>&2
+	exit 1
+}
+
+replicadb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts fh F; do
+		case $F in
+		h)
+			replicadb_usage
+			;;
+		f)
+			FORCE=1
+			;;
+		\?)	
+			replicadb_usage
+			;;
+		esac
+	done	
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 1 -a $# -ne 0 ]; then
+		replicadb_usage
+	fi;
+
+	if [ -n "$1" ]; then
+		local MASTER_SERVER="$1"
+	elif [ -n "$DR_PARTNER" ]; then
+		local MASTER_SERVER="$DR_PARTNER"
+	else
+		echo "$PROGNAME: No master server given to replicate from." 1>&2
+		exit 2
+	fi
+
+	set -e
+	check_if_pgsql_running
+	echo "$PROGNAME: Will replicate from '$MASTER_SERVER'"
+	check_with_user $FORCE
+	echo "$PROGNAME: replicating from '$MASTER_SERVER'"
+	do_pg_basebackup -f "$MASTER_SERVER"
+	if do_mv_xlog; then
+		echo "$PROGNAME: moving PG xlog to '$DBALTXLOGDIR/$PGVERSION/$PGCLUSTER'..."
+		do_move_xlog
+	fi
+	write_recovery_conf "$MASTER_SERVER"
+	invoke-rc.d postgresql start
+}
+
+case $0 in
+*admindb)
+	admindb "$@"
+	;;
+*createdb)
+	createdb "$@"
+	;;
+*dropdb)
+	dropdb "$@"
+	;;
+*dumpdb)
+	dumpdb "$@"
+	;;
+*sqldb)
+	sqldb "$@"
+	;;
+*pg_basebackup)
+	do_pg_basebackup "$@"
+	;;
+*write_recovery_conf)
+	write_recovery_conf "$@"
+	;;
+*move_xlog)
+	move_xlog "$@"
+	;;
+*replicadb)
+	replicadb "$@"
+	;;
+*promotedb)
+	promotedb "$@"
+	;;
+esac
