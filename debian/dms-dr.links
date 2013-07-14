@@ -1,0 +1,8 @@
+usr/share/net24/dr_scripts/dms_start_as_replica usr/sbin/dms_master_down
+usr/share/net24/dr_scripts/dms_start_as_replica usr/sbin/dms_master_up
+usr/share/net24/dr_scripts/dms_start_as_replica usr/sbin/dms_promote_replica
+usr/share/net24/dr_scripts/dms_start_as_replica usr/sbin/dms_start_as_replica
+usr/share/net24/dr_scripts/dms_start_as_replica usr/sbin/dms_write_recovery_conf
+usr/share/net24/dr_scripts/dms_start_as_replica usr/sbin/dms_pg_basebackup
+usr/share/net24/dr_scripts/dms_start_as_replica usr/sbin/dms_update_wsgi_dns
+usr/share/net24/dr_scripts/etckeeper_git_shell usr/sbin/etckeeper_git_shell

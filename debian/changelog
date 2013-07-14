@@ -1,0 +1,921 @@
+dms (0.111-1) unstable; urgency=low
+
+  * ServerSM retry_msg - display reason for RETRY
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 07 Nov 2012 16:15:39 +1300
+
+dms (0.110d-1) unstable; urgency=low
+
+  * pg_dumpallgz - fix drop privilege can't chdir prob
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 07 Nov 2012 11:31:15 +1300
+
+dms (0.110c-1) unstable; urgency=low
+
+  * Fix a typo in master_sm zone_sm_reconfig_schedule
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 06 Nov 2012 15:41:33 +1300
+
+dms (0.110b-1) unstable; urgency=low
+
+  * Fix Master SM reading master_id from pyparameters
+  * Fix ls_server and show_dms_status to default all.
+  * Added oping ping testing to ls_server
+  * Handle a disabled server in the ping testing.
+  * More comprehensive str error handling round ping
+  * Add dependency on oping
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 06 Nov 2012 14:07:52 +1300
+
+dms (0.109-1) unstable; urgency=low
+
+  * Update README.Debian for new commands in v0.108a
+  * New Exceptions/RPC errors documentation
+  * Make details of net24.dms.zone_tool appear - pydoc
+  * Updated ZoneSM DB schema diagram
+  * Update State Machine diagram docs.
+  * Update State Machine disagrams
+  * Use core preconvert and boolean settings
+  * Add Auto reverse control settings.
+  * Initial ssh_address, laster_repy, and OK state
+  * New ls_server output 1
+  * zone_tool set_server_ssh_address stuff
+  * ServerSM RETRY state for better human info.
+  * Rename SSTATE_CONFIGURING SSTATE_CONFIG
+  * Remove SSTATE_INACTIVE
+  * Add timstamp to master server code as will check
+  * WIP - ser ver keepalive SOA query
+  * zone_tool show_master_status to use time format.
+  * Server_sm SOA query as keep alive method.
+  * Bug fix for soaquery_rcodes for ServerSM
+  * Move ServerSM error handling to one routine.
+  * Shuffle some code blocks in configure processing.
+  * Initial UDP port 53 tie in
+  * Add server state BROKEN.
+  * Fix another missing time_format argument.
+  * Initial Check ServerSM code.
+  * Add zone_count column to sm_servers table
+  * Retrieve bind9 zone count from rndc status
+  * WIP - don't create multiple ServerSMCheckServer ev
+  * More human info - Publish_zi_id in update events
+  * Add zi_id to ls_pending_events output.
+  * Server output status changes.
+  * ls_failed_events - first cut working.
+  * Full go at ls_events work
+  * zone_tool show_event working.
+  * zone_tool fail_event working.
+  * Set up Statemachine FKey columns in DB
+  * Create mssing DB indexes.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 02 Nov 2012 16:37:19 +1300
+
+dms (0.108a-1) unstable; urgency=low
+
+  * Updates for new config paths etc.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 11 Oct 2012 15:13:46 +1300
+
+dms (0.108-1) unstable; urgency=low
+
+  * Update exception documentation
+  * Update README.Debian documentation
+  * DB table sm_slave_server -> sm_servers
+  * rsync-slave-password to rsync-dnsconf-password
+  * slave-admin-config -> server-admin-config
+  * slave-config-templates to server-config-templates
+  * Fix  stragler DB sm_slave_server -> sm_servers
+  * slave_server -> server substitution
+  * sg_slave_acls -> sg_server_acls substitution
+  * Rename etc/slave-* dirs to etc/server-*
+  * Substitute rndc.conf-server for rndc.conf-slave
+  * rndc_slave_template -> rndc_server_template
+  * rndc_conf_slave -> rndc_conf_server
+  * slave_template -> server_template
+  * slave_name -> server_name substitution
+  * slave_ -> server_ substitution
+  * _slave -> _server substitution
+  * zone_tool ls_server - fix output for shell usage
+  * move_server -> move_server_sg substitution
+  * ter-slave-acl.conf -> master-server-acl.conf subst
+  * SlaveServer -> Server substitution
+  * SgStillHasSlaves -> SgStillHasServers substitution
+  * SlaveConfigFileError -> ServerConfigFileError
+  * Rename SQL function to get rid of ss_ prefix
+  * Textual Slave server -> server substitution
+  * MASTER_SLAVE_ACL_TEMPLATE -> MASTER_SERVER_ACL_
+  * slave-acl.conf -> server-acl.conf
+  * master-server-acl.conf  -> server-acl.conf
+  * master-config.conf -> zones.conf
+  * conf-templates -> config-templates
+  * named-dr-slave.conf -> named-dr-replica.conf
+  * Textual configuration - replica terminology
+  * Remove historical cruft.
+  * DR scripts SLAVE -> SERVER
+  * Makefile - SLAVECONF -> SERVERCONF
+  * MASTER_SLAVE_ACL -> MASTER_SERVER_ACL
+  * Textual Slave -> Server subst
+  * Change server ACL name extension to -servers
+  * def _show_sg slave -> server
+  * def list_server slaves -> servers
+  * Fix zone_tool write_rndc_conf error handling/help
+  * Update rsync_server_admin_config help
+  * ss_ -> server_ substitution
+  * local variables ss -> s substitution
+  * Rename DB sm_config tables to sm_master
+  * config_sm -> master_sm substitution and file mv
+  * ConfigSM -> MasterSM substitution
+  * configsm -> mastersm substitution
+  * config_id -> master_id substitution
+  * Revert "config_id -> master_id substitution"
+  * Revert "Revert "config_id -> master_id substitution""
+  * config_id -> master_id substitution
+  * Straggler config_sm -> master_sm substitution
+  * Sensibly name Master SM commands
+  * Rename CSTATE_ states to MSTATE_HOLD/READY
+  * config_hold_timeout -> master_hold_timeout subst
+  * config_rndc_master_settle_delay -> master_rndc_set
+  * Comment out redundant update_wsgi_dns call
+  * Update WSGI dns whenever net24dmd is started.
+  * update debian/ rsync-slave-password to rsync-dnsconf-password 
+  * update debian/ slave-admin-config to server-admin-config
+  * update debian/ slave-config-templates to server-config-templates
+  * update debian/ master-slave-acl.conf to server-acl.conf
+  * update debian/ named-dr-slave.conf -> named-dr-replica.conf
+  * update debian/ conf-templates -> config-templates 
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 11 Oct 2012 14:26:40 +1300
+
+dms (0.107-1) unstable; urgency=low
+
+  * Rename _slave commands _server
+  * Some more WSGI test commands
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 05 Oct 2012 11:52:34 +1300
+
+dms (0.106-1) unstable; urgency=low
+
+  * Add zone_tool rename_sg command
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 04 Oct 2012 17:11:53 +1300
+
+dms (0.105c-1) unstable; urgency=low
+
+  * Update DB schema for new sm_config columns
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 04 Oct 2012 12:22:59 +1300
+
+dms (0.105b-1) unstable; urgency=low
+
+  * Fix wrong indexing in seed config file
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 04 Oct 2012 11:46:18 +1300
+
+dms (0.105a-1) unstable; urgency=low
+
+  * Update index values to fix install errors
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 04 Oct 2012 11:34:53 +1300
+
+dms (0.105-1) unstable; urgency=low
+
+  * Restructure slave to_engine fNs + log msg fix.
+  * Update WSGI exceptions documentation
+  * Change string 'ssg' to 'sg' over codebase
+  * Fixed typo - should be ENOENT
+  * Change string 'Ssg' to 'Sg' only
+  * Change string 'SSG' to 'SG' only
+  * Change DB table 'ss_group' to 'server_group'
+  * Change DB table 'server_group' to 'server_groups'
+  * Change 'slave_server_group' to 'server_group'
+  * Change 'SlaveServerGroup' to 'ServerGroup'
+  * Fix most of remaining 'Slave Server Group' text.
+  * Fix doc string typo in zone_sm.py
+  * Change 'master_sg' to 'replica_sg' - code
+  * Change code MasterSg to ReplicaSg
+  * Change SgMaster to ReplicaSg (code)
+  * Fix buggy MasterSgExists exception handling.
+  * Fix replica SG text strings and comments.
+  * Make replica-sg short arg '-p'
+  * Make show_replica_sg output honest.
+  * Changes to vacuum_* behavihour for zone archiving
+  * Fix help messages for vacuum_* commands.
+  * Setting zone_del_age to 0 turns off aging.
+  * Carry out simple command and function call renames
+  * Zone_tool command clean ups and removals 2
+  * zone_tool poke_zone_set_serial update SOA serial
+  * zone_tool WSGI test mode
+  * Remove ls_ss from restricted mode commands
+  * Fix confusing command(s) set_sg_master - add addr
+  * Make show_*_byid revelaed more sensible.
+  * More zone_tool command mode list changes
+  * Last coommands adjusment for restricted mode.
+  * Add master_server setting capability for ConfgSM.
+  * Fix show_dms_status output a bit more.
+  * Add ls_server, plus some doc and output cleanups
+  * Rename write_rndc_conf command correctly
+  * Add gethostname() if master name not slave in DB
+  * Status display obviousness cleanups 1
+  * Add is_master query to slave SM, better state name
+  * Even better server state name WITHDRAWN
+  * Another output clean up.
+  * Go back to INACTIVE state/hide master slave_server
+  * Rudimentry error handling for termplate key errors
+  * Fix ls_sg help message
+  * Better slave server template key processing.
+  * Update DMS seed configuration file.
+  * Fix ordering of settings depend on dr-settings.sh
+  * Fix write_config for SG group.
+  * Fix some typos in new termplate error logging code
+  * Change dms-ssg to dms-sg in line with v0.105
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 04 Oct 2012 10:44:40 +1300
+
+dms (0.104a-2) unstable; urgency=low
+
+  * Update net24.core git repository
+  * Fix LESS_SECURE net24.core duplication
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 20 Sep 2012 10:19:03 +1200
+
+dms (0.104a-1) unstable; urgency=low
+
+  * Fix LESS_SECURE type business in net24.core
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 19 Sep 2012 17:57:50 +1200
+
+dms (0.104-1) unstable; urgency=low
+
+  * Reverse lszi output, INACTIVE to MASTER slave stat
+  * Show-all command line flag, hide master ssg slaves
+  * Add zone_tool show_active -t flag for zones/slaves
+  * Fix NoMasterSsgFound Exception.
+  * Make _print_show_ssg more 'None' safe
+  * More 'None' _print fixes.
+  * Really finish shuffling line feeds
+  * Make Master SSG output show Replica Masters
+  * Add DB zone_sm locked_at timestamp for edit lock
+  * Implement lock_at timestamping in ZoneSM.
+  * Fx zone_tool tickle edit_lock timeout exc handling
+  * Add locked_at to edit locked messaging.
+  * Better Edit lock timeout error messages.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 19 Sep 2012 16:16:08 +1200
+
+dms (0.103a-1) unstable; urgency=low
+
+  * Correct replace_zone_sectags help message.
+  * Set defaults and config to final tuned values.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 17 Sep 2012 12:18:54 +1200
+
+dms (0.103-1) unstable; urgency=low
+
+  * Fix zone-tool internal refresh_all -f flag.
+  * Add rndc_master_settle_time so master can be ready
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 13 Sep 2012 10:57:44 +1200
+
+dms (0.102a-1) unstable; urgency=low
+
+  * Set initial configuration values to Net24 values.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 12 Sep 2012 15:54:27 +1200
+
+dms (0.102-1) unstable; urgency=low
+
+  * Sysctl under load net config values for IPSEC.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 12 Sep 2012 14:57:12 +1200
+
+dms (0.101b-1) unstable; urgency=low
+
+  * Fix settle time being in wrong place.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 11 Sep 2012 11:28:15 +1200
+
+dms (0.101a-1) unstable; urgency=low
+
+  * Fix mising import in zone_data_util
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 07 Sep 2012 15:09:43 +1200
+
+dms (0.101-1) unstable; urgency=low
+
+  * Add Documentation for Helpdesk presentation.
+  * Add refresh_zone_ttl to the restricted shell.
+  * track_reverse setting for auto PTR updates.
+  * DB schema updates for auto PTR track_revserse
+  * Correct show_zone_byid help message.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 06 Sep 2012 14:30:20 +1200
+
+dms (0.100d-1) unstable; urgency=low
+
+  * BIND9_DR_SLAVE_OPTIONS - 1 worker thread replica
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 05 Sep 2012 12:04:54 +1200
+
+dms (0.100c-1) unstable; urgency=low
+
+  * Add setting of bind9 extra arguments for tuning
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 04 Sep 2012 10:12:34 +1200
+
+dms (0.100b-1) unstable; urgency=low
+
+  * Fix grooming of /var/lib/bind/dynamic for replica
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 03 Sep 2012 11:54:51 +1200
+
+dms (0.100a-1) unstable; urgency=low
+
+  * Fix missing login_id arg vor edit_zone() call
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 31 Aug 2012 12:05:24 +1200
+
+dms (0.100-1) unstable; urgency=low
+
+  * Fix '*' getting into RHS of PTR records.
+  * Fix mtime problems with /var/lib/bind/dynamic
+  * Fix /var/lib/bind/dynamic zone permissions.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 31 Aug 2012 11:17:01 +1200
+
+dms (0.99z-1) unstable; urgency=low
+
+  * Fix set_alt_ssg typo on swap_zone_ssg
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 30 Aug 2012 14:32:36 +1200
+
+dms (0.99y-1) unstable; urgency=low
+
+  * zone_tool - Fix show_zone_byid to show Apex RRs
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 30 Aug 2012 09:19:31 +1200
+
+dms (0.99x-3) unstable; urgency=low
+
+  * Correct dms-core logrotate file for local7.log
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 29 Aug 2012 16:08:29 +1200
+
+dms (0.99x-2) unstable; urgency=low
+
+  * Added linitian override for var/cache/bind/dynamic
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 29 Aug 2012 15:53:06 +1200
+
+dms (0.99x-1) unstable; urgency=low
+
+  * Add log rotation to dms-core for local7.log
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 29 Aug 2012 15:12:42 +1200
+
+dms (0.99w-1) unstable; urgency=low
+
+  * zone_tool- master SSG first in show_dms_status
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 29 Aug 2012 11:48:47 +1200
+
+dms (0.99v-1) unstable; urgency=low
+
+  * Add show_dms_status to restricted zone_tool cmds.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 29 Aug 2012 10:50:07 +1200
+
+dms (0.99u-1) unstable; urgency=low
+
+  * zone_tool - add copy_zone, copy_zi to rshell mode
+  * show_zone_text, and load_zone/load_zi RPC fNs.
+  * Revert "show_zone_text, and load_zone/load_zi RPC fNs."
+  * Revert "Revert "show_zone_text, and load_zone/load_zi RPC fNs.""
+  * show_zone_text fixes and corrected wsgi tests
+  * WIP - JSON RPC load_zone call bug fixing I
+  * JSON RPC load_zone/load_zi working.
+  * updat_zone_text I
+  * update_zone_text to support plesk, and edit_lock
+  * Back end admin_privilege check for core zones
+  * Make edit_zone_admin
+  * Move _admin calls for admin and helpdesk WSGI.
+  * WSGI server support for helpdesk DMI URL
+  * Fix typoi in Makefile
+  * Fix apache config typo
+  * Fix another apache config typo
+  * WIP - zone_tool show_dms_status command.
+  * zone_tool and zone_engine show_dms_status work.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 29 Aug 2012 10:30:03 +1200
+
+dms (0.99s-1) unstable; urgency=low
+
+  * Updated DB Schema diagram.
+  * Fix _resolv_zi_id misnamed date format exc bug
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 23 Aug 2012 09:29:39 +1200
+
+dms (0.99r-1) unstable; urgency=low
+
+  * zone_tool - Fix exception in restricted shelll mode
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 21 Aug 2012 09:41:13 +1200
+
+dms (0.99q-1) unstable; urgency=low
+
+  * Fix syslog iverbosity and command line processing.
+  * Ignore restricted shell sym-links
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 20 Aug 2012 11:27:10 +1200
+
+dms (0.99p-1) unstable; urgency=low
+
+  * New net24.dms.exceptions header doc
+  * Edit Lock 'locked_by' user ID tracking/exceptions.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 17 Aug 2012 16:02:53 +1200
+
+dms (0.99o-1) unstable; urgency=low
+
+  * Fix zone_tool copy_zi to use login_id
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 16 Aug 2012 17:17:43 +1200
+
+dms (0.99n-1) unstable; urgency=low
+
+  * First state of changes for ZI change_by field.
+  * DB schema for change_by field.
+  * change_by/login_id API changes II
+  * login_id/change_by setting III
+  * login_id/change_by changes IV
+  * login_id/change_by ZI fields V - zone_tool execing
+  * login_id/change_by fields VI - complete zone_tool
+  * login_id/change_by VII bug fixes
+  * login_id/change_by VIII - ZI copy src change_by
+  * login_id/change_by IX - update dms DB schema
+  * Update default seed values to vygr ones.
+  * Add audit logging of successful zone_tool commands
+  * Don't log zone_tool information commands, as we are not interested.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 16 Aug 2012 15:52:04 +1200
+
+dms (0.99l-1) unstable; urgency=low
+
+  * Change DR Replica slave template to absolute path.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 15 Aug 2012 08:38:03 +1200
+
+dms (0.99k-3) unstable; urgency=low
+
+  * Really fix symlink - fix dirN in dms-core.links
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 14 Aug 2012 18:05:53 +1200
+
+dms (0.99k-2) unstable; urgency=low
+
+  * Fixes for debian install. Most notably missing /var/cache/bind/dynmaic
+    symlink.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 14 Aug 2012 18:00:31 +1200
+
+dms (0.99k-1) unstable; urgency=low
+
+  * Make set_alt_ssg reconfigure SSG concerned.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 13 Aug 2012 09:59:36 +1200
+
+dms (0.99j-1) unstable; urgency=low
+
+  * Move Zone SSG swap into zone_sm for SSG rebalance.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 09 Aug 2012 17:13:06 +1200
+
+dms (0.99i-1) unstable; urgency=low
+
+  * zone_tool swap_zone_ssg command - move a zone
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 07 Aug 2012 16:08:06 +1200
+
+dms (0.99h-1) unstable; urgency=low
+
+  * Rename list_zones to list_zone ala RPC call.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 07 Aug 2012 11:13:14 +1200
+
+dms (0.99g-1) unstable; urgency=low
+
+  * Redo WSGI scripts for real memory usage scenario
+  * WSGI install set up changes for better memory use
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 07 Aug 2012 10:44:59 +1200
+
+dms (0.99f-1) unstable; urgency=low
+
+  * Fix error processing - DB REad only + error codes
+  * zone_tool dms_master_up script.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 06 Aug 2012 13:53:14 +1200
+
+dms (0.99d-1) unstable; urgency=low
+
+  * Updating DMS system architecture diagram.
+  * State machine diagram doc updates.
+  * Fix apache not being started on DR swap over.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 02 Aug 2012 17:16:42 +1200
+
+dms (0.99c-1) unstable; urgency=low
+
+  * Updating net24-core submodule
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 31 Jul 2012 13:26:08 +1200
+
+dms (0.99b-1) unstable; urgency=low
+
+  * Fix SOA range check - sense of it wrong
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 31 Jul 2012 12:50:38 +1200
+
+dms (0.99a-1) unstable; urgency=low
+
+  * Add SOA serial number to ZI brief and lszi output.
+  * WIP - start of ls_pending_events
+  * Added slave_name to slave server events for humans
+  * Add zone name to event parameters for humans.
+  * zone_tool ls_pending_events command.
+  * Fixes for Event to_engine net24/core
+  * WIP - SOA serial poke work.
+  * Fix location of ZiParseError, add SOASerialError
+  * WIP - Fix up SOA Serial limit checking, + poke
+  * WIP - getting SOA serial manipulation working.
+  * Set zone_tool logging_level to critical
+  * Fix cosmetic output issues with ls_pending_event
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 31 Jul 2012 12:14:15 +1200
+
+dms (0.98j-1) unstable; urgency=low
+
+  * Fix dyndns_tool, missing condition in RR __init__
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 26 Jul 2012 14:00:31 +1200
+
+dms (0.98i-1) unstable; urgency=low
+
+  * Use published Zone DB SOA Serial number in updates.  Fixes DR SOA serial
+    number problems when secondaries left in partially updated state due to
+    switch over.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 26 Jul 2012 12:30:07 +1200
+
+dms (0.98h-1) unstable; urgency=low
+
+  * Make SOA serial recalcs use max of named, and DB.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 25 Jul 2012 14:06:09 +1200
+
+dms (0.98g-1) unstable; urgency=low
+
+  * Fix stray comments getting into update_groups.
+  * Stop ZI copy() creating multiple apex comments.
+  * Fix label regexp, was passing '_' due to case typo
+  * Remove dummy bind9.conf as it overwrites on rsync
+  * Force use_apex_ns once with plain create_zone()
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 25 Jul 2012 11:52:40 +1200
+
+dms (0.98f-1) unstable; urgency=low
+
+  * Add empty bin9 slave include for slave bring up.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 20 Jul 2012 15:16:05 +1200
+
+dms (0.98e-1) unstable; urgency=low
+
+  * Fix no DMSDRIF and ending failover domain with '.'
+  * Updates to README.Debian - mostly WSGI setup
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 20 Jul 2012 15:02:59 +1200
+
+dms (0.98d-1) unstable; urgency=low
+
+  * README.Debian updates for WSGI setup
+  * Update pg_ident for WSGI DB access and comment it.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 18 Jul 2012 10:42:12 +1200
+
+dms (0.98c-1) unstable; urgency=low
+
+  * Minor test shell script tweak
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 18 Jul 2012 09:52:37 +1200
+
+dms (0.98b-1) unstable; urgency=low
+
+  * Add WSGI apache include for default debian site
+  * Roughly rev test stuff up for example docs include
+  * Install JSON test sample and WSGI apache conf.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 18 Jul 2012 09:38:24 +1200
+
+dms (0.98-1) unstable; urgency=low
+
+  * Add show_zone_byid to admin_wsgi script
+  * Change default reference to NET24-NZ
+  * Fix ZoneEngine.set_zone_reference() for unset ref
+  * show_zone_byid zi_id argument, admin wsgi calls
+  * Fix missing argument in inc. update trial exec op.
+  * Little dr_script modification - tidies up a little
+  * Add inc_updates -i flag to zone_tool
+  * Fix OSError, IOError handling.
+  * A couple of minor typo fixes.
+  * WIP for fail over using zone_tool update_rrs
+  * Add TTL to WSGI zone_tool update_rrs call
+  * WIP commit - Fix fail over domain not ending in .
+  * Fix updating an already existing CNAME
+  * Fix Mia Typo for RROP_UPDATE_RRTYPE
+  * Fix UPDATE_RRTYPE failing on duplicate records
+  * Fix error handling for update_rrs IntegrityError
+  * Make dm_update_wsgi_dns exit cleanly from do_start
+  * Optional master server arg - dms_start_as_replica
+  * Adding explanational echos for replication script.
+  * Added quotes to dms_start_as_replica output.
+  * Modifications for v0.98, no quagga routing etc.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 17 Jul 2012 15:32:40 +1200
+
+dms (0.96a-1) unstable; urgency=low
+
+  * Change DMSWSGI to true by default on install.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 11 Jul 2012 16:32:14 +1200
+
+dms (0.96-3) unstable; urgency=low
+
+  * Add missing config file dr-settings.sh to dms-dr
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 11 Jul 2012 15:43:23 +1200
+
+dms (0.96-2) unstable; urgency=low
+
+  * Add SNMP and exim to dms Reccomends.
+  * Fix dependencies adding netscript, MAT, and snmpd
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 11 Jul 2012 11:54:12 +1200
+
+dms (0.96-1) unstable; urgency=low
+
+  * DMS DR Interface up/down support
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 10 Jul 2012 17:13:50 +1200
+
+dms (0.95a-1) unstable; urgency=low
+
+  * Fix wrong DR bind9-replica.conf include line
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 09 Jul 2012 17:13:37 +1200
+
+dms (0.95-1) unstable; urgency=low
+
+  * Added -replica for master_ssg slave configuration
+  * Add replica master_ssg template for DR.
+  * Intergrate dr_scripts into one multi-call script
+  * Comment out apache code till needed.
+  * Integration of variables for config files etc.
+  * Fix up postgres running check
+  * Fix execution problems with too many exit() calls.
+  * Add PATH to shell scripts for no cron surprises.
+  * Apache2 activation/deactivation
+  * WIP - reflect fix for dms_ dr_scripts to DR test
+  * Fix apache2 default regexp - was not turning off.
+  * Add net24dmd stop to dms_start_as_replica
+  * Add links for further dr_scripts integration
+  * Postgresql-client/server predepends -> depends
+  * Update README.DEbian for logging and initial conf.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 09 Jul 2012 16:56:54 +1200
+
+dms (0.94b-1) unstable; urgency=low
+
+  * Way point - DBNAME to PGCLUSTER
+  * Waypoint - DBVERSION to PGVERSION
+  * Waypoint - dr_scripts PGCLUSTER and PGVERSION in.
+  * Update net24.conf for proper zone_tool function.
+  * Change var names to PGDATADIR
+  * Mave shell vars to PGETCDIR
+  * Move shell vars to PGPIDFILE
+  * Move shell vars to RECOVERYCONF
+  * Move shell vars to PGPASSFILE
+  * Revert "Move shell vars to PGPASSFILE"
+  * Move to shell vars to PGPASSWORDFILE
+  * Shell code to support dr-settings.sh file
+  * Remove stray rm trigger file line.
+  * dr-settings.sh permissions and named DR directory
+  * Set default options to fix named racing
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 06 Jul 2012 11:47:24 +1200
+
+dms (0.93a-1) unstable; urgency=low
+
+  * More README.DEbian updates
+  * Fix DMS master-ssg not updating - ConfigSMPartialReconfig fixes
+  * Updates to README.Debian
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 04 Jul 2012 17:32:21 +1200
+
+dms (0.93-1) unstable; urgency=low
+
+  * Remove trigger file in favour of pg_ctlcluster
+  * Remove trigger file rm line.
+  * Fix cron line perl edit to take out multiple #s
+  * More careful cron zone_tool vacuum_all editing.
+  * Switch from 'service' to 'invoke-rc.d'
+  * Fix up a replacement mistake.
+  * Remove redundant shell variable line.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 03 Jul 2012 12:39:09 +1200
+
+dms (0.92e-1) unstable; urgency=low
+
+  * Update README.Debian
+  * Correct cron.d fragment name to dms-core
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 02 Jul 2012 16:52:30 +1200
+
+dms (0.92d-1) unstable; urgency=low
+
+  * More setup documentation.
+  * Correct named DNSSEC keys directory.
+  * Touch empty Replica DR bind9.conf for named.
+  * Flip over to Linux with IPv6 bound to IPv4 sockets
+  * Update changelog for 0.92c-2 release
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 02 Jul 2012 16:28:45 +1200
+
+dms (0.92b-2) unstable; urgency=low
+
+  * Add configuration examples for bind, rsyslog etc.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 02 Jul 2012 10:28:54 +1200
+
+dms (0.92b-1) unstable; urgency=low
+
+  * Add rsynd.conf examples and py2/py3k pg_dumpallgz
+  * Fix bind example configuration, add rsync-config dir
+  * Update changelog for 0.92b-1 release
+  * Add missing /etc/bind/rsync-config dir to dms-dr
+  * Add rsynd.conf examples and py2/py3k pg_dumpallgz
+  * Fix bind example configuration, add rsync-config dir
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 28 Jun 2012 18:21:46 +1200
+
+dms (0.92-3) unstable; urgency=low
+
+  * 2nd go at fixing postgresql dependencies.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 28 Jun 2012 15:50:48 +1200
+
+dms (0.92-2) unstable; urgency=low
+
+  * Fix linitian errors and warnings.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 28 Jun 2012 15:43:01 +1200
+
+dms (0.92-1) unstable; urgency=low
+
+  * Fix up PGSQL backup scripts on Debian
+  * Upgrade install to v0.92
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Thu, 28 Jun 2012 15:13:26 +1200
+
+dms (0.91c-1) unstable; urgency=low
+
+  * Change dms_dumpdb to use zcat for failure exitcode
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 27 Jun 2012 12:01:36 +1200
+
+dms (0.91b-5) unstable; urgency=low
+
+  * Change dms_dumpdb to use zcat for failure exitcode
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 27 Jun 2012 11:58:36 +1200
+
+dms (0.91b-4) unstable; urgency=low
+
+  * Fix syntax error in dms-core.postinst script
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 27 Jun 2012 11:09:57 +1200
+
+dms (0.91b-3) unstable; urgency=low
+
+  * Add counter changes to remove to dms-core postinst.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 27 Jun 2012 11:01:16 +1200
+
+dms (0.91b-2) unstable; urgency=low
+
+  * Fix dms-core package prerm shutting down postgres
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 27 Jun 2012 10:38:31 +1200
+
+dms (0.91b-1) unstable; urgency=low
+
+  * Move password from net24.conf DEFAULT to zone_tool
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 26 Jun 2012 16:34:50 +1200
+
+dms (0.91a-5) unstable; urgency=low
+
+  * Comment out zone_tool vacuum_all cron for replica
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 26 Jun 2012 16:04:04 +1200
+
+dms (0.91a-4) unstable; urgency=low
+
+  * Detect if PGSQL dms cluster exists before creating
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 26 Jun 2012 15:34:13 +1200
+
+dms (0.91a-3) unstable; urgency=low
+
+  * Add missing python3 dependencies.
+  * Fix dms-core README.Debian typo.
+  * Fix wrong version on python3-sqlalchemy
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 26 Jun 2012 14:41:36 +1200
+
+dms (0.91a-1) unstable; urgency=low
+
+  * Set up/install Debian Linux share memory file
+  * Add Kernel SHM setting on package install.
+  * Update changelog for 0.91a-1 release
+  * Fix parse eror in dms-core.prerm
+  * Predepend on Postgresql client/server for postinst
+  * Make prerm more robust via tests for files/bins.
+  * Update changelog for 0.91-7 release
+  * Revert "Update changelog for 0.91-7 release"
+  * Add Kernel SHM setting on package install.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Tue, 26 Jun 2012 12:16:29 +1200
+
+dms (0.91-6) unstable; urgency=low
+
+  * Really fix dms_dumpdb for faulty config!
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 25 Jun 2012 15:49:48 +1200
+
+dms (0.91-5) unstable; urgency=low
+
+  * Handle no DB in dms_dumpdb in a far better way.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 25 Jun 2012 15:38:41 +1200
+
+dms (0.91-4) unstable; urgency=low
+
+  * Fix dms-core prerm script to handle DB problems
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 25 Jun 2012 15:28:12 +1200
+
+dms (0.91-3) unstable; urgency=low
+
+  * Fix DBLIBDIR for dms_createdb in Makefile.
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 25 Jun 2012 14:47:20 +1200
+
+dms (0.91-2) unstable; urgency=low
+
+  * Cron DB backup, add missing files/links.
+  * Stop and backup PGSQL dms cluster on removal
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 25 Jun 2012 14:29:57 +1200
+
+dms (0.91-1) unstable; urgency=low
+
+  * Fix virtual dependency for diff, make it prefer diffutils.
+  * Add missing dms dependency on dms-dr.
+  * Fix missing pgpassfile in dms-dr.   
+  * Add DB creation script and SQL script to create DB after 1st install.
+  * Fix missing cron.d file in dms-core + minor stuff
+  * Really do git-dch always commit
+  * Documentation up to DB creation.
+  * Seed files for creating dms catalog cluster.
+  * dms_createdb script - installing and working.
+  * Tidied up dms_createdb, mainly replica ability.
+  * PGSQL cluster scripts and templates finalised.
+  * PGSQL cluster scripts and templates finalised.
+  * Remove identd from templates to simplify things
+  * Tune up dr_scripts
+  * Tuned up dms_createdb script
+  * Install missing PGSQL schema files.
+  * Remove non-functional to PG postgres mappings.
+  * Update to 0.91, and creating DB cluster on install.
+  * Update changelog for 0.91-1 release
+  * Fix syntax error in dms-core.postinst
+  * Update changelog for 0.91-2 release
+  * Really fix dms-core.postinst syntax error...
+  * Committing changelog...
+  * Update changelog for 0.91-2 release
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Wed, 20 Jun 2012 13:31:45 +1200
+
+dms (0.9-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 18 Jun 2012 12:44:48 +1200

@@ -1,0 +1,14 @@
+usr/share/net24/dns-createzonekeys
+usr/share/net24/dyndns_tool
+usr/share/net24/net24
+usr/share/net24/net24dmd
+usr/share/net24/postgresql
+usr/share/net24/zone_tool
+etc/net24/config-templates
+etc/net24/master-config-templates
+etc/net24/net24.conf
+etc/net24/rsync-dnssec-password
+etc/net24/rsync-dnsconf-password
+etc/net24/server-admin-config
+etc/net24/server-config-templates
+etc/sysctl.d

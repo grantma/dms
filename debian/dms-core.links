@@ -1,0 +1,15 @@
+usr/share/net24/zone_tool usr/bin/zone_tool
+usr/share/net24/zone_tool usr/bin/zone_tool~rnano
+usr/share/net24/zone_tool usr/bin/zone_tool~rvim
+usr/share/net24/dns-createzonekeys usr/sbin/dns-createzonekeys
+usr/share/net24/net24dmd usr/sbin/net24dmd
+usr/share/net24/dyndns_tool usr/sbin/dyndns_tool
+usr/share/net24/postgresql/dms_createdb usr/sbin/dms_createdb
+usr/share/net24/postgresql/dms_createdb usr/sbin/dms_dropdb
+usr/share/net24/postgresql/dms_createdb usr/sbin/dms_admindb
+usr/share/net24/postgresql/dms_createdb usr/sbin/dms_sqldb
+usr/share/net24/postgresql/dms_createdb usr/sbin/dms_dumpdb
+usr/share/net24/postgresql/pg_dumpallgz usr/sbin/pg_dumpallgz
+etc/bind/master var/lib/bind/master
+var/cache/bind/slave var/lib/bind/slave
+var/lib/bind/dynamic var/cache/bind/dynamic

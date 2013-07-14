@@ -1,0 +1,76 @@
+Source: dms
+Section: admin
+Priority: extra
+Maintainer: Matthew Grant <matthewgrant5@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), python3-all-dev
+Standards-Version: 3.9.3
+X-Python3-Version: >= 3.2
+Homepage: https://github.com/grantma/dms
+Vcs-Git: https://github.com/grantma/dms.git
+Vcs-Browser: https://github.com/grantma/dms
+
+Package: dms-core
+Architecture: any
+Recommends: vim-nox, nano, colordiff
+Depends: ${misc:Depends}, ${python3:Depends},
+  postgresql (>= 9.1), postgresql (<< 9.2),
+  postgresql-client (>= 9.1), postgresql-client (<< 9.2),
+  python3-sqlalchemy (>= 0.7),
+  python3-psycopg2 (>= 2.4.5),
+  python3-setproctitle (>= 1.1.6),
+  python3-psutil (>= 0.4.1),
+  python3-pyparsing (>= 1.5.6),
+  python3-dnspython (>= 1.10),
+  haveged,
+  racoon|ike-server,
+  rsync,
+  bind9,
+  ntp,
+  adduser,
+  less,
+  diffutils|diff,
+  oping
+Description: DNS Management System, core system
+ This is the DNS Management System, core backend.
+ .
+ This package include the dms python3 modules, zone_tool and dmsdmd.
+ It creates the dms system users.
+ .
+ For setup, see README.Debian in /usr/share/doc/dms-core
+
+Package: dms-wsgi
+Architecture: any
+Depends: ${misc:Depends}, ${python3:Depends}, dms-core (= ${binary:Version}), apache2, libapache2-mod-wsgi-py3
+Description: DNS Management System, WSGI JSON http RPC backend. 
+ This is the DNS Management system, WSGI JSON RPC layer.
+ .
+ This installs the WSGI layer needed to access the DMS backend via JSON
+ RPC over http.  It is split from the core package to allow the DMS to be set
+ up on a small scale, with command line only editing.
+ .
+ For setup, see the README.Debian in /usr/share/doc/dms-core 
+
+Package: dms-dr
+Architecture: any
+Depends: ${misc:Depends}, ${python3:Depends}, dms-core (= ${binary:Version}), adduser, netscript-2.4, rsyslog-pgsql
+Description: DNS Management System, DR scripts and setup.
+ This is the DNS Management System, DR recovery scripts for running a 
+ replica.
+ .
+ This package contains the stuff required to set up a DR replica of a DMS
+ Master Server.  
+ .
+ For setup, see the README.Debian in /usr/share/doc/dms-core. 
+
+Package: dms
+Architecture: any
+Depends: ${misc:Depends}, dms-wsgi (= ${binary:Version}), dms-core (= ${binary:Version}), dms-dr (= ${binary:Version}), etckeeper, ssh, netscript-2.4, vim-nox, nano, colordiff, snmpd, snmp, snmp-mibs-downloader, mail-transfer-agent | exim4
+Suggests: quagga
+Description: DNS Management System, master server.
+ This is the DNS Management System, the master server dummy install 
+ package.
+ .
+ This package installs all the components needed for a DMS master server or
+ DR replica.
+ .
+ For setup, see the README.Debian in /usr/share/doc/dms-core. 

@@ -1,0 +1,2 @@
+wsgi-scripts etc/net24
+etc/dms-wsgi-apache.conf etc/net24

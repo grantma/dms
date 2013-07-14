@@ -1,0 +1,12 @@
+usr/bin
+usr/sbin
+etc/bind/master
+etc/bind/master-config
+var/cache/bind/slave
+var/lib/bind/dynamic
+var/lib/bind/keys
+var/lib/net24
+var/lib/net24/dms-sg
+var/lib/net24/postgresql
+var/lib/net24/postgresql/dump
+var/log/net24
