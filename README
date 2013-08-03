@@ -6,6 +6,9 @@ scripts.
 
 See INSTALL for installation instructions.
 
+Note: dms depends on py-magcode-core up at 
+    https://github.com/grantma/py-magcode-core.git
+
 Programming kindly sponsored by Voyager Internet Ltd, http://www.voyager.co.nz/
 
 Released under GPL v3 or later.  See COPYING.

@@ -5,4 +5,8 @@ Install from Source Repository at the bottom of the index in the technical
 section.  The contents of this PDF is being entered intoa new Website for
 the project.
 
+Note: dms depends on py-magcode-core up at 
+
+                   https://github.com/grantma/py-magcode-core.git
+
 Matthew Grant <matthewgrant5@gmail.com> Sun, 14 Jul 2013 21:20:59 +1200
