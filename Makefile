@@ -227,8 +227,8 @@ install-bin: install-python
 	done;
 	- $(INSTALL) -m 755 dr_scripts/etckeeper_git_shell $(SHAREDIR)/dr_scripts \
 	 	&& perl -pe 's~^#!/\S+/python3.[0-9]\s+.*$$~#!$(PYTHON_INTERPRETER)~' -i $(SHAREDIR)/dr_scripts/etckeeper_git_shell
-	- $(INSTALL) -m 644 postgresql/dms-schema-pg91.sql $(SHAREDIR)/postgresql
-	- $(INSTALL) -m 644 postgresql/dms-seed-config-pg91.sql $(SHAREDIR)/postgresql
+	- $(INSTALL) -m 644 postgresql/dms-schema-pg93.sql $(SHAREDIR)/postgresql
+	- $(INSTALL) -m 644 postgresql/dms-init-pg93.sql $(SHAREDIR)/postgresql
 ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -m 755 postgresql/dms_createdb $(SHAREDIR)/postgresql \
 		&& perl -pe 's~^DBLIBDIR=.*$$~DBLIBDIR=$(PREFIX)/share/dms/postgresql~' -i $(SHAREDIR)/postgresql/dms_createdb
