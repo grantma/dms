@@ -22,7 +22,7 @@
 # Blow up on any errors
 set -e
 
-PYTHON_VERSION=3.2
+PYTHON_VERSION=3.3
 OS=`uname`
 [ "$OS" = "Linux" ] && LINUX_DIST=`cat /etc/issue | cut -d ' ' -f 1`
 if [ "$OS" = "FreeBSD" ]; then
