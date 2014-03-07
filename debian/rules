@@ -26,7 +26,10 @@ export DMS_DEB_BUILD
 PYTHON3:=$(shell py3versions -vr)
 
 %:
-	dh $@ --with python3 --without pysupport
+	dh $@ --with python3
+
+override_dh_python3:
+	dh_python3 /usr/share/dms
 
 override_dh_auto_install:
 	$(MAKE) PREFIX=/usr DESTDIR=$(CURDIR)/debian/tmp install
