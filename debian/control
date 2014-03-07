@@ -11,14 +11,13 @@ Vcs-Browser: https://github.com/grantma/dms
 
 Package: dms-core
 Architecture: any
-Recommends: vim-nox, nano, colordiff
+Recommends: vim-nox, nano, colordiff, python3-setproctitle (>= 1.1.6)
 Depends: ${misc:Depends}, ${python3:Depends},
   python3-magcode-core,
   postgresql (>= 9.1), postgresql (<< 9.4),
   postgresql-client (>= 9.1), postgresql-client (<< 9.4),
   python3-sqlalchemy (>= 0.7),
   python3-psycopg2 (>= 2.4.5),
-  python3-setproctitle (>= 1.1.6),
   python3-psutil (>= 0.4.1),
   python3-pyparsing (>= 1.5.6),
   python3-dnspython (>= 1.10),
@@ -54,7 +53,7 @@ Description: DNS Management System, WSGI JSON http RPC backend.
 
 Package: dms-dr
 Architecture: any
-Depends: ${misc:Depends}, ${python3:Depends}, dms-core (= ${binary:Version}), adduser, rsyslog-pgsql
+Depends: ${misc:Depends}, python3:any (>= 3.3.2-2~), python3:any (>= 3.2~), dms-core (= ${binary:Version}), adduser, rsyslog-pgsql
 Suggests: netscript-2.4
 Description: DNS Management System, DR scripts and setup.
  This is the DNS Management System, DR recovery scripts for running a 
