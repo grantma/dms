@@ -1,7 +1,7 @@
 Source: dms
 Section: admin
 Priority: extra
-Maintainer: Matthew Grant <matthewgrant5@gmail.com>
+Maintainer: Matthew Grant <matt@mattgrant.net.nz>
 Build-Depends: debhelper (>= 8.0.0), python3-all-dev
 Standards-Version: 3.9.3
 X-Python3-Version: >= 3.2

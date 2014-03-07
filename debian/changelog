@@ -14,7 +14,7 @@ dms (1.0rc1-1~1.gbp40c202) UNRELEASED; urgency=medium
   * Update /debian to make package build
   * Update /debian files for python3-magcode-core
 
- -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 07 Mar 2014 16:35:54 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 07 Mar 2014 16:35:54 +1300
 
 dms (0.111-1) unstable; urgency=low
 
