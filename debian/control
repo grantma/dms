@@ -31,8 +31,8 @@ Depends: ${misc:Depends}, ${python3:Depends},
   less,
   diffutils|diff,
   oping
-Description: DNS Management System, core system
- This is the DNS Management System, core backend.
+Description: bind9 DNS Management System, core system
+ This is the bind9 DNS Management System, core backend.
  .
  This package include the dms python3 modules, zone_tool and dmsdmd.
  It creates the dms system users.
@@ -42,8 +42,8 @@ Description: DNS Management System, core system
 Package: dms-wsgi
 Architecture: any
 Depends: ${misc:Depends}, ${python3:Depends}, dms-core (= ${binary:Version}), apache2, libapache2-mod-wsgi-py3
-Description: DNS Management System, WSGI JSON http RPC backend. 
- This is the DNS Management system, WSGI JSON RPC layer.
+Description: bind9 DNS Management System, WSGI JSON http RPC backend. 
+ This is the bind9 DNS Management system, WSGI JSON RPC layer.
  .
  This installs the WSGI layer needed to access the DMS backend via JSON
  RPC over http.  It is split from the core package to allow the DMS to be set
@@ -55,8 +55,8 @@ Package: dms-dr
 Architecture: any
 Depends: ${misc:Depends}, python3:any (>= 3.3.2-2~), python3:any (>= 3.2~), dms-core (= ${binary:Version}), adduser, rsyslog-pgsql
 Suggests: netscript-2.4
-Description: DNS Management System, DR scripts and setup.
- This is the DNS Management System, DR recovery scripts for running a 
+Description: bind9 DNS Management System, DR scripts and setup.
+ This is the bind9 DNS Management System, DR recovery scripts for running a 
  replica.
  .
  This package contains the stuff required to set up a DR replica of a DMS
@@ -68,8 +68,8 @@ Package: dms
 Architecture: any
 Depends: ${misc:Depends}, dms-wsgi (= ${binary:Version}), dms-core (= ${binary:Version}), dms-dr (= ${binary:Version}), etckeeper, ssh, vim-nox, nano, colordiff, snmpd, snmp, snmp-mibs-downloader, mail-transfer-agent | exim4
 Suggests: quagga, netscript-2.4
-Description: DNS Management System, master server.
- This is the DNS Management System, the master server dummy install 
+Description: bind9 DNS Management System, master server.
+ This is the bind9 DNS Management System, the master server dummy install 
  package.
  .
  This package installs all the components needed for a DMS master server or
