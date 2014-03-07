@@ -31,8 +31,8 @@ DBREPLICA="ip6-localhost"
 DBLIBDIR="/usr/local/share/dms/postgresql"
 VARDIR="/var/lib/dms/postgresql"
 DBDUMPDIR="/var/backups"
-DBSCHEMA="dms-schema-pg91.sql"
-DBSEEDDATA="dms-init-pg91.sql"
+DBSCHEMA="dms-schema-pg93.sql"
+DBSEEDDATA="dms-init-pg93.sql"
 DBALTXLOGDIR="/srv/postgresql"
 DBMOVEXLOG=false
 SETTINGSFILE="/etc/dms/dr-settings.sh"
@@ -251,7 +251,7 @@ createdb () {
 		exit 1
 	fi
 
-	if [ -e "$PGDATADIR" ]; then
+	if [ -e "$PGETCDIR" ]; then
 		if [ $FORCE -lt 1 ]; then
 			echo "$PROGNAME: database cluster exists - aborting" 1>&2
 			exit 2

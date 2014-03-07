@@ -50,7 +50,7 @@ $UPDATE_TYPE wsgi-failover
 #----------------------------------------------
 
 # PostgresQL version used
-PGVERSION="9.1"
+PGVERSION="9.3"
 
 # PstgresQL catalog cluster name
 PGCLUSTER="dms"

@@ -508,6 +508,14 @@ class RR_ANY(ResourceRecord):
     _rr_class = RRCLASS_IN
     _rr_type = RRTYPE_ANY
     
+@rr_register
+class RR_TLSA(ResourceRecord):
+    """
+    TLSA DANE record type
+    """
+    _rr_class = RRCLASS_IN
+    _rr_type = RRTYPE_TLSA
+
 # Factory functions
 def dnspython_to_rr(dnspython_rr):
     """

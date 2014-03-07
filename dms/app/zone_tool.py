@@ -4720,9 +4720,9 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
             oping_args = settings['oping_args'].split()
             cmdline = [settings['oping_path']]
             cmdline.extend(oping_args)
-            s_ips = [(s['address'] 
-                            if s['state'] != SSTATE_DISABLED else '::1') 
-                        for s in server_list]
+            s_ips = [(s['address']) 
+                        for s in server_list
+                            if (s['state'] != SSTATE_DISABLED)]
             cmdline.extend(s_ips)
             output = check_output(cmdline, stderr=STDOUT)
         except CalledProcessError as exc:
@@ -4745,6 +4745,7 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
         for s in server_list:
             if s['state'] == SSTATE_DISABLED:
                 s['ping_results'] = 'server disabled'
+                continue
             elif not error_msg:
                 s['ping_results'] = output[index]
             else:

@@ -22,7 +22,7 @@
 # Blow up on any errors
 set -e
 
-PYTHON_VERSION=3.2
+PYTHON_VERSION=3.3
 OS=`uname`
 [ "$OS" = "Linux" ] && LINUX_DIST=`cat /etc/issue | cut -d ' ' -f 1`
 if [ "$OS" = "FreeBSD" ]; then
@@ -39,20 +39,20 @@ else
 	# Hopefully everything else is like this
 	PYTHON_SITE_PACKAGES="/usr/local/lib/python${PYTHON_VERSION}/dist-packages"
 fi
-PYTHON_DISTRIBUTE_VERSION="0.6.19"
-PYTHON_DISTRIBUTE_NAME="distribute-${PYTHON_DISTRIBUTE_VERSION}"
-PYTHON_DISTRIBUTE_TARGZ="${PYTHON_DISTRIBUTE_NAME}.tar.gz"
-PYTHON_DISTRIBUTE_URL="http://pypi.python.org/packages/source/d/distribute/${PYTHON_DISTRIBUTE_TARGZ}"
+PYTHON_SETUPTOOLS_VERSION="1.4.1"
+PYTHON_SETUPTOOLS_NAME="setuptools-${PYTHON_SETUPTOOLS_VERSION}"
+PYTHON_SETUPTOOLS_TARGZ="${PYTHON_SETUPTOOLS_NAME}.tar.gz"
+PYTHON_SETUPTOOLS_URL="https://pypi.python.org/packages/source/s/setuptools/${PYTHON_SETUPTOOLS_TARGZ}"
 
 clean_site_packages () {
 	(cd  $PYTHON_SITE_PACKAGES; rm -rf `ls -1 | grep -v 'README'`)
 }
 
-install_python_distribute () {
+install_python_setuptools () {
 	local SCRATCH="scratch-$$"
 	mkdir $SCRATCH
-	(cd $SCRATCH && curl -O "$PYTHON_DISTRIBUTE_URL" && tar xzf $PYTHON_DISTRIBUTE_TARGZ)
-	(cd $SCRATCH/$PYTHON_DISTRIBUTE_NAME && "python${PYTHON_VERSION}" ./setup.py install)
+	(cd $SCRATCH && curl -O "$PYTHON_SETUPTOOLS_URL" && tar xzf $PYTHON_SETUPTOOLS_TARGZ)
+	(cd $SCRATCH/$PYTHON_SETUPTOOLS_NAME && "python${PYTHON_VERSION}" ./setup.py install)
 	rm -rf $SCRATCH
 }
 
@@ -83,12 +83,17 @@ install_python_dnspython3 () {
 
 }
 
+install_magcode_core () {
+	easy_install-${PYTHON_VERSION} magcode-core
+}
+
 clean_site_packages
-install_python_distribute
+install_python_setuptools
 install_python_sqlalchemy
 install_python_setproctitle
 install_python_winpdb
 install_python_pyparsing
 install_python_dnspython3
 install_python_psutil
+install_magcode_core
 
