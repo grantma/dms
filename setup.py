@@ -22,10 +22,10 @@
 from distutils.core import setup
 
 setup(name='DMS',
-    version='0.9',
+    version='1.0rc1',
     description='DMS Master System',
     author='Matthew Grant',
-    author_email='matthewgrant5@gmail.com',
-    url='https://wiki.devel.net.nz/confluence/display/dmiapi/Home',
+    author_email='matti@mattgrant.net.nz',
+    url='http://mattgrant.net.nz/software/dms',
     packages=['dms', 'dms.app', 'dms.database'])
 
