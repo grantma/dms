@@ -28,6 +28,7 @@ PYTHON3:=$(shell py3versions -vr)
 
 override_dh_auto_install:
 	$(MAKE) PREFIX=/usr DESTDIR=$(CURDIR)/debian/tmp install
+	- find $(CURDIR)/debian/tmp -name __pycache__ | xargs rm -rf 
 
 override_dh_install:
 	dh_install

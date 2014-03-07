@@ -3,7 +3,7 @@ Section: admin
 Priority: extra
 Maintainer: Matthew Grant <matt@mattgrant.net.nz>
 Build-Depends: debhelper (>= 8.0.0), python3-all-dev
-Standards-Version: 3.9.3
+Standards-Version: 3.9.5
 X-Python3-Version: >= 3.2
 Homepage: https://github.com/grantma/dms
 Vcs-Git: https://github.com/grantma/dms.git
