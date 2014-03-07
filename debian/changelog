@@ -1,6 +1,6 @@
-dms (1.0rc1-1~1.gbp40c202) UNRELEASED; urgency=medium
+dms (1.0rc2-1~2.gbp9838d1) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @40c2020f5ac11ccef82a027969dc43494b2977aa **
+  ** SNAPSHOT build @9838d1be1260fabab4174fbc25057970d81c4e7b **
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -13,8 +13,17 @@ dms (1.0rc1-1~1.gbp40c202) UNRELEASED; urgency=medium
   * Fix oping output with 2 DISABLED servers.
   * Update /debian to make package build
   * Update /debian files for python3-magcode-core
+  * Add debian packaging dir.
+  * Remove Net24 referenences from all these files.
+  * Fix Debian version string
+  * Fix email address and maintainer
+  * Fix __pycache__ in debian install dirs
+  * try to fix up build-dep
+  * Another tweak to try and get python3 depends
+  * Fix Python package version
+  * Trye something else...
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 07 Mar 2014 16:35:54 +1300
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 07 Mar 2014 21:09:37 +1300
 
 dms (0.111-1) unstable; urgency=low
 
