@@ -1,6 +1,6 @@
-dms (1.0rc2-1~2.gbp9838d1) UNRELEASED; urgency=medium
+dms (1.0rc3-1~1.gbpc14a0d) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @9838d1be1260fabab4174fbc25057970d81c4e7b **
+  ** SNAPSHOT build @c14a0d8819c58d3ef64a11327746b32b09725e80 **
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -22,8 +22,10 @@ dms (1.0rc2-1~2.gbp9838d1) UNRELEASED; urgency=medium
   * Another tweak to try and get python3 depends
   * Fix Python package version
   * Trye something else...
+  * Update setup.py correctly
+  * REally fix version and setup.py problems...
 
- -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 07 Mar 2014 21:09:37 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 07 Mar 2014 21:25:52 +1300
 
 dms (0.111-1) unstable; urgency=low
 
