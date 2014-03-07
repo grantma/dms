@@ -1,3 +1,21 @@
+dms (1.0rc1~1.gbp40c202) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @40c2020f5ac11ccef82a027969dc43494b2977aa **
+
+  * Add debian packaging dir.
+  * Add rudimentary README and INSTALL files
+  * Update wrt dependency on py-magcode-core.
+  * Add support for RFC 6698 TLSA records.
+  * Fix and update booststrap shell script
+  * Update to postgresql 9.3 initial
+  * Really update for postgresql 9.3
+  * Updates for running bind 9.9
+  * Fix oping output with 2 DISABLED servers.
+  * Update /debian to make package build
+  * Update /debian files for python3-magcode-core
+
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Fri, 07 Mar 2014 16:35:54 +1300
+
 dms (0.111-1) unstable; urgency=low
 
   * ServerSM retry_msg - display reason for RETRY

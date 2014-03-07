@@ -5,8 +5,8 @@ etc/bind/master-config
 var/cache/bind/slave
 var/lib/bind/dynamic
 var/lib/bind/keys
-var/lib/net24
-var/lib/net24/dms-sg
-var/lib/net24/postgresql
-var/lib/net24/postgresql/dump
-var/log/net24
+var/lib/dms
+var/lib/dms/dms-sg
+var/lib/dms/postgresql
+var/lib/dms/postgresql/dump
+var/log/dms

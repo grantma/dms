@@ -1,5 +1,5 @@
-Net24 DMS System
-----------------
+DNS Management System
+---------------------
 
 The DNS Management System (DMS) is designed to have a master/replica master
 setup. It is a complex setup, requiring the hand configuration of database, DNS
@@ -19,7 +19,8 @@ configuration.
 
 For information on etckeeper usage, see /usr/share/doc/etckeeper/README.gz
 
-Example for diffing/checking out /etc/racoon/racoon-tool.conf from other machine:
+Example for diffing/checking out /etc/racoon/racoon-tool.conf from other
+machine:
 
 dms3-master:/etc# git diff dms4-dr/master racoon/racoon-tool.conf
 dms3-master:/etc# git checkout dms4-dr/master racoon/racoon-tool.conf
@@ -240,15 +241,15 @@ Though the master and replica can run the PGSQL dms cluster on port 5433 or
 other port, it is reccommended to swap the ports with the main cluster, and
 revert the main cluster to manual start up.
 
-Edit postgresql.conf /etc/postgresql/9.1/main and /etc/postgresql/9.1/dms, 
+Edit postgresql.conf /etc/postgresql/9.3/main and /etc/postgresql/9.3/dms, 
 and swap the settings for 'port =', making dms port 5432.
 
-Edit /etc/postgresql/9.1/main/start.conf, and set it to manual.
+Edit /etc/postgresql/9.3/main/start.conf, and set it to manual.
 
 Stop posgresql, and start it, (restart will probably result in failure due to a
 port clash...):
 
-# pg_ctlcluster 9.1 main stop
+# pg_ctlcluster 9.3 main stop
 # service postgresql stop
 # service postgresql start
 
@@ -257,8 +258,8 @@ Use etckeeper to migrate the configuration to the replica:
 dms3-master:/etc# etckeeper commit
 
 dms4-dr:/etc#  git fetch dms3-master
-dms4-dr:/etc/# git checkout dms3-master/master postgresql/9.1/main postgresql/9.1/dms
-dms4-dr:/etc# pg_ctlcluster 9.1 main stop
+dms4-dr:/etc/# git checkout dms3-master/master postgresql/9.3/main postgresql/9.3/dms
+dms4-dr:/etc# pg_ctlcluster 9.3 main stop
 dms4-dr:/etc# service postgresql stop
 dms4-dr:/etc# service postgresql start
 
@@ -266,7 +267,7 @@ On the master, set the DB passwords for the dms user and the ruser (they will
 be copied to the replica when mirroring is started):
 
 root@dms3-master:/home/grantma# psql -U pgsql dms
-psql (9.1.4)
+psql (9.3.3)
 Type "help" for help.
 
 dms=# \password ruser
@@ -281,12 +282,12 @@ Note: The pgsql database super user exists for cross OS/distro compatibility
 reasons.
 
 Record the 2 passwords you have just set for reference.  Put the ruser
-password in /etc/net24/pgpassfile on both machines, which is in the standard
-PGSQL format (see section 31.14 in "PostgreSQL 9.1.4 Documentation").
+password in /etc/dms/pgpassfile on both machines, which is in the standard
+PGSQL format (see section 31.14 in "PostgreSQL 9.3.3 Documentation").
 
 NB: You will have to alter the machine name and password. Use vi or vim as root to prevent permissions and ownership alteration.
 
-Also edit /etc/net24/net24.conf, and set the dms db_password for zone_tool on
+Also edit /etc/dms/dms.conf, and set the dms db_password for zone_tool on
 both machines as zone_tool uses password access unless user is in pg_ident.conf
 
 Connecting Replica and Starting Replication
@@ -313,8 +314,8 @@ configuration settings:
 dms4-dr:/root# zone_tool show_config
 root@dms4-dr:/home/grantma# zone_tool show_config
         auto_dnssec:       false
-        default_ref:       net24
-        default_sg:        net24-one
+        default_ref:       someorg
+        default_sg:        someorg-one
         default_stype:     bind9
         edit_lock:         false
         event_max_age:     120.0
@@ -322,10 +323,10 @@ root@dms4-dr:/home/grantma# zone_tool show_config
         nsec3:             false
         soa_expire:        7d
         soa_minimum:       24h
-        soa_mname:         ns1.net24.net.nz. (net24-one)
+        soa_mname:         ns1.someorg.net. (someorg-one)
         soa_refresh:       7200
         soa_retry:         7200
-        soa_rname:         soa.net24.net.nz.
+        soa_rname:         soa.someorg.net.
         syslog_max_age:    120.0
         use_apex_ns:       true
         zi_max_age:        90.0
@@ -360,7 +361,7 @@ secrets file = /etc/rsyncd.secrets
 [dnssec]
         path = /var/lib/bind/keys
         uid=bind
-        gid=net24dmd
+        gid=dmsdmd
         comment = DNSSEC key data area
         auth users = dnssec
         use chroot = yes
@@ -379,8 +380,8 @@ making it only readable by root:
 # chown root:root /etc/rsyncd.secrets
 # chmod 600 /etc/rsyncd.secrets
 
-and set the passwords /etc/net24/rsync-dnssec-password and
-/etc/net24/rsync-dnsconf-password using vi to preserve permissions.
+and set the passwords /etc/dms/rsync-dnssec-password and
+/etc/dms/rsync-dnsconf-password using vi to preserve permissions.
 
 and enable the rsyncd daemon in /etc/default/rsync, and start the service.
 
@@ -391,7 +392,7 @@ Use etckeeper to mirror the config to the replica:
 dms3-master:/etc# etckeeper commit
 
 dms4-dr:/etc#  git fetch dms3-master
-dms4-dr:/etc/# git checkout dms3-master/master rsyncd.secrets rsyncd.conf /etc/default/rsync net24/rsync-dnsconf-password net24/rsync-dnssec-password
+dms4-dr:/etc/# git checkout dms3-master/master rsyncd.secrets rsyncd.conf /etc/default/rsync dms/rsync-dnsconf-password dms/rsync-dnssec-password
 dms4-dr:/etc/# chmod 600 /etc/rsyncd.secrets
 
 And start rsyncd on the replica as well.
@@ -414,9 +415,9 @@ Lets create the master sg, and disabled replica servers (DMS master and DR),
 and check that the DR slave named config can be rsynced.
 
 dms3-master:/etc/# zone_tool
-zone_tool > create_sg -p net24-master /etc/net24/server-config-templates 2001:db8:f012:2::2 2001:db8:f012:2::3
-zone_tool > create_server -g net24-master dms4-dr 2001:db8:f012:2::2
-zone_tool > create_server -g net24-master dms3-master 2001:db8:f012:2::3
+zone_tool > create_sg -p someorg-master /etc/dms/server-config-templates 2001:db8:f012:2::2 2001:db8:f012:2::3
+zone_tool > create_server -g someorg-master dms4-dr 2001:db8:f012:2::2
+zone_tool > create_server -g someorg-master dms3-master 2001:db8:f012:2::3
 zone_tool > rsync_server_admin_config dms4-dr no_rndc
 zone_tool >
 
@@ -481,7 +482,7 @@ root@dms3-master:/etc/bind# zone_tool generate_tsig_key -f update-ddns hmac-sha2
 root@dms3-master:/etc/bind# zone_tool generate_tsig_key -f rndc-key hmac-md5 rndc-local.key
 root@dms3-master:/etc/bind# zone_tool generate_tsig_key -f remote-key hmac-md5 rndc-remote.key
 root@dms3-master:/etc/bind# zone_tool write_rndc_conf -f
-root@dms3-master:/etc/bind# cp -a rndc-remote.key /etc/net24/server-admin-config/bind9
+root@dms3-master:/etc/bind# cp -a rndc-remote.key /etc/dms/server-admin-config/bind9
 root@dms3-master:/etc/bind# cp rndc-remote.key /etc/bind/rsync-config
 
 Add a line to /etc/default/bind9 to get rid of the default rndc.key to stop
@@ -499,19 +500,19 @@ RESOLVCONF=no
 OPTIONS="-u bind"
 -----
 
-Create 2 empty named.conf include files that will be overwritten by net24dmd, 
+Create 2 empty named.conf include files that will be overwritten by dmsdmd, 
 on both machines (master and replica):
 
 # touch /etc/bind/master-config/server-acl.conf
 # touch /etc/bind/master-config/zones.conf
-# chown net24dmd:bind /etc/bind/master-config/*
+# chown dmsdmd:bind /etc/bind/master-config/*
 
 Restart named to make sure all is good:
 
 root@dms3-master:/etc/bind# service bind9 stop
 root@dms3-master:/etc/bind# service bind9 start
 root@dms3-master:/etc/bind# rndc status
-version: 9.8.1-P1
+version: 9.9.5-2-Debian <id:f9b8a50e>
 CPUs found: 1
 worker threads: 1
 number of zones: 5
@@ -524,21 +525,21 @@ recursive clients: 0/0/1000
 tcp clients: 0/100
 server is up and running
 
-Enable net24dmd, the dynamic DNS update and DMS event daemon by editing
-/etc/default/net24dmd, setting NET24DMD_ENABLE=true, and start it:
+Enable dmsdmd, the dynamic DNS update and DMS event daemon by editing
+/etc/default/dmsdmd, setting DMSDMD_ENABLE=true, and start it:
 
-root@dms3-master:/etc# vi /etc/bind/net24dmd
-root@dms3-master:/etc# service net24dmd start
-[ ok ] Starting net24dmd: net24dmd.
-root@dms3-master:/etc# service net24dmd status
-[ ok ] net24dmd is running.
+root@dms3-master:/etc# vi /etc/bind/dmsdmd
+root@dms3-master:/etc# service dmsdmd start
+[ ok ] Starting dmsdmd: dmsdmd.
+root@dms3-master:/etc# service dmsdmd status
+[ ok ] dmsdmd is running.
 
 Enable the master server so that the server SM can monitor named on the
 machine:
 
 root@dms3-master:/etc# zone_tool enable_server dms3-master
 
-This means that when net24dmd is started, it will set up an index in the Master
+This means that when dmsdmd is started, it will set up an index in the Master
 SM in the DB to the Master server in the ServerSM table (important for keeping
 track of where the master is for human output and ServerSM functionality - uses
 machines actual network addresses cf.  master_address and master_alt_address in
@@ -553,7 +554,7 @@ $ORIGIN foo.bar.org.
 
 ;
 ; Zone:      foo.bar.org.
-; Reference: net24
+; Reference: someorg
 ; zi_id:     1
 ; ctime:     Mon Jul  2 11:30:26 2012
 ; mtime:     Mon Jul  2 11:31:03 2012
@@ -562,17 +563,17 @@ $ORIGIN foo.bar.org.
 
 
 ;| Apex resource records for foo.bar.org.
-;!REF:net24
-@                       IN      SOA             ( ns1.net24.net.nz. ;Master NS
-                                                soa.net24.net.nz. ;RP email
+;!REF:someorg
+@                       IN      SOA             ( ns1.someorg.net. ;Master NS
+                                                soa.someorg.net. ;RP email
                                                 2012070200   ;Serial yyyymmddnn
                                                 7200         ;Refresh
                                                 7200         ;Retry
                                                 604800       ;Expire
                                                 86400        ;Minimum/Ncache
                                                 )           
-                        IN      NS              ns2.net24.net.nz.
-                        IN      NS              ns1.net24.net.nz.
+                        IN      NS              ns2.someorg.net.
+                        IN      NS              ns1.someorg.net.
 
 
 root@dms3-master:/etc/bind# zone_tool show_zonesm foo.bar.org
@@ -587,9 +588,9 @@ root@dms3-master:/etc/bind# zone_tool show_zonesm foo.bar.org
         lock_state:      EDIT_UNLOCK
         mtime:           Mon Jul  2 11:30:26 2012
         nsec3:           False
-        reference:       net24
+        reference:       someorg
         soa_serial:      2012070200
-        sg_name:         net24-one
+        sg_name:         someorg-one
         state:           PUBLISHED
         use_apex_ns:     True
         zi_candidate_id: 1
@@ -602,20 +603,20 @@ root@dms3-master:/etc/bind# zone_tool show_zonesm foo.bar.org
         ptime:           Mon Jul  2 11:31:03 2012
         soa_expire:      7d
         soa_minimum:     24h
-        soa_mname:       ns1.net24.net.nz.
+        soa_mname:       ns1.someorg.net.
         soa_refresh:     7200
         soa_retry:       7200
-        soa_rname:       soa.net24.net.nz.
+        soa_rname:       soa.someorg.net.
         soa_serial:      2012070200
         soa_ttl:         None
         zone_id:         1
         zone_ttl:        24h
 
 root@dms3-master:/etc/bind# dig -t AXFR +noall +answer foo.bar.org @localhost
-foo.bar.org.		86400	IN	SOA	ns1.net24.net.nz. soa.net24.net.nz. 2012070200 7200 7200 604800 86400
-foo.bar.org.		86400	IN	NS	ns1.net24.net.nz.
-foo.bar.org.		86400	IN	NS	ns2.net24.net.nz.
-foo.bar.org.		86400	IN	SOA	ns1.net24.net.nz. soa.net24.net.nz. 2012070200 7200 7200 604800 86400
+foo.bar.org.		86400	IN	SOA	ns1.someorg.net. soa.someorg.net. 2012070200 7200 7200 604800 86400
+foo.bar.org.		86400	IN	NS	ns1.someorg.net.
+foo.bar.org.		86400	IN	NS	ns2.someorg.net.
+foo.bar.org.		86400	IN	SOA	ns1.someorg.net. soa.someorg.net. 2012070200 7200 7200 604800 86400
 root@dms3-master:/etc/bind# zone_tool delete_zone foo.bar.org
 
 Reflect the bind directory to the DR via etckeeper:
@@ -629,7 +630,7 @@ root@dms4-dr:/etc# git checkout dms3-master/master default/bind9
 Setting UP DR bind9 slave server on Replica
 -------------------------------------------
 
-Edit /etc/net24/server-admin-config/bind9/controls.conf and add each masters IP
+Edit /etc/dms/server-admin-config/bind9/controls.conf and add each masters IP
 address to the uncommented inet  allow line.  IPv4 address will have to be
 prefixed with '::ffff:' as by default Linux binds  v6 sockets to IPv4.
 
@@ -638,10 +639,10 @@ reconfig:
 
 root@dms3-master:/etc# zone_tool rsync_server_admin_config dms4-dr no_rndc
 
-Copy the /etc/net24/server-admin-config/bind9 directory to
+Copy the /etc/dms/server-admin-config/bind9 directory to
 /etc/bind/rsync-config 
 
-root@dms3-master:/etc# cp -a /etc/net24/server-admin-config/bind9/* /etc/bind/rsync-config
+root@dms3-master:/etc# cp -a /etc/dms/server-admin-config/bind9/* /etc/bind/rsync-config
 root@dms3-master:/etc# chown bind:bind /etc/bind/rsync-config/*
 
 Reflect the bind directory to the DR via etckeeper:
@@ -649,7 +650,7 @@ Reflect the bind directory to the DR via etckeeper:
 root@dms3-master:/etc# etckeeper commit
 
 root@dms4-dr:/etc# git fetch dms3-master
-root@dms4-dr:/etc# git checkout dms3-master/master net24/server-admin-config
+root@dms4-dr:/etc# git checkout dms3-master/master dms/server-admin-config
 
 To apply permissions on master to replica:
 
@@ -677,8 +678,8 @@ root@dms3-master:/etc# dms_start_as_replica dms4-dr.devel.net.nz
 Wait for synchronisation to be shown 15 - 20 minutes:
 
 root@dms4-dr:/etc# zone_tool show_replica_sg -v
-        sg_name:             net24-replica
-        config_dir:          /etc/net24/server-config-templates
+        sg_name:             someorg-replica
+        config_dir:          /etc/dms/server-config-templates
         master_address:      192.168.101.2
         master_alt_address:  192.168.102.2
         replica_sg:          True
@@ -724,14 +725,14 @@ root@dms3-master:/some/dir/with/zone/files# zone_tool load_zones *
 Setting up WSGI on apache
 -------------------------
 
-Include the /etc/net24/dms-wsgi-apache.conf fragment into the file
+Include the /etc/dms/dms-wsgi-apache.conf fragment into the file
 /etc/apache2/sites-available/default-ssl
 
 Set the apache log level to info, delete the cgi-bin section, and set up the 
 SSL certificates.
 
-Create the htpasswd file /etc/net24/htpasswd-dms, and set the passwords for
-admin-dms, net24-dms, 1stdomains-dms WSGI users.
+Create the htpasswd file /etc/dms/htpasswd-dms, and set the passwords for
+admin-dms, someorg-dms, provider1-dms WSGI users.
 
 Use a2ensite and a2dissite to enable the SSL default site
 
@@ -765,4 +766,4 @@ make sure WSGI is functional there.
  
 
 
- -- Matthew Grant <matthew.grant@net24.co.nz>  Mon, 18 Jun 2012 12:44:48 +1200
+ -- Matt Grant <matt@mattgrant.net.nz>  Fri, 07 Mar 2014 14:50:58 +1300

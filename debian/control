@@ -13,14 +13,16 @@ Package: dms-core
 Architecture: any
 Recommends: vim-nox, nano, colordiff
 Depends: ${misc:Depends}, ${python3:Depends},
-  postgresql (>= 9.1), postgresql (<< 9.2),
-  postgresql-client (>= 9.1), postgresql-client (<< 9.2),
+  python3-magcode-core,
+  postgresql (>= 9.1), postgresql (<< 9.4),
+  postgresql-client (>= 9.1), postgresql-client (<< 9.4),
   python3-sqlalchemy (>= 0.7),
   python3-psycopg2 (>= 2.4.5),
   python3-setproctitle (>= 1.1.6),
   python3-psutil (>= 0.4.1),
   python3-pyparsing (>= 1.5.6),
   python3-dnspython (>= 1.10),
+  netscript-ipfilter|netscript-2.4|iptables-persistent,
   haveged,
   racoon|ike-server,
   rsync,
@@ -52,7 +54,8 @@ Description: DNS Management System, WSGI JSON http RPC backend.
 
 Package: dms-dr
 Architecture: any
-Depends: ${misc:Depends}, ${python3:Depends}, dms-core (= ${binary:Version}), adduser, netscript-2.4, rsyslog-pgsql
+Depends: ${misc:Depends}, ${python3:Depends}, dms-core (= ${binary:Version}), adduser, rsyslog-pgsql
+Suggests: netscript-2.4
 Description: DNS Management System, DR scripts and setup.
  This is the DNS Management System, DR recovery scripts for running a 
  replica.
@@ -64,8 +67,8 @@ Description: DNS Management System, DR scripts and setup.
 
 Package: dms
 Architecture: any
-Depends: ${misc:Depends}, dms-wsgi (= ${binary:Version}), dms-core (= ${binary:Version}), dms-dr (= ${binary:Version}), etckeeper, ssh, netscript-2.4, vim-nox, nano, colordiff, snmpd, snmp, snmp-mibs-downloader, mail-transfer-agent | exim4
-Suggests: quagga
+Depends: ${misc:Depends}, dms-wsgi (= ${binary:Version}), dms-core (= ${binary:Version}), dms-dr (= ${binary:Version}), etckeeper, ssh, vim-nox, nano, colordiff, snmpd, snmp, snmp-mibs-downloader, mail-transfer-agent | exim4
+Suggests: quagga, netscript-2.4
 Description: DNS Management System, master server.
  This is the DNS Management System, the master server dummy install 
  package.

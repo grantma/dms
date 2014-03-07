@@ -29,17 +29,17 @@ case "$1" in
 			rm -rf /etc/postgresql/9.1/dms
 		fi
 		# Clean up Slave include  and log dirs
-		rm -rf /var/lib/net24/dms-sg
-		rm -rf /var/log/net24
+		rm -rf /var/lib/dms/dms-sg
+		rm -rf /var/log/dms
 
 		if which deluser > /dev/null 2>&1; then
-			deluser --quiet net24dmd bind > /dev/null || true
-			deluser --quiet --system net24dmd > /dev/null || true
-			deluser --quiet --system net24dms > /dev/null || true
+			deluser --quiet dmsdmd bind > /dev/null || true
+			deluser --quiet --system dmsdmd > /dev/null || true
+			deluser --quiet --system dms > /dev/null || true
 		fi
 		if which delgroup > /dev/null 2>&1; then
-			delgroup --quiet --system net24dmd > /dev/null || true
-			delgroup --quiet --system net24dms > /dev/null || true
+			delgroup --quiet --system dmsdmd > /dev/null || true
+			delgroup --quiet --system dms > /dev/null || true
 		fi
 	;;
 	remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)

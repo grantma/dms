@@ -23,11 +23,11 @@ DMSPGCONFDIR="/etc/postgresql/$PGVER/dms"
 case "$1" in
     configure)
 	# Add users and groups
-	if ! getent passwd net24dmd >/dev/null; then
-		adduser --quiet --system --group --no-create-home --home / --shell /bin/false net24dmd
+	if ! getent passwd dmsdmd >/dev/null; then
+		adduser --quiet --system --group --no-create-home --home / --shell /bin/false dmsdmd
 	fi
-	if ! getent passwd net24dms >/dev/null; then
-		adduser --quiet --system --group --no-create-home --home / --shell /bin/false net24dms
+	if ! getent passwd dmsdms >/dev/null; then
+		adduser --quiet --system --group --no-create-home --home / --shell /bin/false dms
 	fi
 	if ! getent passwd postgres > /dev/null; then
 		adduser --system --quiet --home /var/lib/postgresql \
@@ -37,31 +37,31 @@ case "$1" in
 	if ! getent group bind > /dev/null; then
 		addgroup --quiet --system bind
 	fi
-	if ! getent group bind | grep -q net24dmd; then
-		adduser net24dmd bind
+	if ! getent group bind | grep -q dmsdmd; then
+		adduser dmsdmd bind
 	fi
-	if ! getent group net24dms | grep -q net24dmd; then
-		adduser net24dmd net24dms
+	if ! getent group dms | grep -q dmsdmd; then
+		adduser dmsdmd dms
 	fi
 
 	# Setup permissions on various files and dirs
-	chown net24dmd:bind /etc/bind/master-config
+	chown dmsdmd:bind /etc/bind/master-config
 	chmod 2755 /etc/bind/master-config
-	chown bind:net24dmd /var/lib/bind/dynamic
+	chown bind:dmsdmd /var/lib/bind/dynamic
 	chmod 2775 /var/lib/bind/dynamic
-	chown bind:net24dmd /var/lib/bind/keys
+	chown bind:dmsdmd /var/lib/bind/keys
 	chmod 2775 /var/lib/bind/keys
-	chown net24dmd:net24dmd /var/lib/net24/dms-sg
-	chown net24dmd:net24dmd /var/log/net24
+	chown dmsdmd:dmsdmd /var/lib/dms/dms-sg
+	chown dmsdmd:dmsdmd /var/log/dms
 	chown root:bind /var/cache/bind/slave
 	chmod 775 /var/cache/bind/slave
 	# Files
-	chown root:net24dms /etc/net24/net24.conf
-	chmod 640 /etc/net24/net24.conf
-	chown root:net24dms /etc/net24/rsync-dnsconf-password
-	chmod 640 /etc/net24/rsync-dnsconf-password
-	chown root:net24dms /etc/net24/rsync-dnssec-password
-	chmod 640 /etc/net24/rsync-dnssec-password
+	chown root:dms /etc/dms/dms.conf
+	chmod 640 /etc/dms/dms.conf
+	chown root:dms /etc/dms/rsync-dnsconf-password
+	chmod 640 /etc/dms/rsync-dnsconf-password
+	chown root:dms /etc/dms/rsync-dnssec-password
+	chmod 640 /etc/dms/rsync-dnssec-password
 
 	# Set up kernel SHM
 	service procps reload

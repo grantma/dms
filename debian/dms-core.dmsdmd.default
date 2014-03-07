@@ -1,0 +1,10 @@
+# defaults file for dmsdmd
+
+# start dmsdmd from init.d script?
+#  only allowed values are "true", and "false"
+DMSDMD_ENABLE=false
+
+# Arguments for dmsdmd
+# it may be usefule to start with a different config file
+#DAEMON_ARGS="-c /etc/dms/dms.conf"
+

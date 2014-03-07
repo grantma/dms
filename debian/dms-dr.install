@@ -1,3 +1,3 @@
-usr/share/net24/dr_scripts
-etc/net24/pgpassfile
-etc/net24/dr-settings.sh
+usr/share/dms/dr_scripts
+etc/dms/pgpassfile
+etc/dms/dr-settings.sh

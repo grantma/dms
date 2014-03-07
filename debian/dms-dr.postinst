@@ -26,8 +26,8 @@ case "$1" in
 			--shell /bin/bash --group --gecos "PostgreSQL administrator" postgres
 	fi
 	# Setup permissions on various files and dirs
-	chown postgres:postgres /etc/net24/pgpassfile
-	chmod 600 /etc/net24/pgpassfile
+	chown postgres:postgres /etc/dms/pgpassfile
+	chmod 600 /etc/dms/pgpassfile
 	# DR slave config file...
 	chown bind:bind /etc/bind/rsync-config
 	chmod 755 /etc/bind/rsync-config
