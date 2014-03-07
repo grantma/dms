@@ -11,7 +11,7 @@
 # build-arch and build-indep targets  by Bill Allombert 2001
 
 # Uncomment this to turn on verbose mode.
-export DH_VERBOSE=1
+#export DH_VERBOSE=1
 
 export PYBUILD_NAME=dms
 
@@ -30,7 +30,6 @@ PYTHON3:=$(shell py3versions -vr)
 
 override_dh_python3:
 	dh_python3 /usr/share/dms
-	dh_python3 -p dms-dr /usr/share/dms/dr_scripts
 
 override_dh_auto_install:
 	$(MAKE) PREFIX=/usr DESTDIR=$(CURDIR)/debian/tmp install
