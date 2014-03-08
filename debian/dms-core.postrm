@@ -18,15 +18,16 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
+PGVER="9.3"
 
 case "$1" in
     	purge)
 		# Clean up postgresql database cluster
 		if [ -x /usr/bin/pg_dropcluster ]; then
-			pg_dropcluster --stop-server 9.1 dms
+			pg_dropcluster --stop-server ${PGVER} dms
 		else
-			rm -rf /var/lib/postgresql/9.1/dms
-			rm -rf /etc/postgresql/9.1/dms
+			rm -rf /var/lib/postgresql/${PGVER}/dms
+			rm -rf /etc/postgresql/${PGVER}/dms
 		fi
 		# Clean up Slave include  and log dirs
 		rm -rf /var/lib/dms/dms-sg

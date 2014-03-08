@@ -16,6 +16,7 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
+PGVER="9.3"
 
 case "$1" in
     remove)
@@ -24,11 +25,11 @@ case "$1" in
 	    dms_dumpdb > /dev/null 2>&1 || true
 	    # Turn off PGSQL dms cluster
 	    if [ -x /usr/bin/pg_ctlcluster ]; then
-	       	pg_ctlcluster 9.1 dms stop || true
+		pg_ctlcluster ${PGVER} dms stop || true
 	    fi
-	    if [ -f /etc/postgresql/9.1/dms/start.conf ]; then
+	    if [ -f /etc/postgresql/${PGVER}/dms/start.conf ]; then
 	        perl -pe 's/^auto/manual/' \
-			-i /etc/postgresql/9.1/dms/start.conf \
+			-i /etc/postgresql/${PGVER}/dms/start.conf \
 	            || true
 	    fi
 	fi
