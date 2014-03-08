@@ -20,7 +20,7 @@
 #    along with py-magcode-core.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-PGVERSION="9.1"
+PGVERSION="9.3"
 PGCLUSTER="dms"
 PGPASSWORDFILE="/etc/dms/pgpassfile"
 BIND9DYNAMICDIR="/var/lib/bind/dynamic"
