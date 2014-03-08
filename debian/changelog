@@ -47,7 +47,7 @@ dms (1.0rc3-1~2.gbpf3d559) UNRELEASED; urgency=medium
   * Add 'bind9' to DNS Management System
   * Correct PGVER control and package scripts to 9.3
 
- -- Matthew Grant <matthew.grant@net24.co.nz>  Sat, 08 Mar 2014 21:11:37 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 08 Mar 2014 21:11:37 +1300
 
 dms (0.111-1) unstable; urgency=low
 
