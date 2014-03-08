@@ -1,6 +1,6 @@
-dms (1.0rc3-1~2.gbpf3d559) UNRELEASED; urgency=medium
+dms (1.0rc3-1~3.gbpcfbb48) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @f3d55961f1328fc90bc6d2b03d5d668b27d05d16 **
+  ** SNAPSHOT build @cfbb48601c7267635fd8d6618225d2f5dda1a9c7 **
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -13,17 +13,6 @@ dms (1.0rc3-1~2.gbpf3d559) UNRELEASED; urgency=medium
   * Fix oping output with 2 DISABLED servers.
   * Update /debian to make package build
   * Update /debian files for python3-magcode-core
-  * Add debian packaging dir.
-  * Remove Net24 referenences from all these files.
-  * Fix Debian version string
-  * Fix email address and maintainer
-  * Fix __pycache__ in debian install dirs
-  * try to fix up build-dep
-  * Another tweak to try and get python3 depends
-  * Fix Python package version
-  * Trye something else...
-  * Update setup.py correctly
-  * REally fix version and setup.py problems...
   * Add debian packaging dir.
   * Remove Net24 referenences from all these files.
   * Fix Debian version string
@@ -46,8 +35,9 @@ dms (1.0rc3-1~2.gbpf3d559) UNRELEASED; urgency=medium
   * Adjust dependencies and recommends.
   * Add 'bind9' to DNS Management System
   * Correct PGVER control and package scripts to 9.3
+  * Fix DB version in postgres scripts and dr_scripts
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 08 Mar 2014 21:11:37 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 08 Mar 2014 21:35:11 +1300
 
 dms (0.111-1) unstable; urgency=low
 
