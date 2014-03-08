@@ -1,6 +1,6 @@
-dms (1.0rc3-1~1.gbpc14a0d) UNRELEASED; urgency=medium
+dms (1.0rc3-1~2.gbpf3d559) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @c14a0d8819c58d3ef64a11327746b32b09725e80 **
+  ** SNAPSHOT build @f3d55961f1328fc90bc6d2b03d5d668b27d05d16 **
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -24,8 +24,30 @@ dms (1.0rc3-1~1.gbpc14a0d) UNRELEASED; urgency=medium
   * Trye something else...
   * Update setup.py correctly
   * REally fix version and setup.py problems...
+  * Add debian packaging dir.
+  * Remove Net24 referenences from all these files.
+  * Fix Debian version string
+  * Fix email address and maintainer
+  * Fix __pycache__ in debian install dirs
+  * try to fix up build-dep
+  * Another tweak to try and get python3 depends
+  * Fix Python package version
+  * Correct setup.py
+  * Update setup.py correctly
+  * Trye something else...
+  * Update changelog for 1.0rc2-1~2.gbp9838d1 release
+  * REally fix version and setup.py problems...
+  * Update changelog for 1.0rc3-1~1.gbpc14a0d release
+  * Another debian/rules tweak...
+  * Fix dh_python3 private dir /usr/share/dms
+  * Add another python3 dir to scan
+  * Another go at dh_python3 private dirs
+  * Remove undeeded dh_python3 call
+  * Adjust dependencies and recommends.
+  * Add 'bind9' to DNS Management System
+  * Correct PGVER control and package scripts to 9.3
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 07 Mar 2014 21:25:52 +1300
+ -- Matthew Grant <matthew.grant@net24.co.nz>  Sat, 08 Mar 2014 21:11:37 +1300
 
 dms (0.111-1) unstable; urgency=low
 
