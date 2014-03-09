@@ -9,6 +9,11 @@ usr/share/dms/postgresql/dms_createdb usr/sbin/dms_dropdb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_admindb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_sqldb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_dumpdb
+usr/share/dms/postgresql/dms_createdb usr/sbin/dms_pg_basebackup
+usr/share/dms/postgresql/dms_createdb usr/sbin/dms_write_recovery_conf
+usr/share/dms/postgresql/dms_createdb usr/sbin/dms_move_xlog
+usr/share/dms/postgresql/dms_createdb usr/sbin/dms_replicadb
+usr/share/dms/postgresql/dms_createdb usr/sbin/dms_promotedb
 usr/share/dms/postgresql/pg_dumpallgz usr/sbin/pg_dumpallgz
 etc/bind/master var/lib/bind/master
 var/cache/bind/slave var/lib/bind/slave
