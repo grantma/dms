@@ -1,6 +1,6 @@
-dms (1.0rc3-1~3.gbpcfbb48) UNRELEASED; urgency=medium
+dms (1.0rc3-1~4.gbpf0d841) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @cfbb48601c7267635fd8d6618225d2f5dda1a9c7 **
+  ** SNAPSHOT build @f0d8416a20062641cb935ef09e921d734a12cf29 **
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -36,8 +36,9 @@ dms (1.0rc3-1~3.gbpcfbb48) UNRELEASED; urgency=medium
   * Add 'bind9' to DNS Management System
   * Correct PGVER control and package scripts to 9.3
   * Fix DB version in postgres scripts and dr_scripts
+  * Update Symlinks for dms_createdb and dr_scripts/dms_start_as_replica
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 08 Mar 2014 21:35:11 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 10 Mar 2014 12:20:32 +1300
 
 dms (0.111-1) unstable; urgency=low
 
