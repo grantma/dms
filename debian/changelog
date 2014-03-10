@@ -1,6 +1,6 @@
-dms (1.0rc3-1~7.gbp46715f) UNRELEASED; urgency=medium
+dms (1.0rc3-1~8.gbp33c247) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @46715f268702d031d6743fe7438c32890df2720f **
+  ** SNAPSHOT build @33c247884c3fb5745fae545d686dd67ba8fe8e01 **
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -41,8 +41,9 @@ dms (1.0rc3-1~7.gbp46715f) UNRELEASED; urgency=medium
   * Fix rsyncd.conf now not allowing chgrp()
   * Fix race condition - rsyslog with module reload
   * Fix typo with restarting rsyslog function call
+  * Correct error path exception in server_sm.py
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 10 Mar 2014 14:58:44 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 10 Mar 2014 23:24:59 +1300
 
 dms (0.111-1) unstable; urgency=low
 
