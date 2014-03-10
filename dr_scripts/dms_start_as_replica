@@ -301,7 +301,7 @@ dms_master_down () {
 	set -x
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	set +x
-	restart_rsyslog
+	rsyslog_restart
 	invoke-rc.d postgresql stop
 	set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
