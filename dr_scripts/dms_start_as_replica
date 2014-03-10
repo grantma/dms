@@ -152,6 +152,12 @@ dms_prepare_binddata () {
 	fi
 }
 
+rsyslog_restart () {
+	invoke-rc.d rsyslog stop
+	sleep 3
+	invoke-rc.d rsyslog start
+}
+
 turn_on_replica_services () {
 	set -x
 	if do_dms_drif; then
@@ -238,7 +244,7 @@ dms_promote_replica () {
 	set -x
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
-	invoke-rc.d rsyslog restart
+	rsyslog_restart
 	set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
 	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind\"/" -i $BIND9_DEFAULT
@@ -295,7 +301,7 @@ dms_master_down () {
 	set -x
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	set +x
-	invoke-rc.d rsyslog restart
+	rsyslog_restart
 	invoke-rc.d postgresql stop
 	set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
@@ -322,7 +328,7 @@ dms_master_up () {
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
 	invoke-rc.d postgresql start
-	invoke-rc.d rsyslog restart
+	rsyslog_restart
 	invoke-rc.d bind9 start
 	sleep 3
 	invoke-rc.d dmsdmd start
