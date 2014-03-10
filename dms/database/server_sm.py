@@ -409,7 +409,7 @@ class ServerSM(StateMachine):
             raise BrokenServer(msg)
         except (socket.error, OSError, IOError) as exc:
             if errno in (errno.EACCES, errno.EPERM, errno.ECONNREFUSED, 
-                    errno.ENETUNREACHABLE, errno.ETIMEDOUT):
+                    errno.ENETUNREACH, errno.ETIMEDOUT):
                 msg = ("Server '%s': SOA query - can't query server %s - %s"
                         % (self.name, self.address, exc.strerror))
                 raise CantSoaQueryServer(msg)
