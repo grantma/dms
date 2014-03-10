@@ -1,6 +1,6 @@
-dms (1.0rc3-1~4.gbpf0d841) UNRELEASED; urgency=medium
+dms (1.0rc3-1~5.gbp6ea6f1) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @f0d8416a20062641cb935ef09e921d734a12cf29 **
+  ** SNAPSHOT build @6ea6f183d0fb9843c3d07abe03636e4aeb1afe31 **
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -37,8 +37,9 @@ dms (1.0rc3-1~4.gbpf0d841) UNRELEASED; urgency=medium
   * Correct PGVER control and package scripts to 9.3
   * Fix DB version in postgres scripts and dr_scripts
   * Update Symlinks for dms_createdb and dr_scripts/dms_start_as_replica
+  * Lose NET24/VOYAGER from PG DB init SQL
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 10 Mar 2014 12:20:32 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 10 Mar 2014 13:19:25 +1300
 
 dms (0.111-1) unstable; urgency=low
 
