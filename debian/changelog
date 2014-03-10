@@ -1,6 +1,6 @@
-dms (1.0rc3-1~6.gbp99a898) UNRELEASED; urgency=medium
+dms (1.0rc3-1~7.gbp46715f) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @99a89877b05f914520dec8796c51e0f1892dc335 **
+  ** SNAPSHOT build @46715f268702d031d6743fe7438c32890df2720f **
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -39,8 +39,10 @@ dms (1.0rc3-1~6.gbp99a898) UNRELEASED; urgency=medium
   * Update Symlinks for dms_createdb and dr_scripts/dms_start_as_replica
   * Lose NET24/VOYAGER from PG DB init SQL
   * Fix rsyncd.conf now not allowing chgrp()
+  * Fix race condition - rsyslog with module reload
+  * Fix typo with restarting rsyslog function call
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 10 Mar 2014 13:55:11 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 10 Mar 2014 14:58:44 +1300
 
 dms (0.111-1) unstable; urgency=low
 
