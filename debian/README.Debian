@@ -54,6 +54,12 @@ you are reading this, create the .gitignore file, and reinstall etckeeper:
 # vi /etc/.gitignore
 # aptitude install etckeeper
 
+Now would be a good time to install dms on both Master and Replica
+
+# aptitude install dms
+
+as this will install scripts needed for ssh configuration following.
+
 1) Set up ssh.  As root on both boxes, turn off the following settings in
 sshd_config:
 
@@ -462,9 +468,44 @@ local7.* /var/log/local7.log
 local7.* :ompgsql:/var/run/postgresql,dms,rsyslog,
 -----
 
+IMPORTANT: On the Replica, comment out the last local7.* line.  Don't change
+the contents of that line, as the administration scripts go searching for
+exactly that line. Replica file is as follows:
+
+-----
+### Configuration file for rsyslog-pgsql
+### Changes are preserved
+
+$ModLoad ompgsql
+local7.* /var/log/local7.log
+#local7.* :ompgsql:/var/run/postgresql,dms,rsyslog,
+-----
+
 The default configuration propagated to the DMS servers uses local7 as the
 named logging facility.
 
+
+Setting up DR settings on both machines
+---------------------------------------
+
+On both machines, edit /etc/dms/dr-settings.sh, and set DR_PARTNER to the name
+of the oppopsite machine.
+
+dms3-master# vi /etc/dms/dr-settings.sh
+
+# Settings file for dr-scripts and Net24 PG database scripts
+
+# DR Partner server host name
+# ie default dms_start_as_replica master
+# This is the exact DNS/host name which you have to replicate from
+DR_PARTNER="dms4-d4-dr.someorg.net
+.
+.
+.
+
+The rest of the file is for type of DR fail over - by IP on a loop back
+interface and/or routing, or by a failover domain in the DNS.  We will set this
+up later.
 
 Setting up Bind9 master DNS server
 ----------------------------------
@@ -472,7 +513,7 @@ Setting up Bind9 master DNS server
 Copy the bind configuration segments from /usr/share/doc/dms-core/examples/bind
 to the /etc/bind directory:
 
-root@dms3-master:/etc/bind# cp /usr/share/doc/dms-core/examples/bind .
+root@dms3-master:/etc/bind# cp /usr/share/doc/dms-core/examples/bind/* .
 root@dms3-master:/etc/bind# chgrp bind named-dr-replica.conf named.conf.options named.conf.local
 
 Create all the required TSIG rndc and dynamic DNS update keys, and generate
@@ -528,7 +569,7 @@ server is up and running
 Enable dmsdmd, the dynamic DNS update and DMS event daemon by editing
 /etc/default/dmsdmd, setting DMSDMD_ENABLE=true, and start it:
 
-root@dms3-master:/etc# vi /etc/bind/dmsdmd
+root@dms3-master:/etc# vi /etc/default/dmsdmd
 root@dms3-master:/etc# service dmsdmd start
 [ ok ] Starting dmsdmd: dmsdmd.
 root@dms3-master:/etc# service dmsdmd status
@@ -678,7 +719,7 @@ root@dms3-master:/etc# dms_start_as_replica dms4-dr.devel.net.nz
 Wait for synchronisation to be shown 15 - 20 minutes:
 
 root@dms4-dr:/etc# zone_tool show_replica_sg -v
-        sg_name:             someorg-replica
+        sg_name:             someorg-master
         config_dir:          /etc/dms/server-config-templates
         master_address:      192.168.101.2
         master_alt_address:  192.168.102.2
