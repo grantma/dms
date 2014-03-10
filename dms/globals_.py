@@ -164,7 +164,7 @@ settings['this_servers_addresses'] = []
 settings['rsync_path'] = 'rsync'
 settings['rsync_password_file'] = settings['config_dir'] \
                 + '/' + 'rsync-dnsconf-password'
-settings['rsync_args'] = '--quiet -av'
+settings['rsync_args'] = '--quiet -rptv'
 settings['rsync_target_user'] = 'dnsconf'
 settings['rsync_target_module'] = 'dnsconf'
 settings['rsync_target'] = (settings['rsync_target_user'] + '@%s::' 

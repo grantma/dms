@@ -54,7 +54,7 @@ SELECT pg_catalog.setval('zone_sectags_id_seq', 9543, true);
 -- Data for Name: server_groups; Type: TABLE DATA; Schema: public; Owner: pgsql
 --
 
-INSERT INTO server_groups (id, name, config_dir, zone_count, master_address) VALUES (1, 'dms-one', NULL, 0, NULL);
+INSERT INTO server_groups (id, name, config_dir, zone_count, master_address) VALUES (1, 'someorg-one', NULL, 0, NULL);
 
 
 --
@@ -62,7 +62,7 @@ INSERT INTO server_groups (id, name, config_dir, zone_count, master_address) VAL
 --
 
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (1, 'auto_dnssec', 'false', NULL);
-INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (2, 'default_ref', 'VOYAGERNET-NZ', NULL);
+INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (2, 'default_ref', 'SOMEORG-NET', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (4, 'default_stype', 'bind9', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (5, 'edit_lock', 'false', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (6, 'event_max_age', '120.0', NULL);
@@ -70,19 +70,19 @@ INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (7, 'inc_updates', 'false', 
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (8, 'nsec3', 'false', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (9, 'soa_expire', '7d', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (10, 'soa_minimum', '1h', NULL);
-INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (11, 'soa_mname', 'ns1.foo.bar.net.', 1);
+INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (11, 'soa_mname', 'ns1.someorg.net.', 1);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (12, 'soa_refresh', '2h', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (13, 'soa_retry', '900', NULL);
-INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (14, 'soa_rname', 'soa.foo.bar.net.', NULL);
+INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (14, 'soa_rname', 'soa.someorg.net.', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (15, 'use_apex_ns', 'true', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (16, 'zi_max_age', '90.0', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (17, 'zi_max_num', '25', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (18, 'zone_del_age', '0.0', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (26, 'zone_del_pare_age', '90.0', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (19, 'zone_ttl', '1h', NULL);
-INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (23, 'apex_ns', 'ns2.foo.bar.net.', 1);
-INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (24, 'apex_ns', 'ns1.foo.bar.net.', 1);
-INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (3, 'default_sg', 'dms-one', NULL);
+INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (23, 'apex_ns', 'ns2.someorg.net.', 1);
+INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (24, 'apex_ns', 'ns1.someorg.net.', 1);
+INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (3, 'default_sg', 'someorg-one', NULL);
 INSERT INTO zone_cfg (id, key, value, sg_id) VALUES (25, 'syslog_max_age', '120.0', NULL);
 
 
