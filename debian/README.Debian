@@ -6,6 +6,28 @@ setup. It is a complex setup, requiring the hand configuration of database, DNS
 server, and other components. If your setup does not require one of the
 components such as quagga, dms-wsgi, or etckeeper, just skip that section.
 
+DNS Topology
+------------
+
+The description below will set up a Master DR setup with hidden master DNS.
+Other topogies are possible, which are useful for smaller environments.  You
+can run without DR, and the Master server can also be 'unhidden' on the
+Internet itself.  Just take what you need from below.
+
+A PDF of the Wiki for DMS for when it was internal to Net24 is avaliable up at
+
+http://mattgrant.net.nz/softwrae/dms.
+
+It is advisable to get this and read it, as it will explain a lot of how this
+all functions.
+
+There is a wiki documentation area to be set up, keep an eye on 
+
+http://mattgrant.net.nz/software/dms
+
+for news of this.
+
+
 etckeeper and ssh
 -----------------
 
@@ -485,8 +507,8 @@ The default configuration propagated to the DMS servers uses local7 as the
 named logging facility.
 
 
-Setting up DR settings on both machines
----------------------------------------
+Setting initial DR settings on both machines
+--------------------------------------------
 
 On both machines, edit /etc/dms/dr-settings.sh, and set DR_PARTNER to the name
 of the oppopsite machine.
@@ -755,12 +777,78 @@ created and managed.
 root@dms3-master:/etc# zone_tool create_zone 2001:2e8:2012::/32 inc_updates
 
 Import all the zones. First of all, load the apex zone which contains the
-ns1/ns2 records with no_update_apex_ns, then load all the rest. Its an idea to
+ns1/ns2 records with no_use_apex_ns, then load all the rest. Its an idea to
 have a look at the edit_lock flag at the same time for those top zone(s).  Note
 that zone_tool load_zones requires all files to be named by full domain name.
 
 root@dms3-master:/some/dir/with/zone/files# zone_tool load_zone foo.bar.net foo.bar.net no_use_apex_ns edit_lock
 root@dms3-master:/some/dir/with/zone/files# zone_tool load_zones *
+
+Setting up failover domain
+--------------------------
+
+This is the easiest way to repoint the Web UIs at the correct master server.
+Anothe alternative is to use a loop back interface with a floating IP address,
+and propagation via routing or simply by being on the ethernet segment. At the
+moment the itnerface method requires the installation of netscript-2.4 instead
+of ifupdown.
+
+1. Create a failover domain
+
+This needs to be updateable by incremental updates
+---
+zone_tool > create_zone failover.somorg.net inc_updates
+---
+
+2. Edit /etc/dms/dr-settings.sh, enable DMSDRDNS, set DMS_FAILOVER_DOMAIN, 
+the DMS_WSGI_LABEL (DNS host that 'floats' to where master is), and the TTL
+
+----
+# zone_tool update_rrs settings, for WSGI DNS name  
+# Uses a CNAME based template.
+# Following is a flag to turn it on or off
+DMSDRDNS=true
+
+# If not defined or empty, the following is set to the hostname
+DMS_MASTER=""
+
+DMS_FAILOVER_DOMAIN="failover.someorg.net."
+
+DMS_WSGI_LABEL="dms-server"
+
+DMS_WSGI_TTL="30s"
+
+DMS_UPDATE_RRS_TEMPLATE='
+$ORIGIN @@DMS_FAILOVER_DOMAIN@@
+$UPDATE_TYPE wsgi-failover
+;!RROP:UPDATE_RRTYPE
+@@DMS_WSGI_LABEL@@  @@DMS_WSGI_TTL@@  IN      CNAME      @@DMS_MASTER@@
+'
+----
+
+3. Repeat 2. on DR server
+
+4. Fail over system back and forth to establish DNS records and test
+
+dms-master1 # dms_master_down
+dms-master2 # dms_promote_replica
+dms-master1 # dms_start_as_replica
+.
+.
+.
+and reverse:
+.
+.
+.
+dms-master2 # dms_master_down
+dms-master1 # dms_promote_replica
+dms-master2 # dms_start_as_replica
+
+ 
+
+
+And you should be good to go, with a DMS WSGI server name of
+"dms-server.failover.someorg.net." 
 
 
 Setting up WSGI on apache
@@ -773,7 +861,13 @@ Set the apache log level to info, delete the cgi-bin section, and set up the
 SSL certificates.
 
 Create the htpasswd file /etc/dms/htpasswd-dms, and set the passwords for
-admin-dms, someorg-dms, provider1-dms WSGI users.
+admin-dms, helpdesk-dms, value-reseller-dms, hosted-dms WSGI users.
+
+Also don't forget to:
+
+dms-master1 # cd /etc/dms
+dms-master1 # chown root:www-data htpasswd-dms
+dms-master1 # chmod 640 htpasswd-dms
 
 Use a2ensite and a2dissite to enable the SSL default site
 
@@ -797,14 +891,306 @@ test4.jsonrpc uses list_zone, so try that first to check WSGI is live.
 
 # ./json-test.sh test4
 
+It is helpful to edit curl command to include --insecure if you are using a
+self-signed SSL cert 
+
 It may take a while before anything shows up if you have imported tens of
 thousands of zone.  Full error information will be shown in the configured
 apache error log  /var/log/apache2/error.log.  You can also try some of the
 other example tests as well after editing them for the current setup.
 
+Edit the WSGI configuration in /etc/dms to your liking. See documentation for
+more details.
+
+Mirror apache2 config to other DR partner server.
+
+dms-master1 # etckeeper commit
+
+dms-master2 # cd /etc
+dms-master2 # git fetch dms-master1
+dms-master2 # git checkout dms-master1/master apache2 dms/htpasswd-dms \
+               dms/dms-wsgi-apache.conf dms/wsgi-scripts
+
 NOTE: Also try some of the readonly tests on the other DR partner server to
-make sure WSGI is functional there.
+make sure WSGI is functional there. You will have to tail over to do this.
  
 
+=================================
+Setting up a Slave DNS Server
+=================================
+
+Based on Debian Wheezy.  
+
+Has 2 connections back to DMS DR partner servers.  You can leave one
+server out for racoon if only running one single DMS master server.
+
+No prevent installation of recommended packages add the following to
+/etc/apt/apt.conf.d/00local.conf:
+
+----
+// No point in installing a lot of fat on VM servers
+APT::Install-Recommends "0";
+APT::Install-Suggests "0";
+----
+
+Install these packages:
+
+----
+# aptitude install bind9 racoon rsync cron-apt bind9-host \
+screen psmisc procps tree sysstat lsof telnet-ssl open-vm-tools apache2-utils
+----
+
+Select raccon-tool method of raccon configuration
+
+Sysctl IPSEC settings
+---------------------
+
+To prevent network problems with running out of buffers, create the file
+/etc/sysctl.d/30-dms-core-net.conf with the following contents:
+
+----
+# Tune kernel for heavy IPSEC DNS work.
+# Up the max connection buffers
+net.core.somaxconn=8192
+net.core.netdev_max_backlog=8192
+# Reduce TCP final timeout
+net.ipv4.tcp_fin_timeout=10
+# Increase size of xfrm tables
+net.ipv6.xfrm6_gc_thresh=16384
+net.ipv4.xfrm4_gc_thresh=16384
+----
+
+and then reload sysctls with
+
+# service procps start
+
+Racoon
+------
+
+Edit /etc/racoon/racoon-tool.conf
+
+----
+connection(%default):
+	src_ip: 2001:db8:c:110e::2
+	admin_status: disabled
+
+peer(2001:db8:f012:2::2):
+
+# DMS Master 1
+connection(dms-master1):
+	dst_ip: 2001:db8:f012:2::2
+	admin_status: enabled
+
+# DMS Master 2
+peer(2001:db8:f012:2::3):
+
+connection(dms-master2):
+	dst_ip: 2001:db8:f012:2::3
+	admin_status: enabled
+----
+
+Note that IPSEC connections to each DMS master server have to be configured on
+each Slave.
+
+Edit /etc/racoon/psk.txt to set PSK secrets. Generate with
+
+----
+# pwgen -asn 128 1
+pc2hPFZOFt8WfksKKv7ku6nApsgrun2jqkqeTycfoYR9AlA8zqm65KEQe0qcpsEWGUjUeksh2BnEPKczQUEbbHuga5XGkq1iR4eG5S23RMTnapgSLPE6AtXnMVC6z2rx
+----
+
+(You can apt-get install it). Make SURE each individual IPSEC connection has a
+unique PSK key for security. They can be generated easily, and cut/paste over
+terminal root session, so no big loss if they are lost.
+
+Rsync
+-----
+
+1. Edit /etc/default/rsync, and enable rsyncd
+
+2. Create /etc/rsyncd.conf:
+
+----
+hosts allow = 2001:db8:f012:2::2/128 2001:db8:f012:2::3/128
+secrets file = /etc/rsyncd.secrets
+
+[dnsconf]
+	path = /etc/bind/rsync-config
+	uid=bind
+	gid=bind
+	comment = Slave server config area
+	auth users = dnsconf
+	use chroot = yes
+	read only = no
+----
+
+3. Create /etc/rsyncd.secrets
+
+----
+dnsconf:SuperSecretRsyncSlavePasswoord
+----
+
+4. Do this at the shell to create target /etc/bind/rsync-config directory:
+
+----
+# mkdir /etc/bind/rsync-config
+# chown bind:bind /etc/bind/rsync-config
+----
+
+5. And named slave directory
+
+----
+# mkdir /var/cache/bind/slave
+# chown root:bind /var/cache/bind/slave
+# chmod 775 /var/cache/bind/slave
+----
+
+6. Start rsyncd
+
+Edit /etc/default/rsync to enable daemon
+----
+# service rsync start
+----
+
+7. Test connectivity from DMS Masters
+
+----
+dms-master1# telnet new-slave domain
+dms-master1# telnet new-slave rsync
+dms-master1# telnet new-slave 973
+dms-master2# telnet new-slave domain
+dms-master2# telnet new-slave rsync
+dms-master2# telnet new-slave 973
+
+Test by rsyncing config to slave - needed for configuring bind9
+
+zone_tool> create_server new-slave-name ip-address
+zone_tool> rsync_admin_config no_rndc
+
+----
+
+Bind9
+-----
+
+Change /etc/bind/named.conf.options to the following:
+
+----
+options {
+directory "/var/cache/bind";
+        // If there is a firewall between you and nameservers you want
+        // to talk to, you may need to fix the firewall to allow multiple
+        // ports to talk. See http://www.kb.cert.org/vuls/id/800113
+        // If your ISP provided one or more IP addresses for stable
+        // nameservers, you probably want to use them as forwarders.
+        // Uncomment the following block, and insert the addressesm replacing
+        // the all-0's placeholder.
+
+        // forwarders {
+        //       0.0.0.0;
+        // };
+
+//========================================================================
+// If BIND logs error messages about the root key being expired,
+// you will need to update your keys. See https://www.isc.org/bind-keys
+//========================================================================
+       // dnssec-validation auto;
+       // auth-nxdomain no; # conform to RFC1035
+
+       listen-on { localhost; };
+       listen-on-v6 { any; };
+       include "/etc/bind/rsync-config/options.conf";
+};
+----
+
+Note that the listen directives are given in file, Debian options commented
+out, as they are set in the rsynced include at the bottom.
+
+Change /etc/bind/named.conf.local to the following:
+
+----
+//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
+// rndc config
+include "/etc/bind/rndc.key";
+include "/etc/bind/rsync-config/rndc-remote.key";
+include "/etc/bind/rsync-config/controls.conf";
+// Logging configuration
+include "/etc/bind/rsync-config/logging.conf";
+// Secondary zones
+include "/etc/bind/rsync-config/bind9.conf";
+
+----
+
+This file is used to include all the required bits from the
+/etc/bind/rsync-config directory. All this configuration can now be updated
+from the master server, and the slave reconfigured – but watch it when you go
+changing the rndc keys.
+
+Restart bind9
+----
+# touch /etc/bind/rsync-config/bind9.conf
+# chown bind:bind /etc/bind/rsync-config/bind9.conf
+
+# service bind9 restart
+----
+
+and check /var/log/syslog for any errors.
+
+Check that on the master servers that zone_tool rsync_admin_config works - it
+by default will rndc the slave
+
+----
+
+dms-master1# zone_tool write_rndc_conf
+dms-master1# zone_tool rsync_server_admin_config new-server
+
+dms-master2# zone_tool write_rndc_conf
+dms-master2# zone_tool rsync_server_admin_config new-server
+
+----
+
+Enable Server
+-------------
+
+On the live DMS master, enable the slave, and watch that it changes state to
+OK. This may take 15-20 minutes
+
+NOTE: a reconfig_sg may be needed to initial seed zone config files on master.
+These files are autmatically created/updated if a new domain is added to the
+server group.
+
+----
+
+dms-master-live# zone_tool
+zone_tool > enable_server <slave-name>
+zone_tool > reconfig_sg someorg-one    .
+.
+.
+zone_tool > ls_pending_events
+ServerSMCheckServer       dms-master2                  Fri Mar 14 11:28:55 2014
+ServerSMConfigure         dms-slave1                   Fri Mar 14 11:31:35 2014
+ServerSMCheckServer       dms-master1                  Fri Mar 14 11:28:54 2014
+.
+.
+.
+zone_tool > show_sg someorg-one
+        sg_name:             someorg-one
+        config_dir:          /etc/dms/server-config-templates
+        master_address:      None
+        master_alt_address:  None
+        replica_sg:          False
+        zone_count:          4
+
+        DNS server status:
+        dms-slave1                   fd14:828:ba69:7::18                     
+                OK
+zone_tool >
+----
 
  -- Matt Grant <matt@mattgrant.net.nz>  Fri, 07 Mar 2014 14:50:58 +1300
