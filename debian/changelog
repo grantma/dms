@@ -1,3 +1,9 @@
+dms (1.0-1) unstable; urgency=medium
+
+  * Change version number for git-buildpackage
+
+ -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 14 Mar 2014 15:44:53 +1300
+
 dms (1.0~rc4-1) unstable; urgency=medium
 
   * Add debian packaging dir.
