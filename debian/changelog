@@ -1,4 +1,4 @@
-dms (1.0rc4-1) unstable; urgency=medium
+dms (1.0~rc4-1) unstable; urgency=medium
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
