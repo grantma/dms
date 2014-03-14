@@ -1,6 +1,4 @@
-dms (1.0rc3-1~8.gbp33c247) UNRELEASED; urgency=medium
-
-  ** SNAPSHOT build @33c247884c3fb5745fae545d686dd67ba8fe8e01 **
+dms (1.0rc4-1) unstable; urgency=medium
 
   * Add debian packaging dir.
   * Add rudimentary README and INSTALL files
@@ -42,8 +40,9 @@ dms (1.0rc3-1~8.gbp33c247) UNRELEASED; urgency=medium
   * Fix race condition - rsyslog with module reload
   * Fix typo with restarting rsyslog function call
   * Correct error path exception in server_sm.py
+  * Add fully updated README.Debian
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 10 Mar 2014 23:24:59 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 14 Mar 2014 15:33:11 +1300
 
 dms (0.111-1) unstable; urgency=low
 
