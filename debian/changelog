@@ -1,3 +1,9 @@
+dms (1.0-3) unstable; urgency=medium
+
+  * Make snmp-mibs-downloader a suggested package.
+
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 22 Mar 2014 13:46:14 +1300
+
 dms (1.0-2) unstable; urgency=medium
 
   * Change version number for git-buildpackage
