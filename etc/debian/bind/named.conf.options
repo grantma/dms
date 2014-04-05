@@ -4,7 +4,7 @@
 // ACLs need to be configured here for use in options...
 
 // include public SG ACL 
-include "/etc/bind/master-config/server-acl.conf";
+include "/var/lib/dms/master-config/server-acl.conf";
 
 options {
 	directory "/var/cache/bind";

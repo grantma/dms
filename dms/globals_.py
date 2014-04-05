@@ -110,7 +110,8 @@ settings['apex_comment_template'] = 'Apex resource records for %s'
 settings['edit_lock_timeout'] = 30 # minutes
 if (settings['os_family'] == 'Linux'):
     settings['master_bind_config_dir'] = '/etc/bind'
-    settings['master_config_dir'] = '/etc/bind/master-config'
+    settings['master_config_dir'] = settings['var_lib_dir'] \
+                                     + '/' + 'master-config'
     settings['master_dyndns_dir'] = '/var/lib/bind/dynamic'
     settings['master_slave_dir'] = '/var/lib/bind/slave'
     settings['master_static_dir'] = '/var/lib/bind/static'

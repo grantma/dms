@@ -34,7 +34,7 @@ CONFSUBDIRS :=  master-config-templates config-templates server-config-templates
 	server-admin-config
 CONFFILES = dms.conf rsync-dnsconf-password rsync-dnssec-password pgpassfile \
 	    dr-settings.sh
-MASTERINCFILES = master-server-acl.conf master-config.conf
+MASTERINCFILES = server-acl.conf zones.conf
 WSGISCRIPTS = admin_dms.wsgi helpdesk_dms.wsgi value_reseller_dms.wsgi \
 	      hosted_dms.wsgi
 LISTZONEWSGISCRIPTS = list_zone.wsgi
@@ -42,8 +42,6 @@ ifeq ($(OSNAME), Linux)
 	PREFIX=/usr/local
 	CONFDIR=$(DESTDIR)$(ETCDIR)/dms
 	SYSCTLDIR=$(DESTDIR)$(ETCDIR)/sysctl.d
-	NAMEDCONFDIR=$(DESTDIR)$(ETCDIR)/bind/master-config
-	NAMEDSERVERCONFDIR=$(DESTDIR)$(ETCDIR)/bind/rsync-config
 	NAMEDDATADIR=$(DESTDIR)/var/lib/bind
 	NAMEDDYNAMICDIR=$(DESTDIR)/var/lib/bind/dynamic
 	NAMEDKEYDIR=$(DESTDIR)/var/lib/bind/keys
@@ -54,6 +52,8 @@ ifeq ($(OSNAME), Linux)
 	NAMEDMASTERLN=$(DESTDIR)/var/lib/bind/master
 	NAMEDMASTERDIR=$(DESTDIR)$(ETCDIR)/bind/master
 	VARCONFDIR=$(DESTDIR)/var/lib/dms
+	NAMEDCONFDIR=$(DESTDIR)$(VARCONFDIR)/master-config
+	NAMEDSERVERCONFDIR=$(DESTDIR)$(VARCONFDIR)/rsync-config
 	LOGDIR=$(DESTDIR)/var/log/dms
 	RUNDIR=$(DESTDIR)/run/dms
 	BACKUPDIR=$(DESTDIR)/var/backups

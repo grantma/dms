@@ -16,5 +16,5 @@ include "/etc/bind/update-session.key";
 // Log in unison with other DMS slave/replica servers
 include "/etc/dms/server-admin-config/bind9/logging.conf";
 
-include "/etc/bind/master-config/zones.conf";
+include "/var/lib/dms/master-config/zones.conf";
 
