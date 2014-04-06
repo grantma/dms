@@ -1,5 +1,5 @@
-include "/etc/bind/rndc-local.key";
-include "/etc/bind/rndc-remote.key";
+include "/etc/dms/bind/rndc-local.key";
+include "/etc/dms/bind/rndc-remote.key";
 
 options {
 	default-key "rndc-key";

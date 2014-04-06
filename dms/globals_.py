@@ -211,7 +211,7 @@ settings['rndc_header_template'] = settings['config_template_dir'] \
                                     + '/rndc.conf-header'
 settings['rndc_server_template'] = settings['config_template_dir'] \
                                     + '/rndc.conf-server'
-settings['rndc_conf_file'] = settings['master_bind_config_dir'] + '/rndc.conf'
+settings['rndc_conf_file'] = settings['var_lib_dir'] + '/rndc' + '/rndc.conf'
 settings['rndc_conf_file_mode'] = '00644'
 settings['server_admin_config_dir'] = settings['config_dir'] \
                                         + '/server-admin-config'
