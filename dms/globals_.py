@@ -66,6 +66,8 @@ settings['nsupdate_arguments'] = ""
 # The following works because of the import at the top!
 if (settings['os_family'] == 'FreeBSD'):
     settings['dyndns_key_file'] = '/etc/namedb/update-session.key'
+elif (settings['os_family'] == 'Linux'):
+    settings['dyndns_key_file'] = '/etc/dms/bind/update-session.key'
 else:
     settings['dyndns_key_file'] = '/etc/bind/update-session.key'
 settings['dyndns_key_name'] = 'update-ddns'
