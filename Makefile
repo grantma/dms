@@ -34,6 +34,7 @@ CONFSUBDIRS :=  master-config-templates config-templates server-config-templates
 	server-admin-config
 CONFFILES = dms.conf rsync-dnsconf-password rsync-dnssec-password pgpassfile \
 	    dr-settings.sh
+CONFBINDFILES = named.conf named.conf.options named.conf.local named-dr-replica.conf
 MASTERINCFILES = server-acl.conf zones.conf
 WSGISCRIPTS = admin_dms.wsgi helpdesk_dms.wsgi value_reseller_dms.wsgi \
 	      hosted_dms.wsgi
@@ -191,9 +192,15 @@ endif
 	for f in $(MASTERINCFILES); do \
 		touch $(NAMEDCONFDIR)/$$f; \
 	done
+	for f in $(CONDBINDFILES); do \
+		$(INSTALL) $${f} $(CONFBINDDIR); \
+	done
 ifndef DMS_DEB_BUILD
 	for f in $(MASTERINCFILES); do \
 		chown $(DAEMONUSER):bind $(NAMEDCONFDIR)/$$f; \
+	done
+	for f in $(CONDBINDFILES); do \
+		chown root:bind $(CONFBINDDIR)/$$f; \
 	done
 endif
 ifeq ($(OSNAME), Linux)
