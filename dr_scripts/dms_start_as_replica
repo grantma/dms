@@ -249,7 +249,7 @@ dms_promote_replica () {
 	rsyslog_restart
 	set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND_NAMED_CONF}\"@" -i $BIND9_DEFAULT
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	set +x
 	invoke-rc.d bind9 restart
 	# Settle time
