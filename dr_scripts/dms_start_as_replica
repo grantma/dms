@@ -29,6 +29,8 @@ PROGNAME="`basename $0`"
 APACHE2_DEFAULT="/etc/default/apache2"
 BIND9_EXTRA_OPTIONS=""
 BIND9_DR_SERVER_OPTIONS=""
+BIND9_NAMED_CONF="/etc/dms/bind/named.conf"
+BIND9_DR_NAMED_CONF="/etc/dms/bind/named-dr-replica.conf"
 BIND9_DEFAULT="/etc/default/bind9"
 DMSDMD_DEFAULT="/etc/default/dmsdmd"
 DMS_CRONTAB="/etc/cron.d/dms-core"
@@ -169,7 +171,7 @@ turn_on_replica_services () {
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
-	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c \/etc\/bind\/named-dr-replica.conf\"/" -i $BIND9_DEFAULT
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	set +x
 }
 
@@ -247,7 +249,7 @@ dms_promote_replica () {
 	rsyslog_restart
 	set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
-	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind\"/" -i $BIND9_DEFAULT
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	set +x
 	invoke-rc.d bind9 restart
 	# Settle time
@@ -305,7 +307,7 @@ dms_master_down () {
 	invoke-rc.d postgresql stop
 	set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
-	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c \/etc\/bind\/named-dr-replica.conf\"/" -i $BIND9_DEFAULT
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 
 }
 
@@ -324,7 +326,7 @@ dms_master_up () {
 	fix_up_apache2_default
 	set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
-	perl -pe "s/^OPTIONS=.*$/OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind\"/" -i $BIND9_DEFAULT
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
 	invoke-rc.d postgresql start

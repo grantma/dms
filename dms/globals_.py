@@ -66,6 +66,8 @@ settings['nsupdate_arguments'] = ""
 # The following works because of the import at the top!
 if (settings['os_family'] == 'FreeBSD'):
     settings['dyndns_key_file'] = '/etc/namedb/update-session.key'
+elif (settings['os_family'] == 'Linux'):
+    settings['dyndns_key_file'] = '/etc/dms/bind/update-session.key'
 else:
     settings['dyndns_key_file'] = '/etc/bind/update-session.key'
 settings['dyndns_key_name'] = 'update-ddns'
@@ -110,7 +112,8 @@ settings['apex_comment_template'] = 'Apex resource records for %s'
 settings['edit_lock_timeout'] = 30 # minutes
 if (settings['os_family'] == 'Linux'):
     settings['master_bind_config_dir'] = '/etc/bind'
-    settings['master_config_dir'] = '/etc/bind/master-config'
+    settings['master_config_dir'] = settings['var_lib_dir'] \
+                                     + '/' + 'master-config'
     settings['master_dyndns_dir'] = '/var/lib/bind/dynamic'
     settings['master_slave_dir'] = '/var/lib/bind/slave'
     settings['master_static_dir'] = '/var/lib/bind/static'
@@ -210,7 +213,7 @@ settings['rndc_header_template'] = settings['config_template_dir'] \
                                     + '/rndc.conf-header'
 settings['rndc_server_template'] = settings['config_template_dir'] \
                                     + '/rndc.conf-server'
-settings['rndc_conf_file'] = settings['master_bind_config_dir'] + '/rndc.conf'
+settings['rndc_conf_file'] = settings['var_lib_dir'] + '/rndc' + '/rndc.conf'
 settings['rndc_conf_file_mode'] = '00644'
 settings['server_admin_config_dir'] = settings['config_dir'] \
                                         + '/server-admin-config'

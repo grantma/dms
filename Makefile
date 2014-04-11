@@ -34,16 +34,16 @@ CONFSUBDIRS :=  master-config-templates config-templates server-config-templates
 	server-admin-config
 CONFFILES = dms.conf rsync-dnsconf-password rsync-dnssec-password pgpassfile \
 	    dr-settings.sh
-MASTERINCFILES = master-server-acl.conf master-config.conf
+CONFBINDFILES = named.conf named.conf.options named.conf.local named-dr-replica.conf
+MASTERINCFILES = server-acl.conf zones.conf
 WSGISCRIPTS = admin_dms.wsgi helpdesk_dms.wsgi value_reseller_dms.wsgi \
 	      hosted_dms.wsgi
 LISTZONEWSGISCRIPTS = list_zone.wsgi
 ifeq ($(OSNAME), Linux)
 	PREFIX=/usr/local
 	CONFDIR=$(DESTDIR)$(ETCDIR)/dms
+	CONFBINDDIR=$(DESTDIR)$(ETCDIR)/dms/bind
 	SYSCTLDIR=$(DESTDIR)$(ETCDIR)/sysctl.d
-	NAMEDCONFDIR=$(DESTDIR)$(ETCDIR)/bind/master-config
-	NAMEDSERVERCONFDIR=$(DESTDIR)$(ETCDIR)/bind/rsync-config
 	NAMEDDATADIR=$(DESTDIR)/var/lib/bind
 	NAMEDDYNAMICDIR=$(DESTDIR)/var/lib/bind/dynamic
 	NAMEDKEYDIR=$(DESTDIR)/var/lib/bind/keys
@@ -54,6 +54,9 @@ ifeq ($(OSNAME), Linux)
 	NAMEDMASTERLN=$(DESTDIR)/var/lib/bind/master
 	NAMEDMASTERDIR=$(DESTDIR)$(ETCDIR)/bind/master
 	VARCONFDIR=$(DESTDIR)/var/lib/dms
+	NAMEDCONFDIR=$(DESTDIR)$(VARCONFDIR)/master-config
+	NAMEDSERVERCONFDIR=$(DESTDIR)$(VARCONFDIR)/rsync-config
+	RNDCCONFDIR=$(DESTDIR)$(VARCONFDIR)/rndc
 	LOGDIR=$(DESTDIR)/var/log/dms
 	RUNDIR=$(DESTDIR)/run/dms
 	BACKUPDIR=$(DESTDIR)/var/backups
@@ -64,8 +67,10 @@ ifeq ($(OSNAME), Linux)
 else ifeq ($(OSNAME), FreeBSD)
 	PREFIX = /usr/local
 	CONFDIR = $(DESTDIR)$(PREFIX)$(ETCDIR)/dms
+	CONFBINDDIR=$(DESTDIR)$(PREFIX)$(ETCDIR)/dms/bind
 	NAMEDCONFDIR=$(DESTDIR)$(ETCDIR)/namedb/master-config
 	NAMEDSERVERCONFDIR=$(DESTDIR)$(ETCDIR)/namedb/rsync-config
+	RNDCCONFDIR=$(DESTDIR)$(ETCDIR)/nameddb
 	NAMEDDYNAMICDIR=$(DESTDIR)$(ETCDIR)/namedb/dynamic
 	NAMEDKEYDIR=$(DESTDIR)$(ETCDIR)/namedb/keys
 	VARCONFDIR = $(DESTDIR)/var/lib/dms
@@ -78,8 +83,10 @@ else ifeq ($(OSNAME), FreeBSD)
 else
 	PREFIX = /usr/local
 	CONFDIR = $(DESTDIR)$(PREFIX)/dms$(ETCDIR)
+	CONFBINDDIR=$(DESTDIR)$(PREFIX)/dms$(ETCDIR)/bind
 	NAMEDCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)/master-config
 	NAMEDSERVERCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)/rsync-config
+	RNDCCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)
 	NAMEDDYNAMICDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)/dynamic
 	NAMEDKEYDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)/keys
 	VARCONFDIR = $(DESTDIR)$(PREFIX)/dms/var
@@ -108,10 +115,12 @@ install-dir:
 	- $(INSTALL) -d $(SBINDIR)
 	- $(INSTALL) -d $(MANDIR)
 	- $(INSTALL) -d $(CONFDIR)
+	- $(INSTALL) -d $(CONFBINDDIR)
 	- $(INSTALL) -d $(NAMEDCONFDIR)
 	- $(INSTALL) -d $(NAMEDSERVERCONFDIR)
 	- $(INSTALL) -d $(NAMEDDYNAMICDIR)
 	- $(INSTALL) -d $(NAMEDKEYDIR)
+	- $(INSTALL) -d $(RNDCCONFDIR)
 	- $(INSTALL) -d $(VARCONFDIR)/dms-sg
 	- $(INSTALL) -d $(LOGDIR)
 	- $(INSTALL) -d $(RUNDIR)
@@ -125,6 +134,8 @@ ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -d $(BACKUPDIR)
 endif
 ifndef DMS_DEB_BUILD
+	chown root:bind $(CONFBINDDIR)
+	chmod 2755 $(CONFBINDDIR)
 	chown $(DAEMONUSER):bind $(NAMEDCONFDIR)
 	chmod 2755 $(NAMEDCONFDIR)
 	chown bind:bind $(NAMEDSERVERCONFDIR)
@@ -181,9 +192,15 @@ endif
 	for f in $(MASTERINCFILES); do \
 		touch $(NAMEDCONFDIR)/$$f; \
 	done
+	for f in $(CONDBINDFILES); do \
+		$(INSTALL) $${f} $(CONFBINDDIR); \
+	done
 ifndef DMS_DEB_BUILD
 	for f in $(MASTERINCFILES); do \
 		chown $(DAEMONUSER):bind $(NAMEDCONFDIR)/$$f; \
+	done
+	for f in $(CONDBINDFILES); do \
+		chown root:bind $(CONFBINDDIR)/$$f; \
 	done
 endif
 ifeq ($(OSNAME), Linux)

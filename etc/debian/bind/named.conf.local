@@ -7,14 +7,14 @@
 //include "/etc/bind/zones.rfc1918";
 
 // local rndc key
-include "/etc/bind/rndc-local.key";
+include "/etc/dms/bind/rndc-local.key";
 controls {
         inet ::1 port 953 allow { ::ffff:127.0.0.1; ::1; } keys { "rndc-key"; };
 };
-include "/etc/bind/update-session.key";
+include "/etc/dms/bind/update-session.key";
 
 // Log in unison with other DMS slave/replica servers
 include "/etc/dms/server-admin-config/bind9/logging.conf";
 
-include "/etc/bind/master-config/zones.conf";
+include "/var/lib/dms/master-config/zones.conf";
 
