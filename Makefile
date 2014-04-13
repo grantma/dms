@@ -193,7 +193,7 @@ endif
 		touch $(NAMEDCONFDIR)/$$f; \
 	done
 	for f in $(CONFBINDFILES); do \
-		$(INSTALL) etc/debian/bind/$${f} $(CONFBINDDIR); \
+		$(INSTALL) -m 644 etc/debian/bind/$${f} $(CONFBINDDIR); \
 	done
 ifndef DMS_DEB_BUILD
 	for f in $(MASTERINCFILES); do \
