@@ -1,6 +1,6 @@
-dms (1.0.1d-1~7.gbpe2d258) UNRELEASED; urgency=medium
+dms (1.0.1d-1~8.gbp9c8756) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @e2d2586282a9878508213c807257fc1aaf5bc24f **
+  ** SNAPSHOT build @9c875651929dbab3028d99cd89dff9e508dd2652 **
 
   * Move rsync-config and master-config /var/lib/dms
   * Move rndc files into their proper Debian locations
@@ -21,8 +21,10 @@ dms (1.0.1d-1~7.gbpe2d258) UNRELEASED; urgency=medium
   * Fix which /etc/dms/bind go into dms-core/dms-dr
   * Update changelog for 1.0.1c-1~6.gbp90cd0d release
   * Fix permissions on /etc/dms/bind files
+  * Update changelog version to 1.0.1d
+  * Fix permissions on named-dr-replica.conf
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 13 Apr 2014 20:14:09 +1200
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 13 Apr 2014 20:28:39 +1200
 
 dms (1.0-3) unstable; urgency=medium
 
