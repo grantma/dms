@@ -22,28 +22,9 @@ PGVER="9.3"
 
 case "$1" in
     	purge)
-		# Clean up postgresql database cluster
-		if [ -x /usr/bin/pg_dropcluster ]; then
-			pg_dropcluster --stop-server ${PGVER} dms
-		else
-			rm -rf /var/lib/postgresql/${PGVER}/dms
-			rm -rf /etc/postgresql/${PGVER}/dms
-		fi
 		# Clean up Slave include  and log dirs
-		rm -rf /var/lib/dms/dms-sg
-		rm -rf /var/lib/dms/master-config
-		rm -rf /var/lib/dms/rndc
-		rm -rf /var/log/dms
+		rm -rf /var/lib/dms/rsync-config
 
-		if which deluser > /dev/null 2>&1; then
-			deluser --quiet dmsdmd bind > /dev/null || true
-			deluser --quiet --system dmsdmd > /dev/null || true
-			deluser --quiet --system dms > /dev/null || true
-		fi
-		if which delgroup > /dev/null 2>&1; then
-			delgroup --quiet --system dmsdmd > /dev/null || true
-			delgroup --quiet --system dms > /dev/null || true
-		fi
 	;;
 	remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
 	;;
