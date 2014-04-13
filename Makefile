@@ -192,7 +192,7 @@ endif
 	for f in $(MASTERINCFILES); do \
 		touch $(NAMEDCONFDIR)/$$f; \
 	done
-	for f in $(CONDBINDFILES); do \
+	for f in $(CONFBINDFILES); do \
 		$(INSTALL) $${f} $(CONFBINDDIR); \
 	done
 ifndef DMS_DEB_BUILD
