@@ -4,7 +4,9 @@ usr/share/dms/dms
 usr/share/dms/dmsdmd
 usr/share/dms/postgresql
 usr/share/dms/zone_tool
-etc/dms/bind
+etc/dms/bind/named.conf
+etc/dms/bind/named.conf.options
+etc/dms/bind/named.conf.local
 etc/dms/config-templates
 etc/dms/master-config-templates
 etc/dms/dms.conf

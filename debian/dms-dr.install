@@ -1,3 +1,4 @@
 usr/share/dms/dr_scripts
 etc/dms/pgpassfile
 etc/dms/dr-settings.sh
+etc/dms/bind/named-dr-replica.conf
