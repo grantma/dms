@@ -29,6 +29,7 @@ case "$1" in
 	chown postgres:postgres /etc/dms/pgpassfile
 	chmod 600 /etc/dms/pgpassfile
 	# DR slave config file...
+	chown root:bind /etc/dms/bind/named-dr-replica.conf
 	chown bind:bind /var/lib/dms/rsync-config
 	chmod 755 /var/lib/dms/rsync-config
 	# Touch empty synced configuration file into existence
