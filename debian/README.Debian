@@ -192,12 +192,19 @@ the remote name:
 Do test each cron command by running it from the root command line.
 
 
-racoon IPSEC set up
--------------------
+Strongswan IPSEC set up
+-----------------------
 
 The DMS system uses IPSEC to authenticate server access to the master servers,
 encrypting and/or integrity protecting the outgoing zone transfers, rndc and
 configuration rsync traffic.
+
+
+Racoon IPSEC set up
+-------------------
+
+An alternative to Strongswan is to use racoon.  This might be a better solution
+if you are workign with a lot of NetBSD or FreeBSD based systems.
 
 This is only covering basic PSK set up.  For X509 etc, see
 /usr/share/doc/racoon/README.Debian
@@ -378,7 +385,7 @@ hosts allow = 2001:db8:f012:2::2/128 2001:db8:f012:2::3/128
 secrets file = /etc/rsyncd.secrets
 
 [dnsconf]
-        path = /etc/bind/rsync-config
+        path = /var/lib/dms/rsync-config
         uid=bind
         gid=bind
         comment = Slave server config area
@@ -511,7 +518,7 @@ Setting initial DR settings on both machines
 --------------------------------------------
 
 On both machines, edit /etc/dms/dr-settings.sh, and set DR_PARTNER to the name
-of the oppopsite machine.
+of the opposite machine.
 
 dms3-master# vi /etc/dms/dr-settings.sh
 
@@ -532,24 +539,18 @@ up later.
 Setting up Bind9 master DNS server
 ----------------------------------
 
-Copy the bind configuration segments from /usr/share/doc/dms-core/examples/bind
-to the /etc/bind directory:
-
-root@dms3-master:/etc/bind# cp /usr/share/doc/dms-core/examples/bind/* .
-root@dms3-master:/etc/bind# chgrp bind named-dr-replica.conf named.conf.options named.conf.local
-
 Create all the required TSIG rndc and dynamic DNS update keys, and generate
 required /etc/bind/rndc.conf:
 
-root@dms3-master:/etc/bind# zone_tool generate_tsig_key -f update-ddns hmac-sha256 update-session.key
-root@dms3-master:/etc/bind# zone_tool generate_tsig_key -f rndc-key hmac-md5 rndc-local.key
-root@dms3-master:/etc/bind# zone_tool generate_tsig_key -f remote-key hmac-md5 rndc-remote.key
-root@dms3-master:/etc/bind# zone_tool write_rndc_conf -f
-root@dms3-master:/etc/bind# cp -a rndc-remote.key /etc/dms/server-admin-config/bind9
-root@dms3-master:/etc/bind# cp rndc-remote.key /etc/bind/rsync-config
+root@dms3-master:/etc/dms/bind# zone_tool generate_tsig_key -f update-ddns hmac-sha256 update-session.key
+root@dms3-master:/etc/dms/bind# zone_tool generate_tsig_key -f rndc-key hmac-md5 rndc-local.key
+root@dms3-master:/etc/dms/bind# zone_tool generate_tsig_key -f remote-key hmac-md5 rndc-remote.key
+root@dms3-master:/etc/dms/bind# zone_tool write_rndc_conf -f
+root@dms3-master:/etc/dms/bind# cp -a rndc-remote.key /etc/dms/server-admin-config/bind9
+root@dms3-master:/etc/dms/bind# cp rndc-remote.key /var/lib/dms/rsync-config
 
-Add a line to /etc/default/bind9 to get rid of the default rndc.key to stop
-rndc complaining:
+Add the /etc/dms/bind/named.conf to /etc/default/bind9, and add a line to get
+rid of the default rndc.key to stop rndc complaining:
 
 -----
 # Get rid of default bind9 rndc.key, that debian install scripts always
@@ -560,15 +561,8 @@ rm -f /etc/bind/rndc.key
 RESOLVCONF=no
 
 # startup options for the server
-OPTIONS="-u bind"
+OPTIONS="-u bind -c /etc/dms/bind/named.conf"
 -----
-
-Create 2 empty named.conf include files that will be overwritten by dmsdmd, 
-on both machines (master and replica):
-
-# touch /etc/bind/master-config/server-acl.conf
-# touch /etc/bind/master-config/zones.conf
-# chown dmsdmd:bind /etc/bind/master-config/*
 
 Restart named to make sure all is good:
 
@@ -610,8 +604,8 @@ replica SG)
 
 And make sure you can create a domain:
 
-root@dms3-master:/etc/bind# zone_tool create_zone foo.bar.org
-root@dms3-master:/etc/bind# zone_tool show_zone foo.bar.org
+root@dms3-master:/etc/dms/bind# zone_tool create_zone foo.bar.org
+root@dms3-master:/etc/dms/bind# zone_tool show_zone foo.bar.org
 $TTL 24h
 $ORIGIN foo.bar.org.
 
@@ -639,7 +633,7 @@ $ORIGIN foo.bar.org.
                         IN      NS              ns1.someorg.net.
 
 
-root@dms3-master:/etc/bind# zone_tool show_zonesm foo.bar.org
+root@dms3-master:/etc/dms/bind# zone_tool show_zonesm foo.bar.org
         name:            foo.bar.org.
         alt_sg_name:     None
         auto_dnssec:     False
@@ -675,19 +669,19 @@ root@dms3-master:/etc/bind# zone_tool show_zonesm foo.bar.org
         zone_id:         1
         zone_ttl:        24h
 
-root@dms3-master:/etc/bind# dig -t AXFR +noall +answer foo.bar.org @localhost
+root@dms3-master:/etc/dms/bind# dig -t AXFR +noall +answer foo.bar.org @localhost
 foo.bar.org.		86400	IN	SOA	ns1.someorg.net. soa.someorg.net. 2012070200 7200 7200 604800 86400
 foo.bar.org.		86400	IN	NS	ns1.someorg.net.
 foo.bar.org.		86400	IN	NS	ns2.someorg.net.
 foo.bar.org.		86400	IN	SOA	ns1.someorg.net. soa.someorg.net. 2012070200 7200 7200 604800 86400
-root@dms3-master:/etc/bind# zone_tool delete_zone foo.bar.org
+root@dms3-master:/etc/dms/bind# zone_tool delete_zone foo.bar.org
 
 Reflect the bind directory to the DR via etckeeper:
 
 root@dms3-master:/etc# etckeeper commit
 
 root@dms4-dr:/etc# git fetch dms3-master
-root@dms4-dr:/etc# git checkout dms3-master/master bind
+root@dms4-dr:/etc# git checkout dms3-master/master dms/bind
 root@dms4-dr:/etc# git checkout dms3-master/master default/bind9
 
 Setting UP DR bind9 slave server on Replica
@@ -705,8 +699,8 @@ root@dms3-master:/etc# zone_tool rsync_server_admin_config dms4-dr no_rndc
 Copy the /etc/dms/server-admin-config/bind9 directory to
 /etc/bind/rsync-config 
 
-root@dms3-master:/etc# cp -a /etc/dms/server-admin-config/bind9/* /etc/bind/rsync-config
-root@dms3-master:/etc# chown bind:bind /etc/bind/rsync-config/*
+root@dms3-master:/etc# cp -a /etc/dms/server-admin-config/bind9/* /var/lib/dms/rsync-config
+root@dms3-master:/etc# chown bind:bind /var/lib/dms/rsync-config/*
 
 Reflect the bind directory to the DR via etckeeper:
 
@@ -964,8 +958,8 @@ and then reload sysctls with
 
 # service procps start
 
-Racoon
-------
+Racoon (or Strongswan)
+----------------------
 
 Edit /etc/racoon/racoon-tool.conf
 
@@ -1015,7 +1009,7 @@ hosts allow = 2001:db8:f012:2::2/128 2001:db8:f012:2::3/128
 secrets file = /etc/rsyncd.secrets
 
 [dnsconf]
-	path = /etc/bind/rsync-config
+	path = /srv/dms/rsync-config
 	uid=bind
 	gid=bind
 	comment = Slave server config area
@@ -1033,8 +1027,8 @@ dnsconf:SuperSecretRsyncSlavePasswoord
 4. Do this at the shell to create target /etc/bind/rsync-config directory:
 
 ----
-# mkdir /etc/bind/rsync-config
-# chown bind:bind /etc/bind/rsync-config
+# mkdir -p /srv/dms/rsync-config
+# chown bind:bind /srv/dms/rsync-config
 ----
 
 5. And named slave directory
@@ -1098,7 +1092,7 @@ directory "/var/cache/bind";
 
        listen-on { localhost; };
        listen-on-v6 { any; };
-       include "/etc/bind/rsync-config/options.conf";
+       include "/srv/dms/rsync-config/options.conf";
 };
 ----
 
@@ -1118,24 +1112,24 @@ Change /etc/bind/named.conf.local to the following:
 
 // rndc config
 include "/etc/bind/rndc.key";
-include "/etc/bind/rsync-config/rndc-remote.key";
-include "/etc/bind/rsync-config/controls.conf";
+include "/srv/dms/rsync-config/rndc-remote.key";
+include "/srv/dms/rsync-config/controls.conf";
 // Logging configuration
-include "/etc/bind/rsync-config/logging.conf";
+include "/srv/dms/rsync-config/logging.conf";
 // Secondary zones
-include "/etc/bind/rsync-config/bind9.conf";
+include "/srv/dms/rsync-config/bind9.conf";
 
 ----
 
 This file is used to include all the required bits from the
-/etc/bind/rsync-config directory. All this configuration can now be updated
+/srv/dms/rsync-config directory. All this configuration can now be updated
 from the master server, and the slave reconfigured – but watch it when you go
 changing the rndc keys.
 
 Restart bind9
 ----
-# touch /etc/bind/rsync-config/bind9.conf
-# chown bind:bind /etc/bind/rsync-config/bind9.conf
+# touch /srv/dms/rsync-config/bind9.conf
+# chown bind:bind /srv/dms/rsync-config/bind9.conf
 
 # service bind9 restart
 ----

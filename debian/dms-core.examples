@@ -1,6 +1,5 @@
 etc/rsyncd.conf
 etc/rsyncd.secrets
-etc/debian/bind
 etc/rsyslog
 etc/firewall/ip6tables
 wsgi-json-testing

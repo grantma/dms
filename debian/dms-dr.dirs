@@ -1,2 +1,2 @@
-etc/bind/rsync-config
+var/lib/dms/rsync-config
 usr/sbin

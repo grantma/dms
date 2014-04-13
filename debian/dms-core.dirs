@@ -1,12 +1,13 @@
 usr/bin
 usr/sbin
 etc/bind/master
-etc/bind/master-config
 var/cache/bind/slave
 var/lib/bind/dynamic
 var/lib/bind/keys
 var/lib/dms
 var/lib/dms/dms-sg
+var/lib/dms/master-config
 var/lib/dms/postgresql
 var/lib/dms/postgresql/dump
+var/lib/dms/rndc
 var/log/dms

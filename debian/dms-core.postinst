@@ -45,8 +45,17 @@ case "$1" in
 	fi
 
 	# Setup permissions on various files and dirs
-	chown dmsdmd:bind /etc/bind/master-config
-	chmod 2755 /etc/bind/master-config
+	chown root:bind /etc/dms/bind
+	chmod 2755 /etc/dms/bind
+	for f in named.conf.options named.conf named.conf.local; do
+		chgrp bind /etc/dms/bind/$f
+	done
+	chown dmsdmd:bind /var/lib/dms/master-config
+	chmod 2755 /var/lib/dms/master-config
+	for f in server-acl.conf zones.conf; do
+		touch /var/lib/dms/master-config/$f
+		chown dmsdmd:bind /var/lib/dms/master-config/$f
+	done
 	chown bind:dmsdmd /var/lib/bind/dynamic
 	chmod 2775 /var/lib/bind/dynamic
 	chown bind:dmsdmd /var/lib/bind/keys

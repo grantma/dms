@@ -12,7 +12,14 @@ Vcs-Browser: https://github.com/grantma/dms
 
 Package: dms-core
 Architecture: any
-Recommends: vim-nox, nano, colordiff, python3-setproctitle (>= 1.1.6)
+Suggests: vim-nox|vim, nano, colordiff
+Recommends: python3-setproctitle (>= 1.1.6),
+  less,
+  diffutils|diff,
+  haveged,
+  netscript-ipfilter|netscript-2.4|iptables-persistent,
+  ntp,
+  strongswan|racoon|ike-server
 Depends: ${misc:Depends}, ${python3:Depends},
   python3-magcode-core,
   postgresql (>= 9.3), postgresql (<< 9.4),
@@ -22,15 +29,9 @@ Depends: ${misc:Depends}, ${python3:Depends},
   python3-psutil (>= 0.4.1),
   python3-pyparsing (>= 1.5.6),
   python3-dnspython (>= 1.10),
-  netscript-ipfilter|netscript-2.4|iptables-persistent,
-  haveged,
-  racoon|ike-server,
   rsync,
   bind9,
-  ntp,
   adduser,
-  less,
-  diffutils|diff,
   oping
 Description: bind9 DNS Management System, core system
  This is the bind9 DNS Management System, core backend.
@@ -60,18 +61,18 @@ Description: bind9 DNS Management System, DR scripts and setup.
  This is the bind9 DNS Management System, DR recovery scripts for running a 
  replica.
  .
- This package contains the stuff required to set up a DR replica of a DMS
- Master Server.  
+ This package contains the management scripts required to set up a DR 
+ replica of a DMS Master Server.  
  .
  For setup, see the README.Debian in /usr/share/doc/dms-core. 
 
 Package: dms
 Architecture: any
 Depends: ${misc:Depends}, dms-wsgi (= ${binary:Version}), dms-core (= ${binary:Version}), dms-dr (= ${binary:Version}), etckeeper, ssh, vim-nox, nano, colordiff, snmpd, snmp, mail-transfer-agent | exim4
-Suggests: quagga, netscript-2.4, snmp-mibs-downloader
-Description: bind9 DNS Management System, master server.
- This is the bind9 DNS Management System, the master server dummy install 
- package.
+Suggests: quagga, netscript-2.4, snmp-mibs-downloader 
+Recommends: vim-nox|vim, nano, colordiff
+Description: bind9 DNS Management System, master server meta-package
+ This is the bind9 DNS Management System, the master server meta-package.
  .
  This package installs all the components needed for a DMS master server or
  DR replica.
