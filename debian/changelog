@@ -7,7 +7,7 @@ dms (1.0.1a-1~1.gbp06386e) UNRELEASED; urgency=medium
   * Move named-dr-replica.conf to /etc/dms/bind
   * Move update-session.key to /etc/dms/bind
   * Move update-session.key to /etc/dms/bind
-  * Seperate dms bind config. Easier installs.
+  * Separate dms bind config. Easier installs.
   * Install bind named.conf files for first install
   * Bump version number in light of changes.
   * Fix typo in dms_promote_replica
