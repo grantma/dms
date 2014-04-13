@@ -1,3 +1,20 @@
+dms (1.0-4~1.gbp06386e) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @06386e34793ce3ad17c6b820a0bc91a3c86abfd3 **
+
+  * Move rsync-config and master-config /var/lib/dms
+  * Move rndc files into their proper Debian locations
+  * Move named-dr-replica.conf to /etc/dms/bind
+  * Move update-session.key to /etc/dms/bind
+  * Move update-session.key to /etc/dms/bind
+  * Seperate dms bind config. Easier installs.
+  * Install bind named.conf files for first install
+  * Bump version number in light of changes.
+  * Fix typo in dms_promote_replica
+  * Packaging fixes, and moving dynamic data from /etc
+
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 13 Apr 2014 14:45:29 +1200
+
 dms (1.0-3) unstable; urgency=medium
 
   * Make snmp-mibs-downloader a suggested package.
