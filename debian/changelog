@@ -1,6 +1,6 @@
-dms (1.0.1a-1~2.gbp02fc12) UNRELEASED; urgency=medium
+dms (1.0.1a-1~3.gbp8af31e) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @02fc12d67a05934f012eebed74fe932420c31fb2 **
+  ** SNAPSHOT build @8af31ed5e6fb4aa0a9d8b51f42d3622fcb7d7a7c **
 
   * Move rsync-config and master-config /var/lib/dms
   * Move rndc files into their proper Debian locations
@@ -14,8 +14,10 @@ dms (1.0.1a-1~2.gbp02fc12) UNRELEASED; urgency=medium
   * Packaging fixes, and moving dynamic data from /etc
   * Clean up dynamic data directories on purge
   * Finalise Recommends/Suggests package split
+  * Update changelog for 1.0.1a-1~2.gbp02fc12 release
+  * Some more tweaks
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 13 Apr 2014 18:10:20 +1200
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 13 Apr 2014 18:54:35 +1200
 
 dms (1.0-3) unstable; urgency=medium
 
