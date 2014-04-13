@@ -1,6 +1,6 @@
-dms (1.0.1c-1~6.gbp90cd0d) UNRELEASED; urgency=medium
+dms (1.0.1c-1~7.gbpe2d258) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @90cd0d3b33eedc9b5c2c706c352245463186eecd **
+  ** SNAPSHOT build @e2d2586282a9878508213c807257fc1aaf5bc24f **
 
   * Move rsync-config and master-config /var/lib/dms
   * Move rndc files into their proper Debian locations
@@ -17,11 +17,12 @@ dms (1.0.1c-1~6.gbp90cd0d) UNRELEASED; urgency=medium
   * Some more tweaks
   * Add mssing /etc/dms/bind config directory
   * Fix type for install /etc/dms/bind config files
-  * Update version to 1.0.1b
   * Fix Makefile for /etc/dms/bind conf files
   * Fix which /etc/dms/bind go into dms-core/dms-dr
+  * Update changelog for 1.0.1c-1~6.gbp90cd0d release
+  * Fix permissions on /etc/dms/bind files
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 13 Apr 2014 20:06:38 +1200
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 13 Apr 2014 20:14:09 +1200
 
 dms (1.0-3) unstable; urgency=medium
 
