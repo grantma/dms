@@ -70,7 +70,6 @@ Package: dms
 Architecture: any
 Depends: ${misc:Depends}, dms-wsgi (= ${binary:Version}), dms-core (= ${binary:Version}), dms-dr (= ${binary:Version}), etckeeper, ssh, vim-nox, nano, colordiff, snmpd, snmp, mail-transfer-agent | exim4
 Suggests: quagga, netscript-2.4, snmp-mibs-downloader 
-Recommends: vim-nox|vim, nano, colordiff
 Description: bind9 DNS Management System, master server meta-package
  This is the bind9 DNS Management System, the master server meta-package.
  .
