@@ -3,8 +3,21 @@ DNS Management System
 
 The DNS Management System (DMS) is designed to have a master/replica master
 setup. It is a complex setup, requiring the hand configuration of database, DNS
-server, and other components. If your setup does not require one of the
+server, and other components. 
+
+Single Master Server
+--------------------
+
+If your setup does not require one of the
 components such as quagga, dms-wsgi, or etckeeper, just skip that section.
+
+Just install dms-core
+
+aptitude install --install-recommends --install-suggested dms-core
+
+At least install reccomends above, as this will pull in IPSEC to protect the
+connections between the master and slave servers.  This is fair more secure
+than relying on MD5 HMAC for tamper proofing.
 
 DNS Topology
 ------------
@@ -16,7 +29,7 @@ Internet itself.  Just take what you need from below.
 
 A PDF of the Wiki for DMS for when it was internal to Net24 is available up at
 
-http://mattgrant.net.nz/softwrae/dms.
+http://mattgrant.net.nz/software/dms
 
 It is advisable to get this and read it, as it will explain a lot of how this
 all functions.
@@ -34,10 +47,14 @@ etckeeper and ssh
 etckeeper is a tool to keep the contents of /etc in a git VCS.  When combined
 with ssh and the appropriate git remote setup with cron, it allows the /etc of
 the other machine in the master/replica DR pair to be kept on its alternate,
-and vice-versa.  This protects aginst the /etc on the master being updated, the
-replica being missed, and then finding that things aren't working on the
-replica when the master dies, with no record of the updates needed to machine
-configuration. 
+and vice-versa.  
+
+The following is a safeguard against Murphies law (ie Back hoe fade, backups
+required at disconnected data centre or offline storage 2 days away). My own
+experience is my witness.  This protects aginst the /etc on the master being
+updated, the replica being missed, and then finding that things aren't working
+on the replica when the master dies , with no record of the updates needed to
+machine configuration. 
 
 For information on etckeeper usage, see /usr/share/doc/etckeeper/README.gz
 
@@ -59,13 +76,10 @@ krb5.keytab
 shadow
 shadow-
 racoon/psk.txt
+ipsec.secrets
 ssl/
 ssh/moduli
 ssh/ssh_host_*
-
-# Ignore these DMS dirs as the files are daemon generated
-bind/master-config/
-bind/rsync-config/
 
 -----
 
@@ -78,7 +92,7 @@ you are reading this, create the .gitignore file, and reinstall etckeeper:
 
 Now would be a good time to install dms on both Master and Replica
 
-# aptitude install dms
+# aptitude install --install-recommends --install-suggested dms
 
 as this will install scripts needed for ssh configuration following.
 
@@ -192,19 +206,124 @@ the remote name:
 Do test each cron command by running it from the root command line.
 
 
-Strongswan IPSEC set up
------------------------
+IPSEC set up
+------------
 
 The DMS system uses IPSEC to authenticate server access to the master servers,
 encrypting and/or integrity protecting the outgoing zone transfers, rndc and
 configuration rsync traffic.
+
+Each server has IPSEC configured and active to both the replica servers (master and DR).  The master and replica have IPSEC configured as well.  Both
+replica servers and 2 slaves should be PSK keyed with each other if DNSSEC
+authentication is to be used for the majority of slaves.  This ensures that the
+DNSSEC CERT records can be progated for use.
+
+Make SURE each individual IPSEC connection has a unique PSK key for security.
+They can be generated easily, and cut/paste over terminal root session, so no
+big loss if they are lost. Just make sure you have 'out-of-band' access via ssh.
+
+Read through the Strongswan section as it has some useful tips on PSK
+generation and other matters.
+
+Strongswan IPSEC set up
+-----------------------
+
+This is only covering basic PSK set up.  If X509 needed see the 
+Strongswan wiki:
+
+http://wiki.strongswan.org/projects/strongswan/wiki/UserDocumentation
+
+The same PSK has to be at each end of the IPSEC 'connection'.
+
+Generate PSK key with openssl:
+
+# openssl rand -hex 64
+
+and place in /etc/ipsec.secrets:
+
+-----
+2001:db8:345:678:2::beef : PSK 0xe788749d48c0a020bc26b15685ad7ea1630c090072acf3f1eeac14dfec90bd4c1ff86fbf82b219cb5c309c3c6ede2d072784823a69271eccce166421317be006
+-----
+
+Note format, "IPv6/IPv4/DNS-type-id : PSK 0xdaedbefdeadbeef" ...
+
+Racoon also takes hex strings as PSK, just add the '0x' to the random number.
+
+Sha1 and sha256 only use 64 bytes (512 bits) for the key.  sha384 and better
+128 bytes.  Making the strings longer does not make sense, and can result in
+some wacky behaviour with strongswan!
+
+Set up /etc/ipsec.conf at each end:
+
+-----
+conn %default
+        ikelifetime=60m
+        keylife=20m
+        rekeymargin=3m
+        keyingtries=1
+        keyexchange=ikev2
+        mobike=no
+        installpolicy=yes
+
+
+conn dms-master2
+        authby=secret
+        right=2001:db8:f012:2::2
+        rightid=dms-master2.someorg.net
+        left=2001:db8:f012:2::3
+        leftid=dms-master1.someorg.net
+        type=transport
+	#ah=sha256-modp2048,sha1-modp1024
+        auto=route
+-----
+
+and vice versa.  Note use of id statements.  It saves having to bury IP numbers 
+in more than one place.  
+
+"auto=route" sets up SPD (use ip xfrm policy to inspect), and when dynamically
+bring up the connection when needed.
+
+AH (authentication header) can be turned on by defining AH protocol at each
+end.  This is useful inside DMZ or back end networks, and allows the traffic to
+be inpected by a decent filtering firewall.
+
+Reload ipsec by:
+
+-----
+dms3-master # ipsec reload
+dms3-master # ipsec rereadsecrets
+dms4-master # ipsec reload
+dms4-master # ipsec rereadsecrets
+
+Enter a separate PSK in /etc/ipsec.secrets for each IPSEC connection.
+
+Useful ipsec commands are:
+
+# ipsec status
+# ipsec statusall
+# ip xfrm policy
+# ip xfrm state
+# ipsec up <connection name>
+# ipsec down <connection name>
+# ipsec reload
+# ipsec rereadsecrets
+# ipsec restart.
+
+Test the connection by pinging the far end - tests unencrypted reachability, 
+and then telnet/netcat the different TCP ports used across the link.  This
+will involve ports 873 (rsync),  953 (rndc/named), 53 (named) to each slave,
+and port 53 on the masters (from slave).  Between both the replica servers
+(master and DR), port 5432 (postgresql) has to be reachable, as well as port 22
+(ssh).  Port 80 (http) for apt-get updates may also be involved.
+
+
 
 
 Racoon IPSEC set up
 -------------------
 
 An alternative to Strongswan is to use racoon.  This might be a better solution
-if you are workign with a lot of NetBSD or FreeBSD based systems.
+if you are working with a lot of NetBSD or FreeBSD based systems.
 
 This is only covering basic PSK set up.  For X509 etc, see
 /usr/share/doc/racoon/README.Debian
@@ -236,15 +355,12 @@ For the replica servers, if you want to inspect/control traffic select ah IPSEC
 encapsulation.  Note, racoon-tool sets up a transport mode IPSEC connection if
 no src_range/dst_range parameters are given. 
 
-Transport mode does not encrypt ICMP traffic, as that can complicate UDP/TCP
-connection issues extensively.
+For Racoon-tool only, transport mode does not encrypt ICMP traffic, as that can
+complicate UDP/TCP connection issues extensively.  This will be changed very
+shortly to conventionally encrypting IPSEC to be compatible with other IPSEC
+solutions.
 
 Also enter a separate PSK in /etc/racoon/psk.txt for each IPSEC connection.
-
-Each server has IPSEC configured and active to both the replica servers (master and DR).  The master and replica have IPSEC configured as well.  Both
-replica servers and 2 slaves should be PSK keyed with each other if DNSSEC
-authentication is to be used for the majority of slaves.  This ensures that the
-DNSSEC CERT records can be progated for use.
 
 Useful racoon-tool commands are:
 
@@ -958,44 +1074,10 @@ and then reload sysctls with
 
 # service procps start
 
-Racoon (or Strongswan)
-----------------------
+IPSEC
+-----
 
-Edit /etc/racoon/racoon-tool.conf
-
-----
-connection(%default):
-	src_ip: 2001:db8:c:110e::2
-	admin_status: disabled
-
-peer(2001:db8:f012:2::2):
-
-# DMS Master 1
-connection(dms-master1):
-	dst_ip: 2001:db8:f012:2::2
-	admin_status: enabled
-
-# DMS Master 2
-peer(2001:db8:f012:2::3):
-
-connection(dms-master2):
-	dst_ip: 2001:db8:f012:2::3
-	admin_status: enabled
-----
-
-Note that IPSEC connections to each DMS master server have to be configured on
-each Slave.
-
-Edit /etc/racoon/psk.txt to set PSK secrets. Generate with
-
-----
-# pwgen -asn 128 1
-pc2hPFZOFt8WfksKKv7ku6nApsgrun2jqkqeTycfoYR9AlA8zqm65KEQe0qcpsEWGUjUeksh2BnEPKczQUEbbHuga5XGkq1iR4eG5S23RMTnapgSLPE6AtXnMVC6z2rx
-----
-
-(You can apt-get install it). Make SURE each individual IPSEC connection has a
-unique PSK key for security. They can be generated easily, and cut/paste over
-terminal root session, so no big loss if they are lost.
+See section above on IPSEC for how to do this.
 
 Rsync
 -----

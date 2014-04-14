@@ -37,6 +37,8 @@ Depends: ${misc:Depends}, ${python3:Depends},
 Description: bind9 DNS Management System, core system
  This is the bind9 DNS Management System, core backend.
  .
+ Install this by itself if you are just after a single Master server, no DR.
+ .
  This package include the dms python3 modules, zone_tool and dmsdmd.
  It creates the dms system users.
  .
@@ -74,7 +76,7 @@ Suggests: quagga, netscript-ipfilter|netscript-2.4, snmp-mibs-downloader
 Description: bind9 DNS Management System, master server meta-package
  This is the bind9 DNS Management System, the master server meta-package.
  .
- This package installs all the components needed for a DMS master server or
- DR replica.
+ This package installs all the components needed for a DMS master server/DR
+ replica pair.
  .
  For setup, see the README.Debian in /usr/share/doc/dms-core. 
