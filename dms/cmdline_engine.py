@@ -873,7 +873,7 @@ class CmdLineEngine(ZoneEngine):
         write_file =  isinstance(file_name, str)
         if write_file:
             if file_name[0] != '/':
-                file_name = (settings['master_bind_config_dir'] 
+                file_name = (settings['dms_bind_config_dir'] 
                                 + '/' + file_name)
             old_umask = os.umask(0o00077)
             output_file = open(file_name, 'wt') 
