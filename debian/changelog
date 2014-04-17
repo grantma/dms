@@ -1,6 +1,6 @@
-dms (1.0.1d-1~8.gbp9c8756) UNRELEASED; urgency=medium
+dms (1.0.1d-1~9.gbpdd6a01) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @9c875651929dbab3028d99cd89dff9e508dd2652 **
+  ** SNAPSHOT build @dd6a0102e141367b84a1b292301945f7491de673 **
 
   * Move rsync-config and master-config /var/lib/dms
   * Move rndc files into their proper Debian locations
@@ -23,8 +23,11 @@ dms (1.0.1d-1~8.gbp9c8756) UNRELEASED; urgency=medium
   * Fix permissions on /etc/dms/bind files
   * Update changelog version to 1.0.1d
   * Fix permissions on named-dr-replica.conf
+  * Update README.Debian - Strongswan, DR pair or solo
+  * Updating README.Debian and control
+  * Correct where TSIG keys are being installed to.
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 13 Apr 2014 20:28:39 +1200
+ -- Matthew Grant <matt@mattgrant.net.nz>  Thu, 17 Apr 2014 13:18:52 +1200
 
 dms (1.0-3) unstable; urgency=medium
 
