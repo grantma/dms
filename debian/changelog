@@ -1,6 +1,6 @@
-dms (1.0.1e-1~1.gbpdd6a01) UNRELEASED; urgency=medium
+dms (1.0.1e-1~2.gbp05bc82) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @dd6a0102e141367b84a1b292301945f7491de673 **
+  ** SNAPSHOT build @05bc822586f0ac8a937d4be9f197e5bfcc15f34a **
 
   * Move rsync-config and master-config /var/lib/dms
   * Move rndc files into their proper Debian locations
@@ -26,8 +26,12 @@ dms (1.0.1e-1~1.gbpdd6a01) UNRELEASED; urgency=medium
   * Update README.Debian - Strongswan, DR pair or solo
   * Updating README.Debian and control
   * Correct where TSIG keys are being installed to.
+  * Set Debian changelog version number correctly
+  * Update debain/READMD.Debian
+  * Turn off DMSDRDNS and WSGI by default
+  * Update version number to 1.0.1f
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Thu, 17 Apr 2014 13:18:52 +1200
+ -- Matthew Grant <grantma@en-gedi.internal.anathoth.net>  Thu, 17 Apr 2014 13:48:27 +1200
 
 dms (1.0-3) unstable; urgency=medium
 
