@@ -16,10 +16,10 @@ DBALTXLOGDIR="/srv/postgresql"
 #BIND9_DR_SERVER_OPTIONS="-n 1"
 
 # Enable the DMS JSON RPC over http API server in apache.  Takes true/false
-DMSWSGI=true
+DMSWSGI=false
 
-# Dummy loop back interface with DR IP address(es) attached.  Quagga is used 
-# to propagate host routes based on the interface.  Multiple addresses can
+# Dummy loop back interface with DR IP address(es) attached.  Quagga or bird is
+# used to propagate host routes based on the interface.  Multiple addresses can
 # be configured on the device.  The scripts take the device up and down as
 # required. The addresses need to be configured properly in the system
 # interface configuration, but the interfaces should not be marked to be
@@ -28,7 +28,7 @@ DMSDRIF=""
 
 # zone_tool update_rrs settings.  Uses a CNAME based template.
 # Following is a flag to turn it on or off
-DMSDRDNS=true
+DMSDRDNS=false
 
 # If not defined or empty, the following is set to the hostname
 DMS_MASTER=""
