@@ -747,10 +747,8 @@ root@dms-master1:/etc# service dmsdmd start
 root@dms-master1:/etc# service dmsdmd status
 [ ok ] dmsdmd is running.
 
-If you need to, set DMSDRDNS=false in /etc/dms/dr-settings.sh
-
 Enable the master server so that the server SM can monitor named on the
-machine:
+machine (briefly, this server twitters to itself):
 
 root@dms-master1:/etc# zone_tool enable_server dms-master1
 
@@ -834,12 +832,13 @@ foo.bar.org.		86400	IN	NS	ns2.someorg.net.
 foo.bar.org.		86400	IN	SOA	ns1.someorg.net. soa.someorg.net. 2012070200 7200 7200 604800 86400
 root@dms-master1:/etc/dms/bind# zone_tool delete_zone foo.bar.org
 
-Reflect the bind directory to the DR via etckeeper:
+Reflect the bind and dms directories to the DR via etckeeper:
 
 root@dms-master1:/etc# etckeeper commit
 
 root@dms-master2:/etc# git fetch dms-master1
 root@dms-master2:/etc# git checkout dms-master1/master dms/bind
+root@dms-master2:/etc# git checkout dms-master1/master bind
 root@dms-master2:/etc# git checkout dms-master1/master default/bind9
 
 Setting UP DR bind9 slave server on Replica
@@ -855,7 +854,7 @@ reconfig:
 root@dms-master1:/etc# zone_tool rsync_server_admin_config dms-master2 no_rndc
 
 Copy the /etc/dms/server-admin-config/bind9 directory to
-/etc/bind/rsync-config 
+/var/lib/dms/rsync-config 
 
 root@dms-master1:/etc# cp -a /etc/dms/server-admin-config/bind9/* /var/lib/dms/rsync-config
 root@dms-master1:/etc# chown bind:bind /var/lib/dms/rsync-config/*
@@ -872,6 +871,10 @@ To apply permissions on master to replica:
 root@dms-master2:/etc# git checkout dms-master1/master .etckeeper
 root@dms-master2:/etc# etckeeper init
 root@dms-master2:/etc# etckeeper commit
+
+Create rndc.conf include needed to start bind.
+
+root@dms-master2:/etc# zont_tool write_rndc_conf
 
 On the replica, Edit /etc/default/bind9, adding '-c
 /etc/bind/named-dr-replica.conf' to OPTIONS, and restart named.
@@ -1005,6 +1008,8 @@ And you should be good to go, with a DMS WSGI server name of
 
 Setting up WSGI on apache
 -------------------------
+
+Enable WSGI in /etc/dms/dr-settings.sh on both machines by editing file.
 
 Include the /etc/dms/dms-wsgi-apache.conf fragment into the file
 /etc/apache2/sites-available/default-ssl

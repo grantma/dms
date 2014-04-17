@@ -33,8 +33,8 @@ case "$1" in
 	chown bind:bind /var/lib/dms/rsync-config
 	chmod 755 /var/lib/dms/rsync-config
 	# Touch empty synced configuration file into existence
-	touch /etc/bind/rsync-config/bind9-replica.conf
-	chown bind:bind /etc/bind/rsync-config/bind9-replica.conf
+	touch /var/lib/dms/rsync-config/bind9-replica.conf
+	chown bind:bind /var/lib/dms/rsync-config/bind9-replica.conf
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
