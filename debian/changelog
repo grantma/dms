@@ -1,6 +1,6 @@
-dms (1.0.1g-1~1.gbpa5131c) UNRELEASED; urgency=medium
+dms (1.0.1g-1~2.gbp1a4bc4) UNRELEASED; urgency=medium
 
-  ** SNAPSHOT build @a5131ce10f541f95bc7a3bcd743cdace42df2d29 **
+  ** SNAPSHOT build @1a4bc4e192e1cdec1e6fa1491c8c34257824b9bd **
 
   * Move rsync-config and master-config /var/lib/dms
   * Move rndc files into their proper Debian locations
@@ -19,7 +19,6 @@ dms (1.0.1g-1~1.gbpa5131c) UNRELEASED; urgency=medium
   * Fix type for install /etc/dms/bind config files
   * Fix Makefile for /etc/dms/bind conf files
   * Fix which /etc/dms/bind go into dms-core/dms-dr
-  * Update changelog for 1.0.1c-1~6.gbp90cd0d release
   * Fix permissions on /etc/dms/bind files
   * Update changelog version to 1.0.1d
   * Fix permissions on named-dr-replica.conf
@@ -27,7 +26,7 @@ dms (1.0.1g-1~1.gbpa5131c) UNRELEASED; urgency=medium
   * Updating README.Debian and control
   * Correct where TSIG keys are being installed to.
   * Set Debian changelog version number correctly
-  * Update debain/READMD.Debian
+  * Update debain/README.Debian
   * Turn off DMSDRDNS and WSGI by default
   * Update version number to 1.0.1f
   * Update README.Debian, and dms-dr.postinst
@@ -35,8 +34,9 @@ dms (1.0.1g-1~1.gbpa5131c) UNRELEASED; urgency=medium
   * Update README.Debian
   * Fix restricted commands list for ordinary users.
   * Update version number to 1.0.1g
+  * Updating README.Debian, and recommends.
 
- -- Matthew Grant <grantma@en-gedi.internal.anathoth.net>  Thu, 17 Apr 2014 15:21:19 +1200
+ -- Matthew Grant <grantma@en-gedi.internal.anathoth.net>  Fri, 18 Apr 2014 09:56:53 +1200
 
 dms (1.0-3) unstable; urgency=medium
 
