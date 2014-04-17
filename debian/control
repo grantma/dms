@@ -19,7 +19,9 @@ Recommends: python3-setproctitle (>= 1.1.6),
   haveged,
   netscript-ipfilter|netscript-2.4|iptables-persistent,
   ntp,
-  strongswan|racoon|ike-server
+  strongswan|racoon|ike-server,
+  bind9-host,
+  dnsutils
 Depends: ${misc:Depends}, ${python3:Depends},
   python3-magcode-core,
   postgresql (>= 9.3), postgresql (<< 9.4),

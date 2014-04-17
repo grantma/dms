@@ -249,6 +249,28 @@ big loss if they are lost. Just make sure you have 'out-of-band' access via ssh.
 Read through the Strongswan section as it has some useful tips on PSK
 generation and other matters.
 
+Sysctl IPSEC settings
+---------------------
+
+To prevent network problems with running out of buffers, create the file
+/etc/sysctl.d/30-dms-core-net.conf with the following contents:
+
+----
+# Tune kernel for heavy IPSEC DNS work.
+# Up the max connection buffers
+net.core.somaxconn=8192
+net.core.netdev_max_backlog=8192
+# Reduce TCP final timeout
+net.ipv4.tcp_fin_timeout=10
+# Increase size of xfrm tables
+net.ipv6.xfrm6_gc_thresh=16384
+net.ipv4.xfrm4_gc_thresh=16384
+----
+
+and then reload sysctls with
+
+# service procps start
+
 Strongswan IPSEC set up
 -----------------------
 
@@ -1110,28 +1132,6 @@ screen psmisc procps tree sysstat lsof telnet-ssl open-vm-tools apache2-utils
 ----
 
 Select raccon-tool method of raccon configuration
-
-Sysctl IPSEC settings
----------------------
-
-To prevent network problems with running out of buffers, create the file
-/etc/sysctl.d/30-dms-core-net.conf with the following contents:
-
-----
-# Tune kernel for heavy IPSEC DNS work.
-# Up the max connection buffers
-net.core.somaxconn=8192
-net.core.netdev_max_backlog=8192
-# Reduce TCP final timeout
-net.ipv4.tcp_fin_timeout=10
-# Increase size of xfrm tables
-net.ipv6.xfrm6_gc_thresh=16384
-net.ipv4.xfrm4_gc_thresh=16384
-----
-
-and then reload sysctls with
-
-# service procps start
 
 IPSEC
 -----
