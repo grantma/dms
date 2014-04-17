@@ -921,9 +921,21 @@ root@dms-master1:/etc# zone_tool show_config
 root@dms-master1:/etc# zone_tool set_config soa_mname ns1.foo.bar.net
 root@dms-master1:/etc# zone_tool set_config soa_rname soa.foo.bar.net
 root@dms-master1:/etc# zone_tool set_config default_sg foo-bar-net
-root@dms-master1:/etc# zone_tool set_config default_ref foo-bar-net
+root@dms-master1:/etc# zone_tool set_config default_ref FOO-BAR-NET
 root@dms-master1:/etc# zone_tool show_apex_ns
 root@dms-master1:/etc# zone_tool edit_apex_ns
+
+Create the default sg
+
+root@dms-master1:/etc# zone_tool create_sg someorg-one
+
+Aside: Apex ns records can be created and edited for each server group.  By
+default, the apex_ns records for the default SG are used.  Use:
+
+zone_tool> show_apex_ns some-sg
+zone_tool> edit_apex_ns some-sg
+
+to create and edit the apex NS server names.
 
 Create all required reverse zone on the master, setting the zone_tool
 create_zone inc_updates flag argument so that auto reverse zone records can be
