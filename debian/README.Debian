@@ -1153,7 +1153,7 @@ secrets file = /etc/rsyncd.secrets
 dnsconf:SuperSecretRsyncSlavePasswoord
 ----
 
-4. Do this at the shell to create target /etc/bind/rsync-config directory:
+4. Do this at the shell to create target /srv/dms/rsync-config directory:
 
 ----
 # mkdir -p /srv/dms/rsync-config
