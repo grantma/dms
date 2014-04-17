@@ -203,7 +203,7 @@ settings['list_events_last_limit'] = 25
 
 # zone_tool.py
 # admin_group_list shifted to magcode.core.globals_
-settings['restricted_mode_commands'] = 'clear_edit_lock create_zone copy_zone copy_zi delete_zone diff_zone_zi diff_zones disable_zone enable_zone edit_zone exit EOF help ls ls_deleted ls_reference lszi quit refresh_zone refresh_zone_ttl reset_zonesm record_query_db show_apex_ns show_config show_dms_status show_zi show_zone show_zone_byid show_zone_sectags show_zonesm show_zonesm_byid undelete_zone'
+settings['restricted_mode_commands'] = 'clear_edit_lock create_zone copy_zone copy_zi delete_zone diff_zone_zi diff_zones disable_zone enable_zone edit_zone exit EOF help ls ls_deleted ls_reference ls_zi quit refresh_zone refresh_zone_ttl reset_zonesm record_query_db show_apex_ns show_config show_dms_status show_zi show_zone show_zone_byid show_zone_sectags show_zonesm show_zonesm_byid undelete_zone'
 settings['wsgi_test_commands'] = 'create_zi_zone cancel_edit_zone rr_query_db set_zone_alt_sg show_zi_byid list_zone list_zone_deleted list_zi'
 # Command log facility
 settings['commands_not_to_syslog'] = 'help show EOF list quit exit rr ls'

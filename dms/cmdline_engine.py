@@ -933,7 +933,7 @@ class CmdLineEngine(ZoneEngine):
 
     def list_resolv_zi_id(self, name, zi_id):
         """
-        Extra functionality for zone_tool lszi command.  Allows ls_zi to take
+        Extra functionality for zone_tool ls_zi command.  Allows ls_zi to take
         a zi_id argument
         """
         self._begin_op()
