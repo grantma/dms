@@ -111,6 +111,7 @@ settings['apex_ns_key'] = 'apex_ns'
 settings['apex_comment_template'] = 'Apex resource records for %s'
 settings['edit_lock_timeout'] = 30 # minutes
 if (settings['os_family'] == 'Linux'):
+    settings['dms_bind_config_dir'] = settings['config_dir'] + '/' + 'bind'
     settings['master_bind_config_dir'] = '/etc/bind'
     settings['master_config_dir'] = settings['var_lib_dir'] \
                                      + '/' + 'master-config'
@@ -120,6 +121,7 @@ if (settings['os_family'] == 'Linux'):
     settings['master_dnssec_key_dir'] = '/var/lib/bind/keys'
 elif (settings['os_family'] == 'FreeBSD'):
     settings['master_bind_config_dir'] = '/etc/namedb'
+    settings['dms_bind_config_dir'] = settings['master_bind_config_dir']
     settings['master_config_dir'] = '/etc/namedb/master-config'
     settings['master_dyndns_dir'] = '/etc/namedb/dynamic'
     settings['master_slave_dir'] = '/etc/namedb/slave'
