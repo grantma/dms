@@ -433,7 +433,7 @@ servers, and each other as the SPD does not have any sense fo connection
 direction, and it ispossble to connect to all the services on the Master
 Servers.
 
-The netscript-ipfilter packacge can save the iptables/ip6tables filters that
+The netscript-ipfilter package can save the iptables/ip6tables filters that
 you create.
 
 Use the policy match module to match decrypted traffic coming from the IPSEC
