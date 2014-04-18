@@ -896,7 +896,7 @@ root@dms-master2:/etc# etckeeper commit
 
 Create rndc.conf include needed to start bind.
 
-root@dms-master2:/etc# zont_tool write_rndc_conf
+root@dms-master2:/etc# zone_tool write_rndc_conf
 
 On the replica, Edit /etc/default/bind9, adding '-c
 /etc/bind/named-dr-replica.conf' to OPTIONS, and restart named.
@@ -1102,8 +1102,14 @@ dms-master2 # git fetch dms-master1
 dms-master2 # git checkout dms-master1/master apache2 dms/htpasswd-dms \
                dms/dms-wsgi-apache.conf dms/wsgi-scripts
 
+Fix permissions:
+
+dms-master2 # git checkout dms-master1/master .etckeeper
+dms-master2 # etckeeper init
+dms-master2 # etckeeper commit
+
 NOTE: Also try some of the readonly tests on the other DR partner server to
-make sure WSGI is functional there. You will have to tail over to do this.
+make sure WSGI is functional there. You will have to fail over to do this.
  
 
 =================================
@@ -1115,7 +1121,7 @@ Based on Debian Wheezy.
 Has 2 connections back to DMS DR partner servers.  You can leave one
 server out for racoon if only running one single DMS master server.
 
-No prevent installation of recommended packages add the following to
+To prevent installation of recommended packages add the following to
 /etc/apt/apt.conf.d/00local.conf:
 
 ----
@@ -1127,11 +1133,9 @@ APT::Install-Suggests "0";
 Install these packages:
 
 ----
-# aptitude install bind9 racoon rsync cron-apt bind9-host \
-screen psmisc procps tree sysstat lsof telnet-ssl open-vm-tools apache2-utils
+# aptitude install bind9 strongswan rsync cron-apt bind9-host dnsutils \
+screen psmisc procps tree sysstat lsof telnet-ssl apache2-utils ntp
 ----
-
-Select raccon-tool method of raccon configuration
 
 IPSEC
 -----
@@ -1192,15 +1196,13 @@ Edit /etc/default/rsync to enable daemon
 ----
 dms-master1# telnet new-slave domain
 dms-master1# telnet new-slave rsync
-dms-master1# telnet new-slave 973
 dms-master2# telnet new-slave domain
 dms-master2# telnet new-slave rsync
-dms-master2# telnet new-slave 973
 
 Test by rsyncing config to slave - needed for configuring bind9
 
 zone_tool> create_server new-slave-name ip-address
-zone_tool> rsync_admin_config no_rndc
+zone_tool> rsync_server_admin_config new-slave-name no_rndc
 
 ----
 
@@ -1277,16 +1279,16 @@ Restart bind9
 
 and check /var/log/syslog for any errors.
 
-Check that on the master servers that zone_tool rsync_admin_config works - it
-by default will rndc the slave
+Check that on the master servers that zone_tool rsync_server_admin_config
+works, by default will rndc the slave
 
 ----
 
 dms-master1# zone_tool write_rndc_conf
-dms-master1# zone_tool rsync_server_admin_config new-server
+dms-master1# zone_tool rsync_server_admin_config new-slave
 
 dms-master2# zone_tool write_rndc_conf
-dms-master2# zone_tool rsync_server_admin_config new-server
+dms-master2# zone_tool rsync_server_admin_config new-slave
 
 ----
 
