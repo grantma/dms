@@ -1,26 +1,20 @@
-dms (1.0.1g-1~3.gbpf93419) UNRELEASED; urgency=medium
+dms (1.0.1g-1) unstable; urgency=medium
 
-  ** SNAPSHOT build @f93419d70d7bd1aa96f4100787bd37bb11700952 **
-
+  * Packaging fixes, and moving dynamic data from /etc
   * Move rsync-config and master-config /var/lib/dms
   * Move rndc files into their proper Debian locations
   * Move named-dr-replica.conf to /etc/dms/bind
   * Move update-session.key to /etc/dms/bind
-  * Move update-session.key to /etc/dms/bind
-  * Separate dms bind config. Easier installs.
+  * Create separate dms bind config. Easier master installs.
   * Install bind named.conf files for first install
-  * Bump version number in light of changes.
   * Fix typo in dms_promote_replica
-  * Packaging fixes, and moving dynamic data from /etc
   * Clean up dynamic data directories on purge
   * Finalise Recommends/Suggests package split
-  * Some more tweaks
   * Add mssing /etc/dms/bind config directory
   * Fix type for install /etc/dms/bind config files
   * Fix Makefile for /etc/dms/bind conf files
   * Fix which /etc/dms/bind go into dms-core/dms-dr
   * Fix permissions on /etc/dms/bind files
-  * Update changelog version to 1.0.1d
   * Fix permissions on named-dr-replica.conf
   * Update README.Debian - Strongswan, DR pair or solo
   * Updating README.Debian and control
@@ -38,7 +32,7 @@ dms (1.0.1g-1~3.gbpf93419) UNRELEASED; urgency=medium
   * Final updates to README.Debian from trial setup
   * Add advice on filtering Incoming IPSEC connections
 
- -- Matthew Grant <grantma@en-gedi.internal.anathoth.net>  Fri, 18 Apr 2014 19:07:01 +1200
+ -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 18 Apr 2014 19:22:42 +1200
 
 dms (1.0-3) unstable; urgency=medium
 
