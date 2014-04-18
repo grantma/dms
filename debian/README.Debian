@@ -425,6 +425,66 @@ and port 53 on the masters (from slave).  Between both the replica servers
 (master and DR), port 5432 (postgresql) has to be reachable, as well as port 22
 (ssh).  Port 80 (http) for apt-get updates may also be involved.
 
+Firewalling on IPSEC links to Master Servers
+--------------------------------------------
+
+The Master servers need protection on the IPSEC connections from the slave
+servers, and each other as the SPD does not have any sense fo connection
+direction, and it ispossble to connect to all the services on the Master
+Servers.
+
+The netscript-ipfilter packacge can save the iptables/ip6tables filters that
+you create.
+
+Use the policy match module to match decrypted traffic coming from the IPSEC
+connection
+
+An example ip6tables output:
+
+shalom-ext: -root- [/tmp/zones] 
+# ip6tables -vnL INPUT
+Chain INPUT (policy ACCEPT 472K packets, 134M bytes)
+ pkts bytes target     prot opt in     out     source               destination         
+    0     0 REJECT     all      *      *       fd14:828:ba69:2::3   ::/0                 reject-with icmp6-port-unreachable
+ 157K   20M ipsec-in   all      *      *       ::/0                 ::/0                 policy match dir in pol ipsec
+
+shalom-ext: -root- [/tmp/zones] 
+# ip6tables -vnL ipsec-in
+Chain ipsec-in (1 references)
+ pkts bytes target     prot opt in     out     source               destination         
+ 138K   16M ACCEPT     all      *      *       ::/0                 ::/0                 ctstate RELATED,ESTABLISHED
+    0     0 ACCEPT     udp      *      *       ::/0                 ::/0                 udp spt:500 dpt:500
+    0     0 icmphost   icmpv6    *      *       ::/0                 ::/0                
+  198 18580 ACCEPT     udp      *      *       ::/0                 ::/0                 ctstate NEW udp dpt:53
+17474 3629K ACCEPT     udp      *      *       ::/0                 ::/0                 ctstate NEW udp dpt:514
+  118  9440 ACCEPT     tcp      *      *       ::/0                 ::/0                 ctstate NEW tcp dpt:53
+    0     0 ACCEPT     tcp      *      *       2001:470:f012:2::3   ::/0                 ctstate NEW tcp dpt:953
+    0     0 ACCEPT     tcp      *      *       2001:470:f012:2::3   ::/0                 ctstate NEW tcp dpt:5432
+    0     0 ACCEPT     tcp      *      *       2001:470:f012:2::3   ::/0                 ctstate NEW tcp dpt:5433
+    0     0 ACCEPT     tcp      *      *       2001:470:f012:2::3   ::/0                 ctstate NEW tcp dpt:873
+    0     0 ACCEPT     tcp      *      *       2001:470:f012:2::3   ::/0                 ctstate NEW tcp dpt:22
+    0     0 ACCEPT     tcp      *      *       2001:470:f012:2::3   ::/0                 ctstate NEW tcp dpt:113
+    0     0 ACCEPT     tcp      *      *       2001:470:f012:2::3   ::/0                 tcp dpt:80 ctstate NEW
+    0     0            tcp      *      *       2001:470:f012:2::3   ::/0                 tcp dpt:80 ctstate NEW
+    0     0 ACCEPT     tcp      *      *       fd14:828:ba69:1:21c:f0ff:fefa:f3c0  ::/0                 ctstate NEW tcp dpt:80
+  128 10240 ACCEPT     tcp      *      *       fd14:828:ba69:1:21c:f0ff:fefa:f3c0  ::/0                 ctstate NEW tcp dpt:22
+    0     0 ACCEPT     tcp      *      *       2001:470:c:110e::2   ::/0                 ctstate NEW tcp dpt:80
+    0     0 ACCEPT     tcp      *      *       2001:470:66:23::2    ::/0                 ctstate NEW tcp dpt:80
+  607 43704 log        all      *      *       ::/0                 ::/0                
+
+shalom-ext: -root- [/tmp/zones] 
+
+The icmphost and log chains are created by using 'netscript ip6filter exec log'
+and 'netscript ip6filter exec icmphost'.  IPv6 helper chains created from RFC
+4890 - 'Recommendations for Filtering ICMPv6 Messages in Firewalls'
+
+Read /etc/netscript/network.conf, and the manpage netscript
+
+The useful commands are:
+ 
+netscript ipfilter/ip6filter reload netscript ipfilter/ip6filter save netscript
+ipfilter/ip6filter exec icmphost (create an incoming ICMP filter for host
+traffic) netscript ipfilter/ip6filter usebackup <number>
 
 PostgresQL DB Setup and Master/Replica Configuration
 ----------------------------------------------------
