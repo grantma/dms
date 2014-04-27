@@ -12,8 +12,8 @@ Vcs-Browser: https://github.com/grantma/dms
 
 Package: dms-core
 Architecture: any
-Suggests: vim-nox|vim, nano
-Recommends: python3-setproctitle (>= 1.1.6),
+Suggests: vim-nox|vim, nano, python3-setproctitle (>= 1.1.6)
+Recommends:
   less,
   colordiff,
   haveged,
