@@ -1,3 +1,9 @@
+dms (1.0.1g-2) unstable; urgency=medium
+
+  * Make python3-setproctitle a Suggests
+
+ -- Matthew Grant <matt@mattgrant.net.nz>  Mon, 28 Apr 2014 08:52:13 +1200
+
 dms (1.0.1g-1) unstable; urgency=medium
 
   * Packaging fixes, and moving dynamic data from /etc
