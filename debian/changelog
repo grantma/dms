@@ -1,3 +1,9 @@
+dms (1.0.1g-3) unstable; urgency=medium
+
+  * Change package maintainer to Alioth DMS team.
+
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sun, 04 May 2014 22:32:08 +1200
+
 dms (1.0.1g-2) unstable; urgency=medium
 
   * Make python3-setproctitle a Suggests
