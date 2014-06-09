@@ -1,3 +1,9 @@
+dms (1.0.1g-4) unstable; urgency=medium
+
+  * Remove python3-setproctitle from dependencies.
+
+ -- Matthew Grant <matt@mattgrant.net.nz>  Tue, 10 Jun 2014 09:04:39 +1200
+
 dms (1.0.1g-3) unstable; urgency=medium
 
   * Change package maintainer to Alioth DMS team.
