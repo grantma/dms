@@ -1,3 +1,9 @@
+dms (1.0.1g-5) unstable; urgency=medium
+
+  * Add required Uploaders line to debian/control
+
+ -- Matthew Grant <matt@mattgrant.net.nz>  Thu, 12 Jun 2014 20:14:31 +1200
+
 dms (1.0.1g-4) unstable; urgency=medium
 
   * Remove python3-setproctitle from dependencies.
