@@ -9,8 +9,11 @@ Welcome to DNS Management System's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
+   overview.rst
+   technical_notes.rst
+   README.Debian.rst
 
 
 Indices and tables
