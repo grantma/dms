@@ -1,6 +1,6 @@
-*************
-Debian README
-*************
+**************
+Debian Install
+**************
 
 DNS Management System
 =====================

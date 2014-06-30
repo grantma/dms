@@ -11,9 +11,11 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   overview.rst
-   technical_notes.rst
+   Overview.rst
+   Operational_Procedures.rst
+   Install_from_Source.rst
    README.Debian.rst
+   Best_Practice_Guidelines.rst
 
 
 Indices and tables

@@ -1,55 +1,14 @@
-***************
-Technical Notes
-***************
-
-.. _best-practice-guidelines:
-
-Best Practice Guidelines
-========================
-
-Anycast Redux
--------------
-
-Refer to RFCs 3528 and 4786. Also refer to `http://dns.isc.org/f-root/` and `http://www.isc.org/solutions/sns-anycast`
-
-* ISCs experience is that a combination of anycast and unicast DNS servers is
-  the most reliable. Due to routing and load balancing instabilities, the
-  unicast servers are required to fill in the holes of service.  Like
-  interference fringes from overlapping point wave sources.
-
-* Small length TCP sessions mostly work.
-
-* Keep Local node routing to one AS as mush as possible, due to trouble
-  shooting difficulties.
-
-* Global node routing has to be very stable.
-
-* As soon as a DNS server can't keep content in sync with master, just shut
-  down named, rather than withdrawing route.
-
-* Turn off PMTU on anycast DNS servers
-
-* Don't filter UDP fragments
-
-* Set IPv6 MTU on anycast servers to 1280 bytes to avoid fragmentation.
-
-Remember that DNS resolvers are v. good at handling non-responsive servers.
-
-Also note that anycast address should at least be on a loopback interface.
-
-Good idea for anycast/slave server to have 2 interfaces - one for query
-traffic, the other for admin and talking to master server. These should be
-connected to separate interfaces on upstream router. Avoids a DOS overflowing
-TX queue affecting admin of the server
-
-
+*********************************************
 Master Server Install from Source Repostitory
-=============================================
+*********************************************
 
-*This may be a bit out of date, but useful for details hidden by Debian Packaging*
+.. note::
+
+   This may be a bit out of date, but useful for details hidden by Debian
+   Packaging.
 
 Packages to Install
--------------------
+===================
 
 Install from Debian 6.0 business card CD, Expert install. On downloading
 release information offered a choice to install Squeeze(stable),
@@ -74,7 +33,7 @@ rsyslog-pgsql, choose not to configure with dbconfig-common as rsyslog database
 will be part of dms database.
 
 Linux Kernel Tuning
--------------------
+===================
 
 This is to increase SYSV shared memory and semaphore limits.
 
@@ -100,10 +59,10 @@ This is to increase SYSV shared memory and semaphore limits.
 Shared memory settings also have to be adjusted in postgresql.conf
 
 Debian Setup
-------------
+============
 
 NTP
-^^^
+---
 
 Add::
 
@@ -114,14 +73,14 @@ to ``/etc/ntp.conf``, commenting out the default Debian NTP server pool
 servers.
 
 Get DMS Master Source code
---------------------------
+==========================
 
 In your home directory::
 
  $ git clone https://git.devel.net.nz/dms/dms-2011.git
 
 PostgresQL set up
------------------
+=================
 
 The procedures here will create PostgresQL setups that are cross compatible.
 Using Unicode in the DB (above) makes the dumps compatible with Debian's PGSQL
@@ -139,7 +98,7 @@ and of course for development::
 Again, record data base passwords for later on, when setting up dms.conf
 
 PostgresQL network and user account mapping
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------------------
 
 The files ``pg_hba.conf``, ``postgresql.conf``, and ``pg_ident.conf`` are found
 in ``/etc/postgresql/9.3/main``, the configuration directory for the main DB
@@ -153,7 +112,7 @@ postgres user across a unix socket. All sorts of maintenance and system cron
 jobs won't work then!*
 
 Production
-""""""""""
+^^^^^^^^^^
 
 Edit ``/etc/postgresql/9.3/pg_hba.conf`` to be::
 
@@ -170,7 +129,7 @@ This turns on password checking for localhost IP access, and sets Unix socket
 connections from psql to have no passwords from the command line.
 
 Development
-"""""""""""
+^^^^^^^^^^^
 
 On Debian, to make work easier and to enable Python DB stuff to work with less
 fuss add the following to ``/etc/postgresql/9.1/main/pg_ident.conf``::
@@ -203,13 +162,13 @@ or ``.bashrc``::
        export PGUSER PGDATABASE
 
 Postgresql.conf settings
-^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------
 
 On Debian, set ``listen_addresses`` to ``ip6-localhost,localhost``, and on both system
 types set shared_buffers to 64MB.
 
 DR Postgresql.conf settings
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
 For reference see the `PostgesQL wiki
 <https://wiki.postgresql.org/wiki/Streaming_Replication>`
@@ -260,7 +219,7 @@ Restart postgresql to make the new settings take effect::
       service postgresql restart
 
 Load database schema and functions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------
 
 Run psql as DB superuser and load the DB dms schema onto the fresh ``dms``
 database created above. Its also a good time to load the seed configuration
@@ -276,13 +235,13 @@ This contains all stored procedures and triggers etc for the database, created
 by ``pg_dump -s -U pgsql dms``
 
 Install Python Stack
---------------------
+====================
 
 As ``root`` from ``dms`` source code directory, run
 ``./setup_scripts/bootstrap-python-packages.sh``
 
 Create System Users
--------------------
+===================
 
 The following will create the 2 system/pseudo users ``dms`` and ``dmsdmd`` the
 DMS sofware will run as::
@@ -294,7 +253,7 @@ so that they can read the ``dms.conf`` file that also stores the database
 password.
 
 Install Software
-----------------
+================
 
 As ``root`` on Debian::
 
@@ -302,7 +261,7 @@ As ``root`` on Debian::
 
 
 Edit dms.conf and test
-------------------------
+======================
 
 Edit ``dms.conf`` in ``/etc/dms`` on Debian to set up DB passwords recorded
 from above. Also note that logging settings can also be adjusted here. Each
@@ -347,7 +306,7 @@ Test using::
       zone_tool >
 
 Configuring BIND named
-----------------------
+======================
 
 Generate the following keys and ``rndc.conf`` using ``zone_tool``::
 
@@ -469,7 +428,7 @@ at the ``zone_tool`` prompt. That will show the next time the ConfigSM will
 cycle, allowing the zone to be published.
 
 Enabling net24dmd at boot
--------------------------
+=========================
 
 Copy ``etc/debian/init/dmsdmd.init`` to ``/etc/init.d/dmsdmd``, and copy
 ``etc/debian/init/dmsdmd.default`` to ``/etc/default/dmsdmd``, and run
@@ -491,13 +450,13 @@ Edit /etc/default/dmsdmd to enable dmsdmd on boot::
        DMSDMD_ENABLE=true
 
 Cron Jobs
----------
+=========
 
 Just create a cron job to run ``zone_tool vacuum_all`` daily, It does not have to
 be done as root, though that is probably the easiest.
 
 WSGI Setup
-----------
+==========
 
 Put the following into ``/etc/apache2/sites-available/wsgi.someorg.org``, and
 ``a2ensite`` it.
@@ -586,7 +545,7 @@ Check that it works:
 It should spew a lot of JSON content.
 
 Rsyslog
--------
+=======
 
 Create the file ``/etc/rsyslog.d/00network``::
 
@@ -625,7 +584,7 @@ for postgresql error messages.
 
 Master Server Bind Logging Setup
 
-Add the following to /etc/namedb or /etc/bind as logging.conf, and include it:
+Add the following to /etc/namedb or /etc/bind as logging.conf, and include it::
 
        // Logging
        logging {
@@ -648,7 +607,7 @@ Add the following to /etc/namedb or /etc/bind as logging.conf, and include it:
 Restart named and check the system events table in the dms database. Log messages should start appearing in it.
 
 Master Server Firewall Setup
-----------------------------
+============================
 
 IPsec SPD is not stateful, and for 2 way traffic, it is easier just to set it
 up to allow all traffic in both directions. System IP filtering on the DMS
@@ -694,6 +653,7 @@ The latter is not typical of a large scale setup.
 
 The above (and a FreeBSD IPFW2 example - IPv6 IPSEC did not work0 are in the
 ``etc/firewall`` directory of the ``dms`` git archive.
+
 
 
 
