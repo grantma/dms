@@ -1147,7 +1147,9 @@ Fix permissions::
 
 NOTE: Also try some of the read-only tests on the other DR partner server to
 make sure WSGI is functional there. You will have to fail over to do this.
- 
+
+.. _Setting-up-a-Slave-Server:
+
 Setting up a Slave DNS Server
 =============================
 
