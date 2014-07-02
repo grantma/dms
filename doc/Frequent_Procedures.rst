@@ -1,8 +1,8 @@
 **********************
-Operational Procedures
+Frequent Procedures
 **********************
 
-Various frequent procedures are listed here. They are typical of the daya to
+Various frequent procedures are listed here. They are typical of the day to
 day management of zones with DMS.
 
 Creating and Copying Zones
@@ -100,9 +100,9 @@ They can also be created from any given ZI by using the copy_zone command::
                                       IN        NS                   ns2.anathoth.net.
                                       IN        NS                   ns1.anathoth.net.
 
-ZIs can also be copied from one zone to another by using the copy_zi command.
-This command will not result in the copied ZI being published unless the zone
-is refreshed to use it.
+ZIs can also be copied from one zone to another by using the ``copy_zi``
+command.  This command will not result in the copied ZI being published unless
+the zone is refreshed to use it.
 
 Deleting and Undeleting Zones
 =============================
@@ -178,8 +178,7 @@ zone.
    ``vacuum_all`` command, which is croned to run daily.
 
 
-
-.. _editing-a-zone
+.. _editing-a-zone:
 
 Editing a Zone
 ==============
@@ -193,13 +192,13 @@ In ``/usr/share/vim/vimcurrent/debian.vim`` ``vim`` has been set up for::
   set nocompatible " Use Vim defaults instead of 100% vi compatibility
   set backspace=indent,eol,start " more powerful backspacing
 
-which means Insert mode behaves like a normal editor. Arrow keys do not finish
+Which means Insert mode behaves like a normal editor. Arrow keys do not finish
 insert mode session. Backspace and delete delete across line ends with a
-logical sense as to directionality when in insert mode etc. (Whew! standard
+logical sense as to directionality when in insert mode etc. (Whew! Standard
 ``vi`` - !@#$%@$%&$%^*@#$%^ - can't find spanner to resolve insertion into
 works trajectory)
 
-At a minumum you still have to know about ``:w`` to save, and ``:q`` to quit
+At a minimum you still have to know about ``:w`` to save, and ``:q`` to quit
 and save.  ``ESC`` is also useful to cancel something if you think you have
 pressed something wrong, and to exit insert mode back to visual command mode.
 Pressing ``u`` in visual mode will undo the last change, with multiple undo for
@@ -213,7 +212,7 @@ recent change history.
                                   key if you want to back out of what ever you are not
                                   sure you have just started (in visual mode). Press
                                   multiple times just to reassure yourself operation is
-                                  cancelled, even though once is all you need to do
+                                  canceled, even though once is all you need to do
                                   95% of the time. This should 'unstick' any vi.
                                   REMEMBER THIS! (vi safety rule number 1!)
 
@@ -221,11 +220,11 @@ recent change history.
 
   :w                              In visual mode, save file
 
-  :e!                             revert all changes until last save
+  :e!                             Revert all changes until last save
 
   :q                              quit
 
-  :q!                             forced quit if you have changed something
+  :q!                             Forced quit if you have changed something
 
   :wq                             save file and quit vi
 
@@ -247,17 +246,17 @@ recent change history.
 
   V                               select current line and then use arrows to select block
 
-  v                               select from cursor posN and then use arrows to select
+  v                               Select from cursor posN and then use arrows to select
                                   block
 
-  d                               delete, then press locational key of where to delete to
+  d                               Delete, then press locational key of where to delete to
                                   (^,$,G,gg)
 
-  ^                               beginning of line
+  ^                               Beginning of line
 
-  $                               end of line
+  $                               End of line
 
-  :s/<regexp>/<replacement>/gc    search and replace with confirmation. Use with v or V
+  :s/<regexp>/<replacement>/gc    Search and replace with confirmation. Use with v or V
                                   selection to apply to block. g suffix means replace
                                   multiple times on one line, rather than first occurrence,
                                   c means confirm
@@ -265,15 +264,15 @@ recent change history.
   :%                              Apply following command across whole file.
                                   ':%s/<regexp>/<replacement>/' very useful
 
-  p                               paste last deletion
+  p                               Paste last deletion
 
-  y                               copy 'yy' copy current line, y$ y^ as you would expect.
+  y                               Copy 'yy' copy current line, y$ y^ as you would expect.
 
-  2yy                             copy current line and one following
+  2yy                             Copy current line and one following
 
-  2dd                             well, work this one out...
+  2dd                             Well, work this one out...
 
-  2p                              paste twice (paste one line 2 times etc)
+  2p                              Paste twice (paste one line 2 times etc)
   ============================    =======================================================
 
 
@@ -358,11 +357,11 @@ The DMS zone file format builds on the format described in RFCs 1034 and 1035
 by the use of 2 character comment tags. In the example above note the Apex RR
 group started by the ``;|`` RR croup comment, with the block finished by a blank
 line. Individual RR record comments start with ``;#`` on the line just before the
-record. Bioth types of comment can be multi line. An new RR Group can be
+record. Both types of comment can be multi line. An new RR Group can be
 started by giving a comment starting with ``;|``, with the RR Group comment
 naming the RR Group. RR Groups tend to be sorted alphabetically, except that
 the Apex group containing the SOA and NS records is at the top of the zone
-file, with the unlabelled default RR Group last of all. RR flag comments also
+file, with the unlabeled default RR Group last of all. RR flag comments also
 exist, mostly to control auto reverse PTR functionality, and to disable any
 individual RR.
 
@@ -374,7 +373,7 @@ individual RR.
  ;!                                       RR flag comment
  ;!LOCKPTR                                Lock the PTR record preventing
                                           any auto update.
- ;!REF:0000@1STDOMAINS-NZ                 PTR RR reference. Any changes coming
+ ;!REF:0000@DNSPROVIDER-NZ                PTR RR reference. Any changes coming
                                           from a zone 'owned' by the given
                                           reference are allowed to change the
                                           record.  The ';!REF' on the SOA
@@ -593,7 +592,7 @@ Refreshing a Zone
 -----------------
 
 This causes a refresh of the zone against the master DMS server. If there are
-any diifferences, they are resolved.
+any differences, they are resolved.
 
 ::
 
@@ -721,27 +720,17 @@ terminal session.
 Viewing Zones (and a lot more about them)
 =========================================
 
-       Listing Zones
-              Examples:
-
-       Listing Deleted Zones
-       Showing a Zone
-       Power Tricks
-              zi-id
-              domain-name
-
-       Differencing ZIs and Zones
-       Differencing Zones
+.. toctree::
 
 Listing Zones
+-------------
 
-You can use the ls command for this. It can take multiple wild cards, '?' and '*'. Other things that are useful are the
-customer reference. These take the form account_id@1STDOMAINS-NZ and account_id@NET24-NZ
+You can use the ``ls`` command for this. It can take multiple wild cards, ``?`` and ``*``. Other things that are useful are the
+customer reference. These take the form ``account_id@DNSPROVIDER-NZ`` and ``account_id@SOMEORG-NZ``
 
 Examples:
 
-Plain ls - Returns everything
-
+Plain ``ls`` - Returns everything::
 
        zone_tool > ls
        110.168.192.in-addr.arpa.
@@ -759,7 +748,7 @@ Plain ls - Returns everything
        test2.com.
        wilma.org.
 
-Wildcard ls
+Wildcard ``ls``::
 
 
        zone_tool > ls anathoth*
@@ -767,11 +756,10 @@ Wildcard ls
        anathoth.org.
 
 
+``ls`` with reference using ``-r`` switch::
 
-ls with reference using -r switch
 
-
-       zone_tool > ls -r 0000@1STDOMAINS-NZ
+       zone_tool > ls -r 0000@DNSPROVIDER-NZ
        110.168.192.in-addr.arpa.
        2.1.0.f.0.7.4.0.1.0.0.2.ip6.arpa.
        31.172.in-addr.arpa.
@@ -785,12 +773,9 @@ ls with reference using -r switch
        test2.com.
        wilma.org.
 
+Verbose ``ls`` with reference::
 
-
-Verbose ls with reference
-
-
-       zone_tool > ls -v -r 0000@1STDOMAINS-NZ
+       zone_tool > ls -v -r 0000@DNSPROVIDER-NZ
        110.168.192.in-addr.arpa.        2012081900                 PUBLISHED           anathoth
        2.1.0.f.0.7.4.0.1.0.0.2.ip6.arpa. 2012052300                 PUBLISHED           anathoth
        31.172.in-addr.arpa.             2012071301                 PUBLISHED           anathoth
@@ -805,18 +790,18 @@ Verbose ls with reference
        wilma.org.                       2012081602                 PUBLISHED           anathoth
        zone_tool >
 
-
-
-
 Listing Deleted Zones
+---------------------
 
-Use the ls_deleted command. It can use wild cards and reference as per the ls command. The second column
-displayed is the zone_id, which you use to undelete a zone. Raison d'etre: With 1st domains, knowing how people
+Use the ``ls_deleted command``. It can use wild cards and reference as per the
+``ls`` command. The second column displayed is the ``zone_id``, which you use
+to undelete a zone. Raison d'etre: With DNS Provider, knowing how people use
+computers when they 'know'/think something goes a bit loopy, they will spring
+for deleting a zone, and recreating it, most likely multiple times. Thus there
+are likely to be multiple deleted zones for the same domain name, hence the use
+of ``zone_id`` for undelete.
 
-use computers when they 'know'/think something goes a bit loopy, they will spring for deleting a zone, and
-recreating it, most likely multiple times. Thus there are likely to be multiple deleted zones for the same domain
-name, hence the use of zone_id for undelete.
-
+::
 
        zone_tool > help ls_deleted
 
@@ -840,9 +825,10 @@ name, hence the use of zone_id for undelete.
 
 
 Showing a Zone
+--------------
 
-Use the show_zone command. By default just displays the published Zone Instance (ZI)
-
+Use the ``show_zone`` command. By default just displays the published Zone
+Instance (ZI)::
 
        zone_tool > show_zone anathoth.net
        $TTL 24h
@@ -861,65 +847,54 @@ Use the show_zone command. By default just displays the published Zone Instance 
        ;|
        ;| Apex resource records for anathoth.net.
        ;|
-       @                       IN      SOA                                ( ns1          ;Master NS
-                                                                          matthewgrant5.gmail.com.
-       ;RP email
-                                                                          2012082000        ;Serial
-       yyyymmddnn
-                                                                          600               ;Refresh
-
-                                                600          ;Retry
-                                                604800       ;Expire
-                                                600
-;Minimum/Ncache
-                                                )
-                         IN     NS              ns3
-                         IN     NS              ns2
-                         IN     NS              ns1
+       @                       IN      SOA            ( ns1                        ;Master NS
+                                                        matthewgrant5.gmail.com.   ;RP email
+                                                        2012082000                 ;Serial  yyyymmddnn
+                                                        600                        ;Refresh
+                                                        600          ;Retry
+                                                        604800       ;Expire
+                                                        600          ;Minimum/Ncache
+                                                        )
+                                 IN     NS              ns3
+                                 IN     NS              ns2
+                                 IN     NS              ns1
 
 
-;| Hosts
-shalom-dr               IN      AAAA            2001:470:f012:2::3
-                        IN      SSHFP           1 1
-07bfdd14b4be97dbe282573eecd5bc6b062a92b1
-shalom-ext              IN      AAAA            2001:470:f012:2::2
-                        IN      SSHFP           1 1
-073b3198599c59a3c2a9db8c209a2097ea46aa09
-shalom-fw               IN      AAAA            2001:470:c:2e6::2
-shalom-svc              IN      AAAA            2001:470:f012:2::1
+        ;| Hosts
+        shalom-dr               IN      AAAA            2001:470:f012:2::3
+                                IN      SSHFP           1 1 07bfdd14b4be97dbe282573eecd5bc6b062a92b1
+        shalom-ext              IN      AAAA            2001:470:f012:2::2
+                                IN      SSHFP           1 1 073b3198599c59a3c2a9db8c209a2097ea46aa09
+        shalom-fw               IN      AAAA            2001:470:c:2e6::2
+        shalom-svc              IN      AAAA            2001:470:f012:2::1
 
 
-;| Internal zone lacing
-internal                IN      DS              18174 7 2
-c42492db9def5ca9403d26f175247dfe86d913da4bedfc7d629f5e57d6669feb
-                        IN      NS              ns1.internal
-                        IN      NS              ns2.internal
-ns1.internal            IN      AAAA
-fd14:828:ba69:1:21c:f0ff:fefa:f3c0
-ns2.internal            IN      AAAA            fd14:828:ba69:2::2
+        ;| Internal zone lacing
+        internal                IN      DS              18174 7 2 c42492db9def5ca9403d26f175247dfe86d913da4bedfc7d629f5e57d6669feb
+                                IN      NS              ns1.internal
+                                IN      NS              ns2.internal
+        ns1.internal            IN      AAAA            fd14:828:ba69:1:21c:f0ff:fefa:f3c0
+        ns2.internal            IN      AAAA            fd14:828:ba69:2::2
 
 
-;| Name server records
-ns1                      IN     A               203.79.116.183
-                         IN     AAAA            2001:470:f012:2::2
-ns2                      IN     A               111.65.238.10
-                         IN     AAAA            2001:470:c:110e::2
-ns3                      IN     A               111.65.238.11
-                         IN     AAAA            2001:470:66:23::2
+        ;| Name server records
+        ns1                      IN     A               203.79.116.183
+                                 IN     AAAA            2001:470:f012:2::2
+        ns2                      IN     A               111.65.238.10
+                                 IN     AAAA            2001:470:c:110e::2
+        ns3                      IN     A               111.65.238.11
+                                 IN     AAAA            2001:470:66:23::2
 
 
-;| Web site Urls
-@                        IN     A               203.79.116.183
-                         IN     AAAA            2001:470:f012:2::2
-                         IN     TXT             "Some hash"
-www                      IN     CNAME           @
+        ;| Web site Urls
+        @                        IN     A               203.79.116.183
+                                 IN     AAAA            2001:470:f012:2::2
+                                 IN     TXT             "Some hash"
+        www                      IN     CNAME           @
 
-       zone_tool >
+        zone_tool >
 
-
-
-
-Use ls_zi <domain-name> to display all the ZIs in the DB for a zone.
+Use ``ls_zi <domain-name>`` to display all the ZIs in the DB for a zone::
 
 
        ls_zi anathoth.net
@@ -949,12 +924,9 @@ Use ls_zi <domain-name> to display all the ZIs in the DB for a zone.
                 102589                         2012082000         Mon   Aug   20   10:41:26   2012
                *102592                         2012082000         Mon   Aug   20   11:07:49   2012
 
-
-
-
 The published ZI is asterisked.
 
-show_zone can also take a ZI as the second argument
+``Show_zone`` can also take a ZI as the second argument::
 
         zone_tool > show_zone anathoth.net 102585
         $TTL 24h
@@ -991,62 +963,69 @@ show_zone can also take a ZI as the second argument
         .
         .
 
-
-
 Power Tricks
+------------
 
 zi-id
+^^^^^
 
-
-Anywhere a ZI id can be entered, you can use the '^---' and '^++' notation. '^' is the published ZI, '^-' the ZI previous
-to the published ZI, '^+2' the ZI 2 ahead of the current published ZI, '@2d' the ZI that was published 2 days ago, '1/4'
-the ZI that was published on the 1st of April, 2/3/1010 the ZI published as of the 2nd March 1010. The zi_id is also
-used with the diff_zone and diff_zones commands.
+Anywhere a ZI id can be entered, you can use the ``^---`` and ``^++` notation.
+``^`` is the published ZI, ``^-`` the ZI previous to the published ZI, ``^+2``
+the ZI 2 ahead of the current published ZI, ``@2d`` the ZI that was published 2
+days ago, ``1/4`` the ZI that was published on the 1st of April, 2/3/1010 the
+ZI published as of the 2nd March 1010. The ``zi_id`` is also used with the
+``diff_zone`` and ``diff_zones`` commands.
 
 domain-name
+^^^^^^^^^^^
 
-
-In the case of reverse zones, the domain name can be the exact network block in CIDR notation when creating a
-zone, deleting a zone, enabling/disabling/setting a zone. An IP number can be given with show_zone, edit_zone,
-and lszi, and the corresponding closest reverse zone will be shown/edited. This is for ease of use when working
-with IP addresses and network diagnosis. The IP number can be pasted into the terminal.
+In the case of reverse zones, the domain name can be the exact network block in
+CIDR notation when creating a zone, deleting a zone, enabling/disabling/setting
+a zone. An IP number can be given with ``show_zone``, ``edit_zone``, and
+``lszi``, and the corresponding closest reverse zone will be shown/edited. This
+is for ease of use when working with IP addresses and network diagnosis. The IP
+number can be pasted into the terminal.
 
 Differencing ZIs and Zones
+--------------------------
 
-Differences between the ZIs in a zone can be taken by using the diff_zone_zi command. The first zi_id parameter is
-the former ZI, and the 2nd the latter ZI. By default the 2nd ZI is the currently published ZI.
+Differences between the ZIs in a zone can be taken by using the
+``diff_zone_zi`` command. The first ``zi_id`` parameter is the former ZI, and
+the 2nd the latter ZI. By default the 2nd ZI is the currently published ZI.
 
-All diff output is in unified format, and if the system is set up properly, difference lines are colorized in the zone_tool
-pager.
+All ``diff`` output is in unified format, and if the system is set up properly,
+difference lines are colorized in the ``zone_tool`` pager.
 
-Dates can also take a 4 digit year, ISO date format, whith hh:mm after a comma. (ie 3/5/2012,13:45) If a time is not
-given with a date, it is taken as being at midnight on the date, the start of the day, 00:00. This is in line with the
+Dates can also take a 4 digit year, ISO date format, with hh:mm after a comma.
+(ie 3/5/2012,13:45) If a time is not given with a date, it is taken as being at
+midnight on the date, the start of the day, 00:00. This is in line with the
 international date time standards used for time zones.
 
-Times in hh:mm can also be used as a zi_id.
+Times in hh:mm can also be used as a ``zi_id``.
 
-            Zone SOA serial numbers for a ZI 'float'. They are updated if a ZI for a zone is republished, of if
-            an update is made to the zone apex records, of if the ZI for the zone is refreshed resulting in it
-            publication. The SOA serial for a ZI is worked out via an RFC compliant 'bargaining' process with
-            named when named is updated with the ZI via dynamic differencing from net24dmd. A current
-            serial number of 'YYYYMMDDnn' format is the first 'offer' if the named zone SOA serial is before
-            the current day.
+.. note::
 
-            The best thing when looking for a SOA serial number for a zone is to give it as a zi_id date.
+            Zone SOA serial numbers for a ZI 'float'. They are updated if a ZI
+            for a zone is republished, of if an update is made to the zone apex
+            records, of if the ZI for the zone is refreshed resulting in it
+            publication. The SOA serial for a ZI is worked out via an RFC
+            compliant 'bargaining' process with named when named is updated
+            with the ZI via dynamic differencing from dmsdmd. A current serial
+            number of 'YYYYMMDDnn' format is the first 'offer' if the named
+            zone SOA serial is before the current day.
 
+            The best thing when looking for a SOA serial number for a zone is
+            to give it as a ``zi_id`` date.
 
-Differencing between ZI at 1/5 (1st May) of current year and published for zone anathoth.net.
+Differencing between ZI at 1/5 (1st May) of current year and published for zone ``anathoth.net.``::
 
       zone_tool > diff_zone_zi anathoth.net 1/5
       @@ -6,7 +6,7 @@
        ;|
        @                       IN      SOA                               ( ns1          ;Master NS
-                                                                         matthewgrant5.gmail.com.
-      ;RP email
-      -                                                                  2012042702       ;Serial
-      yyyymmddnn
-      +                                                                  2012082000       ;Serial
-      yyyymmddnn
+                                                                         matthewgrant5.gmail.com.      ;RP email
+      -                                                                  2012042702       ;Serial      yyyymmddnn
+      +                                                                  2012082000       ;Serial      yyyymmddnn
                                                                          600              ;Refresh
                                                                          600              ;Retry
                                                                          604800           ;Expire
@@ -1055,11 +1034,9 @@ Differencing between ZI at 1/5 (1st May) of current year and published for zone 
 
         ;| Hosts
       +shalom-dr               IN      AAAA                              2001:470:f012:2::3
-      +                        IN      SSHFP                             1 1
-      07bfdd14b4be97dbe282573eecd5bc6b062a92b1
+      +                        IN      SSHFP                             1 1 07bfdd14b4be97dbe282573eecd5bc6b062a92b1
         shalom-ext             IN      AAAA                              2001:470:f012:2::2
-      +                        IN      SSHFP                             1 1
-      073b3198599c59a3c2a9db8c209a2097ea46aa09
+      +                        IN      SSHFP                             1 1 073b3198599c59a3c2a9db8c209a2097ea46aa09
         shalom-fw              IN      AAAA                              2001:470:c:2e6::2
         shalom-svc             IN      AAAA                              2001:470:f012:2::1
 
@@ -1070,48 +1047,39 @@ Differencing between ZI at 1/5 (1st May) of current year and published for zone 
       +                                 IN         TXT                   "Some hash"
         www                             IN         CNAME                 @
 
-
       zone_tool >
 
+Differencing between ZI 65 days ago and published for zone ``anathoth.net.``
+Note that the 2 days ago, no difference, produces no output. Other time
+specifiers are ``s`` for seconds, ``m`` for minutes, ``h`` for hours. Months is
+not available as Python standard lib datetime.timedelta class does not support
+it (months varying in length?).
 
-
-
-Differencing between ZI 65 days ago and published for zone anathoth.net Note the 2 days ago, no difference,
-produces no output. Other time specifiers are s for seconds, m for minutes, h for hours. Months is not available as
-Python standard lib datetime.timedelta class does not support it (months varying in length?).
+::
 
       zone_tool > diff_zone_zi anathoth.net @2d ^
       zone_tool > diff_zone_zi anathoth.net @25d ^
       @@ -6,7 +6,7 @@
        ;|
        @                       IN      SOA                              ( ns1          ;Master NS
-                                                                        matthewgrant5.gmail.com.
-      ;RP email
-      -                                                                 2012072600       ;Serial
-      yyyymmddnn
-      +                                                                 2012082000       ;Serial
-      yyyymmddnn
+                                                                        matthewgrant5.gmail.com. ;RP email
+      -                                                                 2012072600       ;Serial yyyymmddnn
+      +                                                                 2012082000       ;Serial yyyymmddnn
                                                                         600              ;Refresh
                                                                         600              ;Retry
                                                                         604800           ;Expire
       zone_tool >
 
-
-
-
-Differencing between anathoth.net on 2/4/2012,14:04 and the ZI 4 previous to the current published one (could also
-be given as '^----'):
+Differencing between ``anathoth.net`` on 2/4/2012,14:04 and the ZI 4 previous to the current published one (could also
+be given as ``^----``)::
 
       diff_zone_zi anathoth.net 3/4/2012,14:04 ^-4
       @@ -6,7 +6,7 @@
        ;|
        @                       IN      SOA                              ( ns1          ;Master NS
-                                                                        matthewgrant5.gmail.com.
-      ;RP email
-      -                                                                 2012042702        ;Serial
-      yyyymmddnn
-      +                                                                 2012072600        ;Serial
-      yyyymmddnn
+                                                                        matthewgrant5.gmail.com.      ;RP email
+      -                                                                 2012042702        ;Serial yyyymmddnn
+      +                                                                 2012072600        ;Serial yyyymmddnn
                                                                         600               ;Refresh
                                                                         600               ;Retry
                                                                         604800            ;Expire
@@ -1120,11 +1088,9 @@ be given as '^----'):
 
         ;| Hosts
       +shalom-dr               IN      AAAA                             2001:470:f012:2::3
-      +                        IN      SSHFP                            1 1
-      07bfdd14b4be97dbe282573eecd5bc6b062a92b1
+      +                        IN      SSHFP                            1 1 07bfdd14b4be97dbe282573eecd5bc6b062a92b1
         shalom-ext             IN      AAAA                             2001:470:f012:2::2
-      +                        IN      SSHFP                            1 1
-      073b3198599c59a3c2a9db8c209a2097ea46aa09
+      +                        IN      SSHFP                            1 1 073b3198599c59a3c2a9db8c209a2097ea46aa09
         shalom-fw              IN      AAAA                             2001:470:c:2e6::2
         shalom-svc             IN      AAAA                             2001:470:f012:2::1
 
@@ -1139,20 +1105,23 @@ be given as '^----'):
       zone_tool >
 
 
-
-
-           The zi_id date format arguments can be used with show_zone and edit_zone instead of a
-           straight zi_id. So you can workflow using command line history. edit_zone will take the specified
-           ZI ID as the source to change, and make it the published ZI on completion (you can also abort,
-           and also diff your edit before updating).
+.. note::
+           
+        The ``zi_id`` date format arguments can be used with ``show_zone`` and
+        ``edit_zone`` instead of a straight ``zi_id``. So you can workflow
+        using command line history. ``edit_zone`` will take the specified ZI ID
+        as the source to change, and make it the published ZI on completion
+        (you can also abort, and also diff your edit before updating).
 
 
 Differencing Zones
+------------------
 
-The diff_zones command can be used to show the difference between 2 zones. This is useful if the latter zone was
-created from the other . The zi_id arguments are given in the order of the zone names.
+The ``diff_zones`` command can be used to show the difference between 2 zones.
+This is useful if the latter zone was created from the other . The ``zi_id``
+arguments are given in the order of the zone names.
 
-To show it works:
+To show it works::
 
       zone_tool > diff_zones anathoth.net anathoth.net ^-- ^
       @@ -3,11 +3,11 @@
@@ -1171,11 +1140,7 @@ To show it works:
       +;   zi_ptime:    Mon Aug 20 11:12:07 2012
        ;
 
-
-
-
-And of course:
-
+And of course::
 
       zone_tool > ls_zi anathoth.net
                102012                2012042702   Mon Feb 27 10:06:28    2012
@@ -1206,71 +1171,62 @@ And of course:
       zone_tool > copy_zone -z 102592 anathoth.net wham-blam.org
       zone_tool > edit_zone wham-blam.org
       ***   Do you wish to Abort, Change, Diff, or Update the zone
+      'wham-blam.org.'?
+      --[U]/a/c/d>
+      zone_tool > diff_zones anathoth.net wham-blam.org ^-- ^
+      @@ -1,33 +1,35 @@
+       $TTL 24h
+      -$ORIGIN anathoth.net.
+      +$ORIGIN wham-blam.org.
 
-'wham-blam.org.'?
---[U]/a/c/d>
-zone_tool > diff_zones anathoth.net wham-blam.org ^-- ^
-@@ -1,33 +1,35 @@
- $TTL 24h
--$ORIGIN anathoth.net.
-+$ORIGIN wham-blam.org.
-
- ;
--;   Zone:        anathoth.net.
-+;   Zone:        wham-blam.org.
-+;   Reference:   anathoth
- ;   change_by:   grantma@shalom-ext.internal.anathoth.net/Admin
--;   zi_id:       102588
--;   zi_ctime:    Mon Aug 20 10:27:36 2012
--;   zi_mtime:    Mon Aug 20 10:27:38 2012
--;   zi_ptime:    Mon Aug 20 10:27:38 2012
-+;   zi_id:       102598
-+;   zi_ctime:    Thu Aug 23 10:52:16 2012
-+;   zi_mtime:    Thu Aug 23 10:52:18 2012
-+;   zi_ptime:    Thu Aug 23 10:52:18 2012
- ;
-
-
--;|
--;| Apex resource records for anathoth.net.
--;|
--@                       IN      SOA                ( ns1            ;Master NS
-+;| Apex resource records for wham-blam.org.
-+;!REF:anathoth
-+@                       IN      SOA                ( ns1.anathoth.net.
-;Master NS
-                                                    matthewgrant5.gmail.com.
-;RP email
--                                                   2012082000     ;Serial
-yyyymmddnn
-+                                                   2012082301     ;Serial
-yyyymmddnn
-                                                    600            ;Refresh
-                                                    600            ;Retry
-                                                    604800         ;Expire
-                                                    600
-;Minimum/Ncache
-                                                    )
--                           IN      NS              ns3
--                           IN      NS              ns2
--                           IN      NS              ns1
-+                           IN      NS              ns3.anathoth.net.
-+                           IN      NS              ns2.anathoth.net.
-+                           IN      NS              ns1.anathoth.net.
+       ;
+      -;   Zone:        anathoth.net.
+      +;   Zone:        wham-blam.org.
+      +;   Reference:   anathoth
+       ;   change_by:   grantma@shalom-ext.internal.anathoth.net/Admin
+      -;   zi_id:       102588
+      -;   zi_ctime:    Mon Aug 20 10:27:36 2012
+      -;   zi_mtime:    Mon Aug 20 10:27:38 2012
+      -;   zi_ptime:    Mon Aug 20 10:27:38 2012
+      +;   zi_id:       102598
+      +;   zi_ctime:    Thu Aug 23 10:52:16 2012
+      +;   zi_mtime:    Thu Aug 23 10:52:18 2012
+      +;   zi_ptime:    Thu Aug 23 10:52:18 2012
+       ;
 
 
- ;| Hosts
+      -;|
+      -;| Apex resource records for anathoth.net.
+      -;|
+      -@                       IN      SOA                ( ns1            ;Master NS
+      +;| Apex resource records for wham-blam.org.
+      +;!REF:anathoth
+      +@                       IN      SOA                ( ns1.anathoth.net.      ;Master NS
+                                                          matthewgrant5.gmail.com. ;RP email
+      +                                                   2012082000     ;Serial  yyyymmddnn
+      -                                                   2012082301     ;Serial  yyyymmddnn
+                                                          600            ;Refresh
+                                                          600            ;Retry
+                                                          604800         ;Expire
+                                                          600
+      ;Minimum/Ncache
+                                                          )
+      1.                           IN      NS              ns3
+      2.                           IN      NS              ns2
+      3.                           IN      NS              ns1
+      4.                           IN      NS              ns3.anathoth.net.
+      5.                           IN      NS              ns2.anathoth.net.
+      6.                           IN      NS              ns1.anathoth.net.
 
-+bingo                   IN      AAAA      ::1
-+                        IN      TXT       "Samson was here"
-  shalom-dr              IN      AAAA      2001:470:f012:2::3
-                         IN      SSHFP     1 1
-07bfdd14b4be97dbe282573eecd5bc6b062a92b1
- shalom-ext              IN      AAAA      2001:470:f012:2::2
+
+        ;| Hosts
+
+      +bingo                   IN      AAAA      ::1
+      -                        IN      TXT       "Samson was here"
+        shalom-dr              IN      AAAA      2001:470:f012:2::3
+                               IN      SSHFP     1 1
+      07bfdd14b4be97dbe282573eecd5bc6b062a92b1
+       shalom-ext              IN      AAAA      2001:470:f012:2::2
 
        zone_tool >
-
-
-
-
 

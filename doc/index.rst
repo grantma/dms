@@ -12,16 +12,11 @@ Contents:
    :maxdepth: 3
 
    Overview.rst
-   Operational_Procedures.rst
+   Frequent_Procedures.rst
+   Administration_Procedures.rst
    Install_from_Source.rst
    README.Debian.rst
    Best_Practice_Guidelines.rst
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 

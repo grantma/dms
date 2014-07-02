@@ -1,0 +1,1365 @@
+***************************
+Administration Procedures
+***************************
+
+Adding a DNS Slave to DMS
+=========================
+
+Based on Debian Wheezy
+
+To prevent installation of recommended packages add the following to
+``/etc/apt/apt.conf.d/00local.conf``::
+
+       // No point in installing a lot of fat on VM servers
+       APT::Install-Recommends "0";
+       APT::Install-Suggests "0";
+
+Install these packages::
+
+       # aptitude install bind9 strongswan rsync cron-apt bind9-host \
+         screen psmisc procps tree sysstat lsof open-vm-tools
+
+
+Sysctl IPSEC settings
+
+To prevent network problems with running out of buffers, create the file /etc/sysctl.d/30-dms-core-net.conf with the
+following contents:
+
+
+       # Tune kernel for heave IPSEC DNS work.
+       # Up the max connection buffers
+       net.core.somaxconn=8192
+       net.core.netdev_max_backlog=8192
+       # Reduce TCP final timeout
+       net.ipv4.tcp_fin_timeout=10
+       # Increase size of xfrm tables
+       net.ipv6.xfrm6_gc_thresh=16384
+       net.ipv4.xfrm4_gc_thresh=16384
+
+
+
+and then reload sysctls with
+
+
+       # service procps start
+
+
+
+Racoon
+
+Edit /etc/racoon/racoon-tool.conf
+
+
+        connection(%default):
+                src_ip: 2001:470:c:110e::2
+                admin_status: disabled
+
+        peer(2001:470:f012:2::2):
+
+        # DMS Master 1
+        connection(shalom-ext):
+                dst_ip: 2001:470:f012:2::2
+                admin_status: enabled
+
+        # DMS Master 2
+        peer(2001:470:f012:2::3):
+
+        connection(shalom-dr):
+                dst_ip: 2001:470:f012:2::3
+                admin_status: enabled
+
+
+
+
+Note that IPSEC connections to each DMS master server have to be configured on each Slave.
+
+Edit /etc/racoon/psk.txt to set PSK secrets. Generate with
+
+
+        # pwgen -asn 128 1
+        Dbj4gxNUgnW0wx8ax8de2Sa38izza9HtzNWCjxkCXFXGWxokeqOd7VgX6sRRDiFVptNQTBBMPNP
+        mC8iK6QCJz3bJzQT06O90QqR6RGbE1hpLKG5xPfNd7DOBLKlnQtcn
+
+
+
+(You can apt-get install it). Make SURE each individual IPSEC connection has a unique PSK key for security. They
+can be generated easily, and cut/paste over terminal root session, so no big loss if they are lost.
+
+
+
+
+Rsync
+   1. Edit /etc/default/rsync, and enable rsyncd
+   2. Create /etc/rsyncd.conf:
+
+          hosts allow = 2001:470:f012:2::2/128 2001:470:f012:2::3/128
+          secrets file = /etc/rsyncd.secrets
+
+          [dnsconf]
+                  path = /etc/bind/rsync-config
+                  uid=bind
+                  gid=bind
+                  comment = Slave server config area
+                  auth users = dnsconf
+                  use chroot = yes
+                  read only = no
+
+
+
+
+3. Create /etc/rsyncd.secrets
+
+
+          dnsconf:etc-net24-rsync-slave-password
+
+
+4. Do this at the shell to create target /etc/bind/rsync-config directory:
+
+
+          mkdir /etc/bind/rsync-config
+          chown bind:bind /etc/bind/rsync-config
+
+
+5. and named slave directory
+
+
+          mkdir /var/cache/bind/slave
+          chown root:bind /var/cache/bind/slave
+          chmod 775 /var/cache/bind/slave
+
+
+6. Start rsyncd
+
+
+          # service rsync start
+
+
+7. Test connectivity from DMS Masters
+
+             dms-master1#     telnet    new-slave       domain
+             dms-master1#     telnet    new-slave       rsync
+             dms-master1#     telnet    new-slave       973
+             dms-master2#     telnet    new-slave       domain
+             dms-master2#     telnet    new-slave       rsync
+             dms-master2#     telnet    new-slave       973
+
+
+             zone_tool> create_slave new-slave-name ip-address
+             zone_tool> rsync_admin_config no_rndc
+
+
+
+
+Bind9
+
+Change /etc/bind/named.conf.options to the following:
+
+
+        options {
+                directory "/var/cache/bind";
+
+                 // If there is a firewall between you and nameservers you want
+                 // to talk to, you may need to fix the firewall to allow multiple
+                 // ports to talk. See http://www.kb.cert.org/vuls/id/800113
+
+                //   If your ISP provided one or more IP addresses for stable
+                //   nameservers, you probably want to use them as forwarders.
+                //   Uncomment the following block, and insert the addresses
+        replacing
+                //   the all-0's placeholder.
+
+                 // forwarders {
+                 //      0.0.0.0;
+                 // };
+
+
+        //========================================================================
+                // If BIND logs error messages about the root key being expired,
+                // you will need to update your keys. See
+        https://www.isc.org/bind-keys
+
+        //========================================================================
+                // dnssec-validation auto;
+
+                 // auth-nxdomain no;            # conform to RFC1035
+
+                 listen-on { localhost; };
+                 listen-on-v6 { any; };
+                 include "/etc/bind/rsync-config/options.conf";
+        };
+
+Note that the listen directives are given in file, Debian options commented out, as they are set in the rsynced include
+at the bottom.
+
+Change /etc/bind/named.conf.local to the following:
+
+
+       //
+       // Do any local configuration here
+       //
+
+       // Consider adding the 1918 zones here, if they are not used in your
+       // organization
+       //include "/etc/bind/zones.rfc1918";
+
+       // rndc config
+       include "/etc/bind/rndc.key";
+       include "/etc/bind/rsync-config/rndc-remote.key";
+       include "/etc/bind/rsync-config/controls.conf";
+       // Logging configuration
+       include "/etc/bind/rsync-config/logging.conf";
+       // Secondary zones
+       include "/etc/bind/rsync-config/bind9.conf";
+
+
+
+
+This file is used to include all the required bits from the /etc/bind/rsync-config directory. All this configuration can
+now be updated from the master server, and the slave reconfigured – but watch it when you go changing the rndc
+keys.
+
+Restart bind9
+
+# service bind9 restart
+and check /var/log/syslog for any errors.
+
+Check that on the master servers that zone_tool rsync_admin_config works - it by default will rndc the slave.
+
+
+       dms-master1# zone_tool write_rndc_conf
+       dms-master1# zone_tool rsync_server_admin_config
+
+       dms-master2# zone_tool write_rndc_conf
+       dms-master2# zone_tool rsync_server_admin_config
+
+
+
+Enable Server
+
+On the live DMS master, enable the slave, and watch that it changes state to OK. This may take 15-20 minutes
+
+    dms-master-live# zone_tool
+    zone_tool > enable_server <slave-name>
+    .
+    .
+    .
+    zone_tool > ls_pending_events
+    ServerSMConfigChange dms-master1                                      Tue Aug 21
+    14:19:39 2012
+    ServerSMConfigChange dms-master2                                      Tue Aug 21
+    14:19:39 2012
+    ServerSMConfigChange dms-slave0                                       Tue Aug 21
+    14:19:39 2012
+    ServerSMConfigChange dms-slave1                                       Tue Aug 21
+    14:19:39 2012
+    MasterSMHoldTimeout                                                   Tue Aug 21
+    14:29:39 2012
+
+    .
+    .
+    .
+    zone_tool > show_sg vygr-one
+            sg_name:                     vygr-one
+            config_dir:                  /etc/net24/slave-config-templates
+            master_address:              None
+            master_alt_address:          None
+            replica_sg:                  False
+            zone_count:                  37
+
+              Named slave configuration state:
+              dms-s1-akl                   2406:1e00:1001:2::2
+
+                      OK
+              dms-s1-chc                            2406:3e00:1001:2::2
+
+                        OK
+    zone_tool >
+
+
+
+
+Break Fix Scenarios
+    Log and Configuration Files
+    Checking DMS status
+    Failing Over as Master Server has Burned (or Subject to EQC Claim)
+    Stuck Zone not Propagating
+    MasterSM Stuck, New Zones not Being Created
+    Stuck ServerSM
+    Rebuilding named data from database
+    Failed Master, Replica /etc not up to date
+    Recovering DB from Backup
+
+      Regenerating ds/ DS material directory from Private Keys
+      IPSEC not going
+           Diagnosis
+           Recovery
+
+Log and Configuration Files
+
+The following are detailed elsewhere in the documentation
+
+ /var/log/net24/net24dmd.log*                               net24dmd logs
+
+ /var/log/local7.log                                        DMS named logs
+
+ /var/log/syslog                                            Basically everything
+
+ /et/net24/net24.conf                                       net24dmd, wsgi and zone_tool configuration file
+
+ /etc/net24                                                 Various passwords, templates and things
+
+See Named.conf and Zone Templating for more details.
+
+Checking DMS status
+
+1) Check that named, postgres, and net24dmd are running on the master
+
+2) Using zone_tool show_dms_status on master server
+
+
+       zone_tool > show_dms_status
+
+       show_master_status:
+
+                   MASTER_SERVER:         dms-akl
+
+                   NAMED master configuration state:
+
+                   hold_sg:               HOLD_SG_NONE
+                   hold_sg_name:          None
+                   hold_start:            Wed Nov 7 16:52:36 2012
+                   hold_stop:             Wed Nov 7 17:02:36 2012
+                   replica_sg_name:       vygr-replica
+                   state:                 HOLD
+
+       show_replica_sg:
+               sg_name:                      vygr-replica
+               config_dir:                   /etc/net24/server-config-templates
+               master_address:               2406:1e00:1001:1::2
+               master_alt_address:           2406:3e00:1001:1::2
+               replica_sg:                   True
+               zone_count:                   37
+
+                   Replica SG named status:
+                   dms-chc                             2406:3e00:1001:1::2
+
+                            OK
+
+ls_server:
+dms-akl                       Wed Nov 7 16:52:46 2012                OK
+        2406:1e00:1001:1::2                      None
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+dms-chc                       Wed Nov 7 16:52:46 2012                OK
+        2406:3e00:1001:1::2                      210.5.48.242
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+dms-s1-akl                    Wed Nov 7 16:31:04 2012                RETRY
+        2406:1e00:1001:2::2                      103.4.136.226
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+        retry_msg:
+           Server 'dms-s1-akl': SOA query - timeout waiting for
+           response, retrying
+dms-s1-chc                    Wed Nov 7 16:52:46 2012                OK
+        2406:3e00:1001:2::2                      210.5.48.226
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+
+list_pending_events:
+ServerSMConfigure         dms-s1-akl                   Wed Nov   7 16:57:22
+2012
+ServerSMCheckServer       dms-chc                      Wed Nov   7 16:53:55
+2012
+ServerSMCheckServer       dms-akl                      Wed Nov   7 16:55:46
+2012
+ServerSMCheckServer       dms-s1-chc                   Wed Nov   7 16:57:06
+2012
+MasterSMHoldTimeout                                    Wed Nov   7 17:02:36
+2012
+
+      zone_tool >
+
+
+
+      Check Master server name, that machine is actually the master
+      Check master state, HOLD means named reconfigured in the last 10 minutes
+      All servers shown at bottom should be in OK ior CONFIG states, staying in RETRY or BROKEN means
+      server may not be contactable. RETRY or BROKEN states should also have a retry_msg: field giving the
+      associated log message
+      list_pending_events shows events that have to be processed
+      Any events that are scheduled in the past may indicate net24dmd having serious problems
+
+Failing Over as Master Server has Burned (or Subject to EQC Claim)
+
+On the Replica:
+
+
+      dms-chc: -root- [~]
+      # dms_promote_replica
+      + perl -pe s/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/ -i
+      /etc/rsyslog.d/pgsql.conf
+      + set +x
+      [ ok ] Stopping enhanced syslogd: rsyslogd.
+      [ ok ] Starting enhanced syslogd: rsyslogd.
+      + perl -pe s/^NET24DMD_ENABLE=.*$/NET24DMD_ENABLE=true/ -i
+      /etc/default/net24dmd
+      + perl -pe s/^OPTIONS=.*$/OPTIONS="-u bind"/ -i /etc/default/bind9
+      + set +x
+      [....] Stopping domain name service...: bind9waiting for pid 8744 to die
+      . ok
+      [ ok ] Starting domain name service...: bind9.
+      [ ok ] Starting net24dmd: net24dmd.
+      + zone_tool write_rndc_conf
+      + zone_tool reconfig_all
+      + perl -pe s/^#+(.*zone_tool vacuum_all)$/\1/ -i /etc/cron.d/dms-core
+      + do_dms_wsgi
+      + return 0
+      + perl -pe s/^(\s*exit\s+0.*$)/#\1/ -i /etc/default/apache2
+      + set +x
+      [ ok ] Starting web server: apache2.
+
+      dms-chc: -root- [~]
+      #
+
+
+
+Wait till servers started, and then use zone_tool show_dms_status to check that everything becomes OK. This may
+take 15 minutes. The section about ls_pending_events will give scheduled times for servers to become configured.
+
+
+      dms-chc: -root- [~]
+      # zone_tool show_dms_status
+
+      show_master_status:
+
+        MASTER_SERVER:      dms-chc
+
+        NAMED master configuration state:
+
+        hold_sg:            HOLD_SG_NONE
+        hold_sg_name:       None
+        hold_start:         Fri Nov 9 08:30:49 2012
+        hold_stop:          Fri Nov 9 08:40:49 2012
+        replica_sg_name:    vygr-replica
+        state:              HOLD
+
+show_replica_sg:
+        sg_name:              vygr-replica
+        config_dir:           /etc/net24/server-config-templates
+        master_address:       2406:1e00:1001:1::2
+        master_alt_address:   2406:3e00:1001:1::2
+        replica_sg:           True
+        zone_count:           37
+
+        Replica SG named status:
+        dms-akl                         2406:1e00:1001:1::2
+
+                RETRY
+
+ls_server:
+dms-akl                       Fri Nov 9 08:23:08 2012                  RETRY
+        2406:1e00:1001:1::2                      None
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+        retry_msg:
+           Server 'dms-akl': SOA query - timeout waiting for response,
+           retrying
+dms-chc                       Fri Nov 9 08:30:58 2012                  OK
+        2406:3e00:1001:1::2                      210.5.48.242
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+dms-s1-akl                    Fri Nov 9 08:30:58 2012                  OK
+        2406:1e00:1001:2::2                      103.4.136.226
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+dms-s1-chc                    Fri Nov 9 08:30:58 2012                  OK
+        2406:3e00:1001:2::2                      210.5.48.226
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+
+list_pending_events:
+ServerSMCheckServer        dms-chc                        Fri Nov   9 08:39:53
+2012
+MasterSMHoldTimeout                                       Fri Nov   9 08:40:49
+2012
+ServerSMCheckServer        dms-s1-chc                     Fri Nov   9 08:40:08
+2012
+ServerSMCheckServer        dms-s1-akl                     Fri Nov   9 08:36:01
+2012
+ServerSMConfigure          dms-akl                        Fri Nov   9 08:50:17
+2012
+
+
+      dms-chc: -root- [~]
+      #
+
+
+
+A new replica will need to be installed as per DMS Master Server Install
+
+Stuck Zone not Propagating
+
+
+      zone_tool > show_zonesm wham-blam.org
+              name:            wham-blam.org.
+              alt_sg_name:     None
+              auto_dnssec:     False
+              ctime:           Thu Aug 23 10:51:14 2012
+              deleted_start:   None
+              edit_lock:       True
+              edit_lock_token: None
+              inc_updates:     False
+              lock_state:      EDIT_UNLOCK
+              locked_at:       None
+              locked_by:       None
+              mtime:           Thu Aug 23 10:51:14 2012
+              nsec3:           True
+              reference:       nutty-nutty@ANATHOTH-NET
+              sg_name:         anathoth-internal
+              soa_serial:      2012091400
+              state:           UNCONFIG
+              use_apex_ns:     True
+              zi_candidate_id: 102880
+              zi_id:           102880
+              zone_id:         101448
+              zone_type:       DynDNSZoneSM
+
+                 zi_id:                  102880
+                 change_by:              grantma@shalom-ext.internal.anathoth.net/Admin
+                 ctime:                  Fri Sep 14 10:55:59 2012
+                 mtime:                  Fri Sep 14 11:12:10 2012
+                 ptime:                  Fri Sep 14 11:12:10 2012
+                 soa_expire:             7d
+                 soa_minimum:            600
+                 soa_mname:              ns1.internal.anathoth.net.
+                 soa_refresh:            24h
+                 soa_retry:              900
+                 soa_rname:              matthewgrant5.gmail.com.
+                 soa_serial:             2012091400
+                 soa_ttl:                None
+                 zone_id:                101448
+                 zone_ttl:               24h
+
+
+
+Maybe as above. Can be caused by:
+
+      Failed events (manually failed or otherwise, Events queue deleted in DB, permissions problems as follows)
+
+      Permissions problems on the master server on the /var/lib/bind/dynamic directory - should be
+
+
+            ls -ld /var/lib/bind/dynamic/
+            drwxrwsr-x 2 bind net24dmd 487424 Nov                9 08:47 /var/lib/bind/dynamic/
+
+
+
+
+      zone_tool > show_zonesm wham-blam.org
+              name:            wham-blam.org.
+              alt_sg_name:     None
+              auto_dnssec:     False
+              ctime:           Thu Aug 23 10:51:14 2012
+              deleted_start:   None
+              edit_lock:       True
+              edit_lock_token: None
+              inc_updates:     False
+              lock_state:      EDIT_UNLOCK
+              locked_at:       None
+              locked_by:       None
+              mtime:           Thu Aug 23 10:51:14 2012
+              nsec3:           True
+              reference:       nutty-nutty@ANATHOTH-NET
+              sg_name:         anathoth-internal
+              soa_serial:      2012091400
+              state:           RESET
+              use_apex_ns:     True
+              zi_candidate_id: 102880
+              zi_id:           102880
+              zone_id:         101448
+              zone_type:       DynDNSZoneSM
+
+                zi_id:                 102880
+                change_by:             grantma@shalom-ext.internal.anathoth.net/Admin
+                ctime:                 Fri Sep 14 10:55:59 2012
+                mtime:                 Fri Sep 14 11:12:10 2012
+                ptime:                 Fri Sep 14 11:12:10 2012
+                soa_expire:            7d
+                soa_minimum:           600
+                soa_mname:             ns1.internal.anathoth.net.
+                soa_refresh:           24h
+                soa_retry:             900
+                soa_rname:             matthewgrant5.gmail.com.
+                soa_serial:            2012091400
+                soa_ttl:               None
+                zone_id:               101448
+                zone_ttl:              24h
+
+
+
+
+and then use show_zonesm to check that zone state goes to PUBLISHED within 15 minutes. ls_pending_events
+
+may also be useful, as it will show the events to do with the zone being published.
+
+
+       show_zonesm wham-blam.org
+               name:             wham-blam.org.
+               alt_sg_name:      None
+               auto_dnssec:      False
+               ctime:            Thu Aug 23 10:51:14 2012
+               deleted_start:    None
+               edit_lock:        True
+               edit_lock_token: None
+               inc_updates:      False
+               lock_state:       EDIT_UNLOCK
+               locked_at:        None
+               locked_by:        None
+               mtime:            Thu Aug 23 10:51:14 2012
+               nsec3:            True
+               reference:        nutty-nutty@ANATHOTH-NET
+               sg_name:          anathoth-internal
+               soa_serial:       2012091400
+               state:            RESET
+               use_apex_ns:      True
+               zi_candidate_id: 102880
+               zi_id:            102880
+               zone_id:          101448
+               zone_type:        DynDNSZoneSM
+
+               zi_id:           102880
+               change_by:       grantma@shalom-ext.internal.anathoth.net/Admin
+               ctime:           Fri Sep 14 10:55:59 2012
+               mtime:           Fri Sep 14 11:12:10 2012
+               ptime:           Fri Sep 14 11:12:10 2012
+               soa_expire:      7d
+               soa_minimum:     600
+               soa_mname:       ns1.internal.anathoth.net.
+               soa_refresh:     24h
+               soa_retry:       900
+               soa_rname:       matthewgrant5.gmail.com.
+               soa_serial:      2012091400
+               soa_ttl:         None
+               zone_id:         101448
+               zone_ttl:        24h
+       zone_tool > ls_pending_events
+       ServerSMCheckServer       shalom                       Fri Nov 9 08:50:35
+       2012
+       ServerSMCheckServer       shalom-ext                   Fri Nov 9 08:50:40
+       2012
+       ServerSMCheckServer       shalom-dr                    Fri Nov 9 08:50:46
+       2012
+       ServerSMCheckServer       dns-slave1                   Fri Nov 9 08:50:53
+       2012
+       ServerSMConfigure         en-gedi-auth                 Fri Nov 9 08:55:31
+       2012
+
+ZoneSMConfig              wham-blam.org.              Fri Nov   9 08:47:07
+2012
+MasterSMHoldTimeout                                   Fri Nov   9 08:56:52
+2012
+ServerSMCheckServer       dns-slave0                  Fri Nov   9 08:54:29
+2012
+zone_tool > show_zonesm wham-blam.org
+        name:            wham-blam.org.
+        alt_sg_name:     None
+        auto_dnssec:     False
+        ctime:           Thu Aug 23 10:51:14 2012
+        deleted_start:   None
+        edit_lock:       True
+        edit_lock_token: None
+        inc_updates:     False
+        lock_state:      EDIT_UNLOCK
+        locked_at:       None
+        locked_by:       None
+        mtime:           Thu Aug 23 10:51:14 2012
+        nsec3:           True
+        reference:       nutty-nutty@ANATHOTH-NET
+        sg_name:         anathoth-internal
+        soa_serial:      2012091400
+        state:           UNCONFIG
+        use_apex_ns:     True
+        zi_candidate_id: 102880
+        zi_id:           102880
+        zone_id:         101448
+        zone_type:       DynDNSZoneSM
+
+        zi_id:           102880
+        change_by:       grantma@shalom-ext.internal.anathoth.net/Admin
+        ctime:           Fri Sep 14 10:55:59 2012
+        mtime:           Fri Sep 14 11:12:10 2012
+        ptime:           Fri Sep 14 11:12:10 2012
+        soa_expire:      7d
+        soa_minimum:     600
+        soa_mname:       ns1.internal.anathoth.net.
+        soa_refresh:     24h
+        soa_retry:       900
+        soa_rname:       matthewgrant5.gmail.com.
+        soa_serial:      2012091400
+        soa_ttl:         None
+        zone_id:         101448
+        zone_ttl:        24h
+zone_tool > ls_pending_events
+ServerSMCheckServer       shalom                       Fri Nov 9 08:50:35
+2012
+ServerSMCheckServer       shalom-ext                   Fri Nov 9 08:50:40
+2012
+ServerSMCheckServer       shalom-dr                    Fri Nov 9 08:50:46
+2012
+ServerSMCheckServer       dns-slave1                   Fri Nov 9 08:50:53
+
+2012
+ServerSMConfigure         en-gedi-auth                 Fri Nov   9 08:55:31
+2012
+MasterSMHoldTimeout                                    Fri Nov   9 08:56:52
+2012
+ServerSMCheckServer       dns-slave0                   Fri Nov   9 08:54:29
+2012
+ZoneSMReconfigUpdate      wham-blam.org.               Fri Nov   9 08:57:10
+2012
+zone_tool > ls_pending_events
+ServerSMCheckServer       shalom-ext                   Fri Nov   9 09:00:25
+2012
+ServerSMCheckServer       shalom-dr                    Fri Nov   9 09:00:44
+2012
+ServerSMCheckServer       dns-slave0                   Fri Nov   9 09:01:25
+2012
+ServerSMCheckServer       dns-slave1                   Fri Nov   9 09:02:11
+2012
+ServerSMConfigure         en-gedi-auth                 Fri Nov   9 09:06:15
+2012
+MasterSMHoldTimeout                                    Fri Nov   9 09:06:57
+2012
+ServerSMCheckServer       shalom                       Fri Nov   9 09:05:11
+2012
+zone_tool > show_zonesm wham-blam.org
+        name:            wham-blam.org.
+        alt_sg_name:     None
+        auto_dnssec:     False
+        ctime:           Thu Aug 23 10:51:14 2012
+        deleted_start:   None
+        edit_lock:       True
+        edit_lock_token: None
+        inc_updates:     False
+        lock_state:      EDIT_UNLOCK
+        locked_at:       None
+        locked_by:       None
+        mtime:           Thu Aug 23 10:51:14 2012
+        nsec3:           True
+        reference:       nutty-nutty@ANATHOTH-NET
+        sg_name:         anathoth-internal
+        soa_serial:      2012091400
+        state:           PUBLISHED
+        use_apex_ns:     True
+        zi_candidate_id: 102880
+        zi_id:           102880
+        zone_id:         101448
+        zone_type:       DynDNSZoneSM
+
+        zi_id:           102880
+        change_by:       grantma@shalom-ext.internal.anathoth.net/Admin
+        ctime:           Fri Sep 14 10:55:59 2012
+        mtime:           Fri Nov 9 08:57:13 2012
+        ptime:           Fri Nov 9 08:57:13 2012
+
+soa_expire:    7d
+soa_minimum:   600
+soa_mname:     ns1.internal.anathoth.net.
+soa_refresh:   24h
+soa_retry:     900
+soa_rname:     matthewgrant5.gmail.com.
+soa_serial:    2012091400
+soa_ttl:       None
+zone_id:       101448
+
+              zone_ttl:                24h
+      zone_tool >
+
+
+
+MasterSM Stuck, New Zones not Being Created
+
+Can be caused by:
+
+      Failed MasterSMHoldTimeout events (manually failed or otherwise, Events queue deleted in DB etc)
+      Permissions problems on the master server on the /etc/bind/master-config directory - Should be '2755
+      net24dmd:bind'
+
+
+            shalom-ext: -grantma- [~]
+            $ ls -ld /etc/bind/master-config
+            drwxr-sr-x 2 net24dmd bind 4096 Nov          9 08:56 /etc/bind/master-config
+
+
+
+This shows up in zone_tool show_dms_status:
+
+
+      zone_tool > show_dms_status
+
+      show_master_status:
+
+                MASTER_SERVER:            dms-akl
+
+                NAMED master configuration state:
+
+                hold_sg:                  HOLD_SG_NONE
+                hold_sg_name:             None
+                hold_start:               Wed Nov 7 16:52:36 2012
+                hold_stop:                Wed Nov 7 17:02:36 2012
+                replica_sg_name:          vygr-replica
+                state:                    HOLD
+
+      show_replica_sg:
+              sg_name:                       vygr-replica
+              config_dir:                    /etc/net24/server-config-templates
+              master_address:                2406:1e00:1001:1::2
+              master_alt_address:            2406:3e00:1001:1::2
+              replica_sg:                    True
+              zone_count:                    37
+
+                Replica SG named status:
+                dms-chc                                2406:3e00:1001:1::2
+
+                           OK
+
+      ls_server:
+      dms-akl                      Wed Nov 7 16:52:46 2012                                        OK
+              2406:1e00:1001:1::2                     None
+              ping: 5 packets transmitted, 5 received, 0.00% packet loss
+
+dms-chc                       Wed Nov 7 16:52:46 2012                OK
+        2406:3e00:1001:1::2                      210.5.48.242
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+dms-s1-akl                    Wed Nov 7 16:31:04 2012                RETRY
+        2406:1e00:1001:2::2                      103.4.136.226
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+        retry_msg:
+           Server 'dms-s1-akl': SOA query - timeout waiting for
+           response, retrying
+dms-s1-chc                    Wed Nov 7 16:52:46 2012                OK
+        2406:3e00:1001:2::2                      210.5.48.226
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+
+list_pending_events:
+ServerSMConfigure         dms-s1-akl                   Wed Nov   7 16:57:22
+2012
+ServerSMCheckServer       dms-chc                      Wed Nov   7 16:53:55
+2012
+ServerSMCheckServer       dms-akl                      Wed Nov   7 16:55:46
+2012
+ServerSMCheckServer       dms-s1-chc                   Wed Nov   7 16:57:06
+2012
+
+
+zone_tool > exit
+
+dms-akl: -root- [~]
+
+       # date
+       Wed Nov      7 16:54:42 NZDT 2012
+
+
+
+Key things to look for:
+
+       master status section shows hold_start and hold_stop being in the past
+       there is no MasterSMHoldTimeout event
+
+            The MasterSM state machine forward posts the MasterSMHoldTimeout event when entering the
+            HOLD state. If it does not get created or disappears or fails due to unforeseen events with
+            outages etc, the MasterSM will end up stuck as above.
+
+The fix is to do 'zone_tool reset_master'. This will reset the MasterSM state machine.
+
+Stuck ServerSM
+
+Just like the Master state machine getting stuck because of a missing MasterSMHoldTimeout event, Server SMs
+can end up being stuck in the CONFIG, RETRY or BROKEN states due to missing events. There will be missing
+'ServerSMConfigure' events for the server in the ls_pending_events output.
+
+zone_tool > show_dms_status
+show_master_status:
+        MASTER_SERVER:      shalom-ext
+        NAMED master configuration state:
+        hold_sg:            HOLD_SG_NONE
+        hold_sg_name:       None
+        hold_start:         None
+        hold_stop:          None
+        replica_sg_name:    anathoth-replica
+        state:              READY
+show_replica_sg:
+        sg_name:              anathoth-replica
+        config_dir:           /etc/bind/anathoth-master
+        master_address:       2001:470:f012:2::2
+        master_alt_address: 2001:470:f012:2::3
+        replica_sg:           True
+        zone_count:           14
+        Replica SG named status:
+        shalom-dr                      2001:470:f012:2::3
+                 OK
+ls_server:
+dns-slave0                    Fri Nov 9 09:56:48 2012                  OK
+        2001:470:c:110e::2                        111.65.238.10
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+dns-slave1                    Fri Nov 9 09:56:38 2012                  OK
+        2001:470:66:23::2                         111.65.238.11
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+en-gedi-auth                  Thu Nov 8 18:01:07 2012                  RETRY
+        fd14:828:ba69:6:5054:ff:fe39:54f9         172.31.12.2
+        ping: 5 packets transmitted, 0 received, 100.00% packet loss
+        retry_msg:
+           Server 'en-gedi-auth': failed to rsync include files,
+           Command '['rsync', '--quiet', '-av', '--password-file',
+           '/etc/net24/rsync-dnsconf-password', '/var/lib/net24/dms-sg
+           /anathoth-internal/',
+           'dnsconf@[fd14:828:ba69:6:5054:ff:fe39:54f9]::dnsconf/']'
+           returned non-zero exit status 10, rsync: failed to connect
+           to fd14:828:ba69:6:5054:ff:fe39:54f9
+           (fd14:828:ba69:6:5054:ff:fe39:54f9): Connection timed out
+           (110), rsync error: error in socket IO (code 10) at
+           clientserver.c(122) [sender=3.0.9]
+shalom                        Fri Nov 9 09:56:19 2012                  OK
+        fd14:828:ba69:1:21c:f0ff:fefa:f3c0        192.168.110.1
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+shalom-dr                     Fri Nov 9 09:56:56 2012                  OK
+        2001:470:f012:2::3                        172.31.10.4
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+shalom-ext                    Fri Nov 9 09:58:21 2012                  OK
+        2001:470:f012:2::2                        172.31.10.2
+        ping: 5 packets transmitted, 5 received, 0.00% packet loss
+list_pending_events:
+ServerSMCheckServer        shalom                         Fri Nov 9 10:01:43   2012
+ServerSMCheckServer        dns-slave1                     Fri Nov 9 10:01:55   2012
+ServerSMCheckServer        dns-slave0                     Fri Nov 9 10:03:17   2012
+ServerSMCheckServer        shalom-dr                      Fri Nov 9 10:05:25   2012
+ServerSMCheckServer        shalom-ext                     Fri Nov 9 10:04:49   2012
+zone_tool >
+
+           Above, the ls_server section of show_dms_status displays the reason for going to RETRY or
+           BROKEN in the displayed retry_msg field.
+
+The fix, reset_server the server, and use ls_pending events to check ServerSMConfigure is created
+
+
+      zone_tool > reset_server en-gedi-auth
+      zone_tool > ls_pending_events
+      ServerSMCheckServer       shalom                                  Fri   Nov   9   12:11:17   2012
+      ServerSMCheckServer       shalom-ext                              Fri   Nov   9   12:11:47   2012
+      ServerSMCheckServer       en-gedi-auth                            Fri   Nov   9   12:14:57   2012
+      ServerSMCheckServer       dns-slave0                              Fri   Nov   9   12:18:02   2012
+      ServerSMCheckServer       shalom-dr                               Fri   Nov   9   12:15:09   2012
+      ServerSMCheckServer       dns-slave1                              Fri   Nov   9   12:19:08   2012
+      ServerSMConfigure         en-gedi-auth                            Fri   Nov   9   12:10:39   2012
+      zone_tool >
+
+
+
+Wait until the scheduled time posted for ServerSMConfigure, and then do a zone_tool show_dms_status to make
+sure everything is going.
+
+      zone_tool > show_dms_status
+      show_master_status:
+              MASTER_SERVER:      shalom-ext
+              NAMED master configuration state:
+              hold_sg:            HOLD_SG_NONE
+              hold_sg_name:       None
+              hold_start:         None
+              hold_stop:          None
+              replica_sg_name:    anathoth-replica
+              state:              READY
+      show_replica_sg:
+              sg_name:              anathoth-replica
+              config_dir:           /etc/bind/anathoth-master
+              master_address:       2001:470:f012:2::2
+              master_alt_address: 2001:470:f012:2::3
+              replica_sg:           True
+              zone_count:           14
+              Replica SG named status:
+              shalom-dr                      2001:470:f012:2::3
+                       OK
+      ls_server:
+      dns-slave0                    Fri Nov 9 12:08:29 2012                  OK
+              2001:470:c:110e::2                        111.65.238.10
+              ping: 5 packets transmitted, 5 received, 0.00% packet loss
+      dns-slave1                    Fri Nov 9 12:10:19 2012                  OK
+              2001:470:66:23::2                         111.65.238.11
+              ping: 5 packets transmitted, 5 received, 0.00% packet loss
+      en-gedi-auth                  Fri Nov 9 12:10:43 2012                  OK
+              fd14:828:ba69:6:5054:ff:fe39:54f9         172.31.12.2
+              ping: 5 packets transmitted, 5 received, 0.00% packet loss
+      shalom                        Fri Nov 9 12:11:19 2012                  OK
+              fd14:828:ba69:1:21c:f0ff:fefa:f3c0        192.168.110.1
+              ping: 5 packets transmitted, 5 received, 0.00% packet loss
+      shalom-dr                     Fri Nov 9 12:09:44 2012                  OK
+              2001:470:f012:2::3                        172.31.10.4
+              ping: 5 packets transmitted, 5 received, 0.00% packet loss
+      shalom-ext                    Fri Nov 9 12:11:47 2012                  OK
+              2001:470:f012:2::2                        172.31.10.2
+              ping: 5 packets transmitted, 5 received, 0.00% packet loss
+      list_pending_events:
+      ServerSMCheckServer        en-gedi-auth                   Fri Nov 9 12:14:57   2012
+      ServerSMCheckServer        dns-slave0                     Fri Nov 9 12:18:02   2012
+      ServerSMCheckServer        shalom-dr                      Fri Nov 9 12:15:09   2012
+      ServerSMCheckServer        dns-slave1                     Fri Nov 9 12:19:08   2012
+      ServerSMCheckServer        shalom                         Fri Nov 9 12:17:44   2012
+      ServerSMCheckServer        shalom-ext                     Fri Nov 9 12:17:31   2012
+      zone_tool >
+
+
+
+
+Rebuilding named data from database
+
+The named dynamic data in /var/lib/bind/dynamic is corrupt, or missing
+
+   1. Stop named and net24dmd
+
+1.
+
+
+
+
+           root@dms3-master:~# service bind9 stop
+           [....] Stopping domain name service...: bind9waiting for pid 15462 to die
+           . ok
+           root@dms3-master:~# service net24dmd stop
+           [ ok ] Stopping net24dmd: net24dmd.
+
+
+
+
+2. Check /etc/bind/master_config and /var/lib/bind/dynamic permissions.
+   /etc/bind/master-config, should be 2755 net24dmd:bind :
+
+
+           root@dms3-master:~# ls -ld /etc/bind/master-config/
+           drwxr-sr-x 2 net24dmd bind 4096 Nov 9 12:39 /etc/bind/master-config/
+           root@dms3-master:~#
+
+
+
+     /var/lib/bind/dynamic, should be 2775 bind:net24dmd :
+
+
+           root@dms3-master:~# ls -ld /var/lib/bind/dynamic
+           drwxrwsr-x 2 bind net24dmd 1683456 Nov 9 12:39 /var/lib/bind/dynamic
+           root@dms3-master:~#
+
+
+
+3. Clear any files from /var/lib/bind/dynamic if needed:
+
+
+           root@dms3-master:~# rm -rf /var/lib/bind/dynamic/*
+           root@dms3-master:~#
+
+
+
+4. Run the restore process which recreates /etc/bind/master-config/ contents, and recreates contents of
+   /var/lib/bind/dynamic. This may take some time. 40000 zones takes 20 - 30 minutes.
+
+
+           root@dms3-master:~# zone_tool restore_named_db
+           ***   WARNING - doing this destroys DNSSEC RRSIG data. It is a last
+                 resort in DR recovery.
+           ***   Do really you wish to do this?
+            --y/[N]> y
+
+
+
+5. Start named and net24dmd
+
+
+           root@dms3-master:~# service net24dmd start
+           [ ok ] Starting net24dmd: net24dmd.
+           root@dms3-master:~# service bind9 start
+           [ ok ] Starting domain name service...: bind9.
+           root@dms3-master:~#
+
+Failed Master, Replica /etc not up to date
+
+The master and DR replica have the etckeeper git archive mirrored every 4 hours to the alternate server. See etcke
+eper and /etc on Replica and Master Servers
+
+Recovering DB from Backup
+
+/etc/cron.d/dms-core does daily FULL pg_dumpall to /var/backups/postresql-9.1-dms.sql.gz, on replica and master,
+which are rotated for 7 days.
+
+To recover:
+
+
+      # cd /var/backups
+      # gunzip -c postregresql-9.1-dms.sql.gz | psql -U pgsql
+
+
+
+There will be lots of SQL output. The dumpall also contains DB user passwords, and ACL/permissions information,
+along with DB details for the whole postgresql 'dms' cluster.
+
+Regenerating ds/ DS material directory from Private Keys
+
+Use the dns-recreateds command to recreate a domains DNSSEC DS material. The /var/lib/bind/keys directory is
+rsynced to the DR replica by the master server net24dmd daemon. Use a '*' argument to regenerate all DS
+material.
+
+
+      shalom-ext: -root- [/var/lib/bind/keys]
+      # dns-recreateds anathoth.net
+      + dnssec-dsfromkey -2 /var/lib/bind/keys/Kanathoth.net.+007+57318.key
+      + set +x
+      shalom-ext: -root- [/var/lib/bind/keys]
+      #
+
+
+
+
+IPSEC not going
+
+These examples are between DNS slave server dns-slave1 and master shalom-ext.
+
+Diagnosis
+
+
+
+
+Ping6 server from master and vice-versa to check unencrypted network level. (Transport mode encryption does not
+encrypt ICMPv6). Use the zone_tool ls_server -v command to get the DMS configured IPv6 addresses of both
+servers.
+
+      shalom-ext: -grantma- [~/dms]
+      $ zone_tool ls_server -v dns-slave1
+      dns-slave1 Mon Nov 12 13:57:20 2012 OK
+       2001:470:66:23::2 111.65.238.11
+
+      shalom-ext: -grantma- [~/dms]
+      $ zone_tool ls_server -v shalom-ext
+      shalom-ext                    Mon Nov 12 13:59:29 2012                           OK
+              2001:470:f012:2::2                       172.31.10.2
+      shalom-ext: -grantma- [~/dms]
+      $ ping6 2001:470:66:23::2
+      PING 2001:470:66:23::2(2001:470:66:23::2) 56 data bytes
+      64 bytes from 2001:470:66:23::2: icmp_seq=1 ttl=58 time=312 ms
+      64 bytes from 2001:470:66:23::2: icmp_seq=2 ttl=58 time=310 ms
+      64 bytes from 2001:470:66:23::2: icmp_seq=3 ttl=58 time=310 ms
+      ^C
+      --- 2001:470:66:23::2 ping statistics ---
+      3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+      rtt min/avg/max/mdev = 310.646/311.293/312.518/0.866 ms
+      shalom-ext: -grantma- [~/dms]
+      $
+
+
+
+
+Telnet domain TCP ports both ways, and rsync out to slave server from master. This checks that IPSEC encryption
+is running.
+
+
+
+
+From shalom-ext:
+
+       shalom-ext: -grantma- [~/dms]
+       $ telnet 2001:470:66:23::2 53
+       Trying 2001:470:66:23::2...
+       Connected to 2001:470:66:23::2.
+       Escape character is '^]'.
+       ^]c
+       telnet> c
+       Connection closed.
+       shalom-ext: -grantma- [~/dms]
+       $ telnet 2001:470:66:23::2 rsync
+       Trying 2001:470:66:23::2...
+       Connected to 2001:470:66:23::2.
+       Escape character is '^]'.
+       @RSYNCD: 30.0
+       ^]c
+       telnet> c
+       Connection closed.
+       shalom-ext: -grantma- [~/dms]
+       $
+
+
+
+
+From dns-slave1:
+
+
+
+
+       grantma@dns-slave1:~$ telnet 2001:470:f012:2::2 53
+       Trying 2001:470:f012:2::2...
+       Connected to 2001:470:f012:2::2.
+       Escape character is '^]'.
+       ^]c
+       telnet> c
+       Connection closed.
+       grantma@dns-slave1:~$
+
+
+
+
+If the DNS server is a DR replica, telnet the rsync port the other way also.
+
+Recovery
+
+If things are not working restart the IPSEC connection at both ends:
+
+shalom-ext master:
+
+       shalom-ext: -root- [/home/grantma/dms]
+       # racoon-tool vlist
+       shalom-dr
+       dns-slave1
+       %anonymous
+       shalom-ext
+       shalom
+       dns-slave0
+       en-gedi-auth
+       shalom-ext: -root- [/home/grantma/dms]
+       # racoon-tool vreload dns-slave1
+       Reloading VPN dns-slave1...The result of line 2: No entry.
+       The result of line 5: No entry.
+       done.
+       shalom-ext: -root- [/home/grantma/dms]
+       #
+
+
+
+
+dns-slave1:
+
+
+
+
+       root@dns-slave1:/home/grantma# racoon-tool vlist
+       shalom-dr
+       %anonymous
+       shalom-ext
+       root@dns-slave1:/home/grantma# racoon-tool vreload shalom-ext
+       Reloading VPN shalom-ext...The result of line 2: No entry.
+       The result of line 5: No entry.
+       done.
+       root@dns-slave1:/home/grantma#
+
+
+
+              Wait 10 minutes for IPSEC replay timing to expire. Then retry the telnet steps above.
+
+
+
+
+If IPSEC still will not work:
+
+Use racoon-tool restart on both ends:
+
+shalom-ext:
+
+       shalom-ext: -root- [/home/grantma/dms]
+       # racoon-tool restart
+       Stopping IKE (ISAKMP/Oakley) server: racoon.
+       Flushing SAD and SPD...
+       SAD and SPD flushed.
+       Unloading IPSEC/crypto modules...
+       IPSEC/crypto modules unloaded.
+       Loading IPSEC/crypto modules...
+       IPSEC/crypto modules loaded.
+       Flushing SAD and SPD...
+       SAD and SPD flushed.
+       Loading SAD and SPD...
+       SAD and SPD loaded.
+       Configuring racoon...done.
+       Starting IKE (ISAKMP/Oakley) server: racoon.
+       shalom-ext: -root- [/home/grantma/dms]
+       #
+
+
+
+
+dns-slave1:
+
+
+       root@dns-slave1:/home/grantma# racoon-tool restart
+       Stopping IKE (ISAKMP/Oakley) server: racoon.
+       Flushing SAD and SPD...
+       SAD and SPD flushed.
+       Unloading IPSEC/crypto modules...
+       IPSEC/crypto modules unloaded.
+       Loading IPSEC/crypto modules...
+       IPSEC/crypto modules loaded.
+       Flushing SAD and SPD...
+       SAD and SPD flushed.
+       Loading SAD and SPD...
+       SAD and SPD loaded.
+       Configuring racoon...done.
+       Starting IKE (ISAKMP/Oakley) server: racoon.
+       root@dns-slave1:/home/grantma#
+
+
+
+              Wait 10 minutes for IPSEC replay timing to expire. Then retry the telnet steps above.
+
+
+
+
+DMS Master Server Install
+Base Operating System
+
+Debian Wheezy
+
+Create /etc/apt/apt.conf.d/00local.conf:
+
+        // No point in installing a lot of fat on VM servers
+        APT::Install-Recommends "0";
+        APT::Install-Suggests "0";
+
+
+
+Create /etc/apt/sources.list.d/00local.conf
+
+
+        deb http://deb-repo.devel.net.nz/debian/ wheezy main
+        deb-src http://deb-repo.devel.net.nz/debian/ wheezy main
+
+
+
+Install these packages:
+cron-apt screen tree procps psmisc sysstat sudo lsof open-vm-tools open-vm-dkms
+
+dms
+
+To properly install netscript-2.4 because of cyclic boot dependencies (I will look into this when have some spare
+time, and log an RC Debian bug):
+
+
+        # dpkg --force --purge ifupdown
+        # apt-get -f install
+
+
+
+Edit /etc/netscript/network.conf to configure static addressing. Look for IF_AUTO, set eth0_IPADDR, and further
+down comment out eth_start and eth_stop functions to turn off DHCP. Netscript manages iptables and ip6tables via
+iptables-save/iptables-restore, and keeps a cyclic history which you can change back to if your filter changes go
+wrong vi netscript ipfilter/ip6filter save/usebackup.
+
+Then:
+
+
+        # aptitude update
+        # aptitude upgrade
+
+
+
+To fix shell prompt for larger terminals on master server makes typing in long zone_tool commands at shell a lot
+clearer:
+
+
+        # tar -C / -xzf shell.tar.gz
+
+
+
+shell.tar.gz
+
+Replaces /etc/skel shell and /root dot files with single line feed to force use of file in /etc
+
+Then edit /etc/environment.sh to turn off various things like umask 00002 for user id < 1000
+
+Then follow Net24 DMS Debian Install Documentation
+
+
+
