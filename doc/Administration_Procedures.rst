@@ -15,25 +15,25 @@ Log and Configuration Files
 
 The following are detailed elsewhere in the documentation
 
- =================================    ==================================================
- /var/log/net24/net24dmd.log*         net24dmd logs
+ ======================================    ==================================================
+ :file:`/var/log/dms/dmsdmd.log\*`         :command:`dmsdmd` logs
 
- /var/log/local7.log                  DMS named logs
+ :file:`/var/log/local7.log`               DMS named logs
 
- /var/log/syslog                      Basically everything
+ :file:`/var/log/syslog`                   Basically everything
 
- /et/net24/net24.conf                 net24dmd, wsgi and zone_tool configuration file
+ :file:`/etc/dms/dms.conf`                 :command:`dmsdmd`, WSGI and :command:`zone_tool` configuration file
 
- /etc/net24                           Various passwords, templates and things
- =================================    ==================================================
+ :file:`/etc/dms`                          Various passwords, templates and things
+ ======================================    ==================================================
 
 See :ref:`Named.conf and Zone Templating<>` for more details.
 
 Checking DMS Status
 -------------------
 
-#) Check that ``named``, ``postgres``, and ``dmsdmd`` are running on the master.
-#) Using zone_tool show_dms_status on master server::
+#) Check that :command:`named`, :command:`postgres`, and :command:`dmsdmd` are running on the master.
+#) Using :command:`zone_tool show_dms_status` on master server::
 
        zone_tool > show_dms_status
 
@@ -101,8 +101,8 @@ Checking DMS Status
       staying in ``RETRY`` or ``BROKEN`` means server may not be contactable.
       ``RETRY`` or ``BROKEN`` states should also have a ``retry_msg:`` field
       giving the associated log message.
-    * ``list_pending_events`` shows events that have to be processed.
-    * Any events that are scheduled in the past may indicate ``dmsdmd`` having
+    * :command:`list_pending_events` shows events that have to be processed.
+    * Any events that are scheduled in the past may indicate :command:`dmsdmd` having
       serious problems.
 
 Failing Over as Master Server has Burned (or Subject to EQC Claim)
@@ -137,9 +137,9 @@ On the Replica::
       dms-chc: -root- [~]
       #
 
-Wait till servers started, and then use ``zone_tool show_dms_status`` to check
-that everything becomes OK. This may take 15 minutes. The section about
-``ls_pending_events`` will give scheduled times for servers to become
+Wait till servers started, and then use :command:`zone_tool show_dms_status` to
+check that everything becomes OK. This may take 15 minutes. The section about
+:command:`ls_pending_events` will give scheduled times for servers to become
 configured.
 
 ::
@@ -259,14 +259,15 @@ Maybe as above. Can be caused by:
       * Failed events (manually failed or otherwise, Events queue deleted in
         DB, permissions problems as follows)
 
-      * Permissions problems on the master server on the /var/lib/bind/dynamic
-        directory - should be::
+      * Permissions problems on the master server on the
+        :file:`/var/lib/bind/dynamic` directory - should be::
 
             # ls -ld /var/lib/bind/dynamic/
             drwxrwsr-x 2 bind dmsdmd 487424 Nov                9 08:47 /var/lib/bind/dynamic/
 
-Do a ``reset_zonesm wham-blam.org``, (noting y/N and DNSSEC RRSIGs being
-destroyed)::
+Do a :command:`reset_zonesm wham-blam.org`, (noting y/N and :abbr:`DNSSEC`
+:abbr:`RRSIGs` being destroyed)::
+
 
       zone_tool > reset_zonesm wham-blam.org.
       ***   WARNING - doing this destroys DNSSEC RRSIG data.
@@ -316,9 +317,9 @@ And check again::
                 zone_id:               101448
                 zone_ttl:              24h
 
-And then use ``show_zonesm`` to check that zone state goes to ``PUBLISHED``
-within 15 minutes. ``ls_pending_events`` may also be useful, as it will show
-the events to do with the zone being published.
+And then use :command:`show_zonesm` to check that zone state goes to
+``PUBLISHED`` within 15 minutes. :command:`ls_pending_events` may also be
+useful, as it will show the events to do with the zone being published.
 
 ::
 
@@ -502,14 +503,14 @@ Can be caused by:
         Events queue deleted in DB etc)
 
       * Permissions problems on the master server on the
-        ``/etc/bind/master-config directory`` - Should be ``2755
+        :file:`/etc/bind/master-config directory` - Should be ``2755
         dmsdmd:bind``::
 
             shalom-ext: -grantma- [~]
             $ ls -ld /etc/bind/master-config
             drwxr-sr-x 2 net24dmd bind 4096 Nov          9 08:56 /etc/bind/master-config
 
-This shows up in ``zone_tool show_dms_status``::
+This shows up in :command:`zone_tool show_dms_status`::
 
 
       zone_tool > show_dms_status
@@ -576,7 +577,7 @@ This shows up in ``zone_tool show_dms_status``::
 
 Key things to look for:
 
-       * master status section shows hold_start and hold_stop being in the past
+       * master status section shows ``hold_start`` and ``hold_stop`` being in the past
 
        * there is no ``MasterSMHoldTimeout`` event
 
@@ -585,16 +586,16 @@ Key things to look for:
             HOLD state. If it does not get created or disappears or fails due to unforeseen events with
             outages etc, the MasterSM will end up stuck as above.
 
-The fix is to do ``zone_tool reset_master``. This will reset the ``MasterSM`` state machine.
+The fix is to do :command:`zone_tool reset_master`. This will reset the ``MasterSM`` state machine.
 
 Stuck ServerSM
 --------------
 
 Just like the ``Master`` state machine getting stuck because of a missing
-``MasterSMHoldTimeout event``, Server SMs can end up being stuck in the
+``MasterSMHoldTimeout event``, Server :abbr:`SMs` can end up being stuck in the
 ``CONFIG``, ``RETRY`` or ``BROKEN`` states due to missing events. There will be
 missing ``ServerSMConfigure`` events for the server in the
-``ls_pending_events`` output::
+:command:`ls_pending_events` output::
 
         zone_tool > show_dms_status
         show_master_status:
@@ -660,8 +661,9 @@ missing ``ServerSMConfigure`` events for the server in the
          reason for going to ``RETRY`` or ``BROKEN`` in the displayed
          ``retry_msg`` field.
 
-The fix, ``reset_server`` the server, and use ``ls_pending_events`` to check an
+The fix, :command:`reset_server` the server, and use :command:`ls_pending_events` to check an
 ``ServerSMConfigure`` event is created::
+
 
       zone_tool > reset_server en-gedi-auth
       zone_tool > ls_pending_events
@@ -675,7 +677,7 @@ The fix, ``reset_server`` the server, and use ``ls_pending_events`` to check an
       zone_tool >
 
 Wait until the scheduled time posted for ``ServerSMConfigure``, and then do a
-``zone_tool show_dms_status`` to make sure everything is going::
+:command:`zone_tool show_dms_status` to make sure everything is going::
 
       zone_tool > show_dms_status
       show_master_status:
@@ -728,14 +730,9 @@ Wait until the scheduled time posted for ``ServerSMConfigure``, and then do a
 Rebuilding named data from database
 -----------------------------------
 
-The named dynamic data in ``/var/lib/bind/dynamic`` is corrupt, or missing
+The named dynamic data in :file:`/var/lib/bind/dynamic` is corrupt, or missing
 
-   1. Stop named and dmsdmd
-
-1.
-
-
-
+    #. Stop :command:`named` and :command:`dmsdmd`::
 
            root@dms3-master:~# service bind9 stop
            [....] Stopping domain name service...: bind9waiting for pid 15462 to die
@@ -743,84 +740,78 @@ The named dynamic data in ``/var/lib/bind/dynamic`` is corrupt, or missing
            root@dms3-master:~# service net24dmd stop
            [ ok ] Stopping net24dmd: net24dmd.
 
+    #. Check :file:`/var/lib/dms/master_config` and :file:`/var/lib/bind/dynamic` permissions.
+           :file:`/var/lib/dms/master-config`, should be ``2755 dmsdmd:bind``::
+
+                   root@dms3-master:~# ls -ld /var/lib/dms/master-config/
+                   drwxr-sr-x 2 dmsdmd bind 4096 Nov 9 12:39 /var/lib/dms/master-config/
+                   root@dms3-master:~#
+
+             :file:`/var/lib/bind/dynamic`, should be ``2775 bind:dmsdmd``::
+
+
+                   root@dms3-master:~# ls -ld /var/lib/bind/dynamic
+                   drwxrwsr-x 2 bind dmsdmd 1683456 Nov 9 12:39 /var/lib/bind/dynamic
+                   root@dms3-master:~#
 
 
 
-2. Check /etc/bind/master_config and /var/lib/bind/dynamic permissions.
-   /etc/bind/master-config, should be 2755 net24dmd:bind :
+    #. Clear any files from :file:`/var/lib/bind/dynamic` if needed::
 
+               root@dms3-master:~# rm -rf /var/lib/bind/dynamic/*
+               root@dms3-master:~#
 
-           root@dms3-master:~# ls -ld /etc/bind/master-config/
-           drwxr-sr-x 2 net24dmd bind 4096 Nov 9 12:39 /etc/bind/master-config/
-           root@dms3-master:~#
+    #. Run the restore process which recreates :file:`/etc/bind/master-config/` contents, and recreates contents of
+       :file:`/var/lib/bind/dynamic`. This may take some time. 40000 zones takes 20 - 30 minutes.
 
+        ::
 
+               root@dms3-master:~# zone_tool restore_named_db
+               ***   WARNING - doing this destroys DNSSEC RRSIG data. It is a last
+                     resort in DR recovery.
+               ***   Do really you wish to do this?
+                --y/[N]> y
 
-     /var/lib/bind/dynamic, should be 2775 bind:net24dmd :
+    #. Start :command:`named` and :command:`dmsdmd`::
 
-
-           root@dms3-master:~# ls -ld /var/lib/bind/dynamic
-           drwxrwsr-x 2 bind net24dmd 1683456 Nov 9 12:39 /var/lib/bind/dynamic
-           root@dms3-master:~#
-
-
-
-3. Clear any files from /var/lib/bind/dynamic if needed:
-
-
-           root@dms3-master:~# rm -rf /var/lib/bind/dynamic/*
-           root@dms3-master:~#
-
-
-
-4. Run the restore process which recreates /etc/bind/master-config/ contents, and recreates contents of
-   /var/lib/bind/dynamic. This may take some time. 40000 zones takes 20 - 30 minutes.
-
-
-           root@dms3-master:~# zone_tool restore_named_db
-           ***   WARNING - doing this destroys DNSSEC RRSIG data. It is a last
-                 resort in DR recovery.
-           ***   Do really you wish to do this?
-            --y/[N]> y
-
-
-
-5. Start named and net24dmd
-
-
-           root@dms3-master:~# service net24dmd start
-           [ ok ] Starting net24dmd: net24dmd.
-           root@dms3-master:~# service bind9 start
-           [ ok ] Starting domain name service...: bind9.
-           root@dms3-master:~#
+               root@dms3-master:~# service dmsdmd start
+               [ ok ] Starting dmsdmd: dmsdmd.
+               root@dms3-master:~# service bind9 start
+               [ ok ] Starting domain name service...: bind9.
+               root@dms3-master:~#
 
 Failed Master, Replica /etc not up to date
+------------------------------------------
 
-The master and DR replica have the etckeeper git archive mirrored every 4 hours to the alternate server. See etcke
-eper and /etc on Replica and Master Servers
+The master and DR replica have the :command:`etckeeper` git archive mirrored
+every 4 hours to the alternate server.  See :ref:`etckeeper and /etc on Replica
+and Master Servers <>`
 
 Recovering DB from Backup
+-------------------------
 
-/etc/cron.d/dms-core does daily FULL pg_dumpall to /var/backups/postresql-9.1-dms.sql.gz, on replica and master,
-which are rotated for 7 days.
+:file:`/etc/cron.d/dms-core` does daily FULL :command:`pg_dumpall` to
+:file:`/var/backups/postresql-9.1-dms.sql.gz`, on replica and master, which are
+rotated for 7 days.
 
-To recover:
-
+To recover::
 
       # cd /var/backups
       # gunzip -c postregresql-9.1-dms.sql.gz | psql -U pgsql
 
+There will be lots of :abbr:`SQL` output. The dump also contains DB user passwords, and
+:abbr:`ACL`/permissions information, along with DB details for the whole PostgresQL
+'dms' cluster.
 
+Regenerating :file:`ds/` DS material directory from Private Keys
+----------------------------------------------------------------
 
-There will be lots of SQL output. The dumpall also contains DB user passwords, and ACL/permissions information,
-along with DB details for the whole postgresql 'dms' cluster.
+Use the :command:`dns-recreateds` command to recreate a domains :abbr:`DNSSEC`
+:abbr:`DS` material. The :file:`/var/lib/bind/keys` directory is rsynced to the
+:abbr:`DR` replica by the master server :command:`dmsdmd` daemon. Use a '*'
+argument to regenerate all :abbr:`DS` material.
 
-Regenerating ds/ DS material directory from Private Keys
-
-Use the dns-recreateds command to recreate a domains DNSSEC DS material. The /var/lib/bind/keys directory is
-rsynced to the DR replica by the master server net24dmd daemon. Use a '*' argument to regenerate all DS
-material.
-
+::
 
       shalom-ext: -root- [/var/lib/bind/keys]
       # dns-recreateds anathoth.net
@@ -829,21 +820,27 @@ material.
       shalom-ext: -root- [/var/lib/bind/keys]
       #
 
-
-
-
 IPSEC not going
+---------------
 
-These examples are between DNS slave server dns-slave1 and master shalom-ext.
+These examples are between DNS slave server dns-slave1 and master shalom-ext,
+using :command:`racoon`, via :command:`racoon-tool` in Debian Wheezy.
+
+.. note::
+
+   The ICMPv6 setup is specific to this Debian Wheezy :command:`racoon` setup.
+   However, the test techniques are also applicable to usewith Strongswan and
+   other IPSEC software.
 
 Diagnosis
+^^^^^^^^^
 
+:command:`Ping6` server from master and vice-versa to check unencrypted network
+level. (Transport mode encryption does not encrypt ICMPv6). Use the
+:command:`zone_tool ls_server -v` command to get the DMS configured IPv6
+addresses of both servers.
 
-
-
-Ping6 server from master and vice-versa to check unencrypted network level. (Transport mode encryption does not
-encrypt ICMPv6). Use the zone_tool ls_server -v command to get the DMS configured IPv6 addresses of both
-servers.
+::
 
       shalom-ext: -grantma- [~/dms]
       $ zone_tool ls_server -v dns-slave1
@@ -867,16 +864,10 @@ servers.
       shalom-ext: -grantma- [~/dms]
       $
 
+Telnet domain TCP ports both ways, and rsync out to slave server
+from master. This checks that IPSEC encryption is running.
 
-
-
-Telnet domain TCP ports both ways, and rsync out to slave server from master. This checks that IPSEC encryption
-is running.
-
-
-
-
-From shalom-ext:
+From shalom-ext::
 
        shalom-ext: -grantma- [~/dms]
        $ telnet 2001:470:66:23::2 53
@@ -898,13 +889,7 @@ From shalom-ext:
        shalom-ext: -grantma- [~/dms]
        $
 
-
-
-
-From dns-slave1:
-
-
-
+From dns-slave1::
 
        grantma@dns-slave1:~$ telnet 2001:470:f012:2::2 53
        Trying 2001:470:f012:2::2...
@@ -915,16 +900,21 @@ From dns-slave1:
        Connection closed.
        grantma@dns-slave1:~$
 
-
-
-
 If the DNS server is a DR replica, telnet the rsync port the other way also.
 
 Recovery
+^^^^^^^^
 
-If things are not working restart the IPSEC connection at both ends:
+For :command:`racoon` and :command:`strongswan`, if things are not working
+restart the IPSEC connection at both ends:
 
-shalom-ext master:
+.. note::
+
+   For Strongswan, use the :command:`ipsec up/down <connection-name>`.
+   :command:`ipsec status [<connection-name>]` can be used to list all
+   connections, and query about status.
+
+:command:`racoon` shalom-ext master::
 
        shalom-ext: -root- [/home/grantma/dms]
        # racoon-tool vlist
@@ -943,13 +933,7 @@ shalom-ext master:
        shalom-ext: -root- [/home/grantma/dms]
        #
 
-
-
-
-dns-slave1:
-
-
-
+:command:`racoon` dns-slave1::
 
        root@dns-slave1:/home/grantma# racoon-tool vlist
        shalom-dr
@@ -962,17 +946,17 @@ dns-slave1:
        root@dns-slave1:/home/grantma#
 
 
-
-              Wait 10 minutes for IPSEC replay timing to expire. Then retry the telnet steps above.
-
-
+.. note::
+   
+        Wait 10 minutes for IPSEC replay timing to expire. Then retry the telnet steps above.
 
 
 If IPSEC still will not work:
 
-Use racoon-tool restart on both ends:
+For :command:`racoon`, Use :command:`racoon-tool restart` on both ends. For
+strongswan, use :command:`ipsec restart` on both ends.
 
-shalom-ext:
+shalom-ext::
 
        shalom-ext: -root- [/home/grantma/dms]
        # racoon-tool restart
@@ -992,11 +976,7 @@ shalom-ext:
        shalom-ext: -root- [/home/grantma/dms]
        #
 
-
-
-
-dns-slave1:
-
+dns-slave1::
 
        root@dns-slave1:/home/grantma# racoon-tool restart
        Stopping IKE (ISAKMP/Oakley) server: racoon.
@@ -1014,79 +994,80 @@ dns-slave1:
        Starting IKE (ISAKMP/Oakley) server: racoon.
        root@dns-slave1:/home/grantma#
 
-
+.. note::
 
               Wait 10 minutes for IPSEC replay timing to expire. Then retry the telnet steps above.
-
-
 
 .. _DMS-Master-Server-Install:
 
 DMS Master Server Install
 =========================
 
-Base Operating System
+Base Operating System: Debian Wheezy or later.
 
-Debian Wheezy
-
-Create /etc/apt/apt.conf.d/00local.conf:
+Create :file:`/etc/apt/apt.conf.d/00local.conf`::
 
         // No point in installing a lot of fat on VM servers
         APT::Install-Recommends "0";
         APT::Install-Suggests "0";
 
-
-
-Create /etc/apt/sources.list.d/00local.conf
-
+Create :file:`/etc/apt/sources.list.d/00local.conf`::
 
         deb http://deb-repo.devel.net.nz/debian/ wheezy main
         deb-src http://deb-repo.devel.net.nz/debian/ wheezy main
 
+Install these packages::
 
+        # apt-get install cron-apt screen tree procps psmisc sysstat sudo lsof open-vm-tools open-vm-dkms dms
 
-Install these packages:
-cron-apt screen tree procps psmisc sysstat sudo lsof open-vm-tools open-vm-dkms
-
-dms
-
-To properly install netscript-2.4 because of cyclic boot dependencies (I will look into this when have some spare
-time, and log an RC Debian bug):
-
+If using ``netscript-2.4`` instead of ``ifupdown`` to properly install it because of cyclic boot
+dependencies (I will look into this when have some spare time, and log an RC
+Debian bug)::
 
         # dpkg --force --purge ifupdown
         # apt-get -f install
 
+Further, for ``netscript-2.4``,  edit :file:`/etc/netscript/network.conf` to configure
+static addressing. Look for ``IF_AUTO``, set ``eth0_IPADDR``, and further down
+comment out ``eth_start`` and ``eth_stop`` functions to turn
+off :abbr:`DHCP`. 
 
+.. note::
 
-Edit /etc/netscript/network.conf to configure static addressing. Look for IF_AUTO, set eth0_IPADDR, and further
-down comment out eth_start and eth_stop functions to turn off DHCP. Netscript manages iptables and ip6tables via
-iptables-save/iptables-restore, and keeps a cyclic history which you can change back to if your filter changes go
-wrong vi netscript ipfilter/ip6filter save/usebackup.
+   For most setups, ``netscript-ipfilter`` is a suitable package for managing
+   Linux filtering rules without replacing ``ifupdown``.
 
-Then:
+``Netscript-2.4`` and ``netscript-ipfilter`` manage :command:`iptables` and
+:command:`ip6tables` via :command:`iptables-save`/:command:`iptables-restore`,
+and keeps a cyclic history which you can change back to if your filter changes
+go wrong via :command:`netscript ipfilter/ip6filter save/usebackup`.
 
+Then::
 
         # aptitude update
         # aptitude upgrade
 
+shell.tar.gz
+------------
 
+.. note::
 
-To fix shell prompt for larger terminals on master server makes typing in long zone_tool commands at shell a lot
-clearer:
-
+      This is just a personal Debian prompt thing of mine. You might say I get
+      too personal...
+      
+To fix shell prompt for larger terminals on master server makes typing in long
+zone_tool commands at shell a lot clearer::
 
         # tar -C / -xzf shell.tar.gz
 
+Replaces :file:`/etc/skel` shell and :file:`/root` dot files with single line feed to force use of file in :file:`/etc`
 
+Then edit :file:`/etc/environment.sh` to turn off various things like ``umask 00002`` for user id less than 1000.
 
-shell.tar.gz
-
-Replaces /etc/skel shell and /root dot files with single line feed to force use of file in /etc
-
-Then edit /etc/environment.sh to turn off various things like umask 00002 for user id < 1000
-
-Then follow Net24 DMS Debian Install Documentation
+Completing DMS Setup
+--------------------
+      
+Then follow :ref:`Debian Install <Debian-Install>` documentation.
 
 
 
