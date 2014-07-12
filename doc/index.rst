@@ -14,6 +14,7 @@ Contents:
    Overview.rst
    Frequent_Procedures.rst
    Administration_Procedures.rst
+   System_Documentation.rst
    Install_from_Source.rst
    README.Debian.rst
    Best_Practice_Guidelines.rst

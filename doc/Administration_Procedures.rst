@@ -1,14 +1,22 @@
+.. _Administration-Procedures:
+
 ***************************
 Administration Procedures
 ***************************
+
+.. _Adding-a-DNS-Slave-to-DMS:
 
 Adding a DNS Slave to DMS
 =========================
 
 Please refer to the Debian Install Documentation, :ref:`Setting-up-a-Slave-Server`
 
+.. _Break-Fix-Scenarios:
+
 Break Fix Scenarios
 ===================
+
+.. _Log-and-Configuration-Files:
 
 Log and Configuration Files
 ---------------------------
@@ -28,6 +36,8 @@ The following are detailed elsewhere in the documentation
  ======================================    ==================================================
 
 See :ref:`Named.conf and Zone Templating<>` for more details.
+
+.. _Checking-DMS-Status:
 
 Checking DMS Status
 -------------------
@@ -104,6 +114,8 @@ Checking DMS Status
     * :command:`list_pending_events` shows events that have to be processed.
     * Any events that are scheduled in the past may indicate :command:`dmsdmd` having
       serious problems.
+
+.. _Failing-Over-as-Master-Server-has-Burned-(or-Subject-to-EQC-Claim):
 
 Failing Over as Master Server has Burned (or Subject to EQC Claim)
 ------------------------------------------------------------------
@@ -208,6 +220,8 @@ configured.
 
 A new replica will need to be installed as per :ref:`DMS Master Server
 Install<DMS-Master-Server-Install>`
+
+.. _Stuck-Zone-not-Propagating:
 
 Stuck Zone not Propagating
 --------------------------
@@ -494,6 +508,8 @@ useful, as it will show the events to do with the zone being published.
        zone_ttl:                24h
        zone_tool >
 
+.. _MasterSM-Stuck,-New-Zones-not-Being-Created:
+
 MasterSM Stuck, New Zones not Being Created
 -------------------------------------------
 
@@ -587,6 +603,9 @@ Key things to look for:
             outages etc, the MasterSM will end up stuck as above.
 
 The fix is to do :command:`zone_tool reset_master`. This will reset the ``MasterSM`` state machine.
+
+
+.. _Stuck-ServerSM:
 
 Stuck ServerSM
 --------------
@@ -727,6 +746,8 @@ Wait until the scheduled time posted for ``ServerSMConfigure``, and then do a
       ServerSMCheckServer        shalom-ext                     Fri Nov 9 12:17:31   2012
       zone_tool >
 
+.. _Rebuilding-named-data-from-database:
+
 Rebuilding named data from database
 -----------------------------------
 
@@ -780,12 +801,16 @@ The named dynamic data in :file:`/var/lib/bind/dynamic` is corrupt, or missing
                [ ok ] Starting domain name service...: bind9.
                root@dms3-master:~#
 
+.. _Failed-Master,-Replica-/etc-not-up-to-date:
+
 Failed Master, Replica /etc not up to date
 ------------------------------------------
 
 The master and DR replica have the :command:`etckeeper` git archive mirrored
 every 4 hours to the alternate server.  See :ref:`etckeeper and /etc on Replica
 and Master Servers <>`
+
+.. _Recovering-DB-from-Backup:
 
 Recovering DB from Backup
 -------------------------
@@ -803,6 +828,8 @@ There will be lots of :abbr:`SQL` output. The dump also contains DB user passwor
 :abbr:`ACL`/permissions information, along with DB details for the whole PostgresQL
 'dms' cluster.
 
+.. _Regenerating-DS-material:
+    
 Regenerating :file:`ds/` DS material directory from Private Keys
 ----------------------------------------------------------------
 
@@ -820,6 +847,8 @@ argument to regenerate all :abbr:`DS` material.
       shalom-ext: -root- [/var/lib/bind/keys]
       #
 
+.. _IPSEC-not-going:
+
 IPSEC not going
 ---------------
 
@@ -831,6 +860,8 @@ using :command:`racoon`, via :command:`racoon-tool` in Debian Wheezy.
    The ICMPv6 setup is specific to this Debian Wheezy :command:`racoon` setup.
    However, the test techniques are also applicable to usewith Strongswan and
    other IPSEC software.
+
+.. _IPSEC-not-going-Diagnosis:
 
 Diagnosis
 ^^^^^^^^^
@@ -901,6 +932,9 @@ From dns-slave1::
        grantma@dns-slave1:~$
 
 If the DNS server is a DR replica, telnet the rsync port the other way also.
+
+
+.. _IPSEC-not-going-Recovery:
 
 Recovery
 ^^^^^^^^
@@ -1047,6 +1081,8 @@ Then::
         # aptitude update
         # aptitude upgrade
 
+.. _shell.tar.gz:
+
 shell.tar.gz
 ------------
 
@@ -1063,6 +1099,8 @@ zone_tool commands at shell a lot clearer::
 Replaces :file:`/etc/skel` shell and :file:`/root` dot files with single line feed to force use of file in :file:`/etc`
 
 Then edit :file:`/etc/environment.sh` to turn off various things like ``umask 00002`` for user id less than 1000.
+
+.. _Completing-DNS-Setup:
 
 Completing DMS Setup
 --------------------
