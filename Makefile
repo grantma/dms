@@ -76,7 +76,7 @@ else ifeq ($(OSNAME), FreeBSD)
 	VARCONFDIR = $(DESTDIR)/var/lib/dms
 	LOGDIR = $(DESTDIR)/var/log/dms
 	RUNDIR = $(DESTDIR)/var/run/dms
-	PYTHON_INTERPRETER ?= $(PREFIX)/bin/python3.2
+	PYTHON_INTERPRETER ?= $(PREFIX)/bin/python3.4
 	PYTHON_SETUP_OPTS =
 	PGUSER=pgsql
 	PGGROUP=pgsql
@@ -92,7 +92,7 @@ else
 	VARCONFDIR = $(DESTDIR)$(PREFIX)/dms/var
 	LOGDIR = $(DESTDIR)$(PREFIX)/dms/log
 	RUNDIR = $(DESTDIR)$(PREFIX)/dms/var
-	PYTHON_INTERPRETER ?= $(PREFIX)/bin/python3.2
+	PYTHON_INTERPRETER ?= $(PREFIX)/bin/python3.4
 	PYTHON_SETUP_OPTS =
 	PGUSER=pgsql
 	PGGROUP=pgsql
