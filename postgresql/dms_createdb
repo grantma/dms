@@ -94,7 +94,7 @@ do_restoredb () {
 	fi
 	NUMUSERS=`su - postgres -c "psql -p 5432 -qtc 'SELECT usesysid, usename FROM pg_stat_activity;'" | grep -v "^$" | wc -l`
 	if [ $NUMUSERS -ne 1 ]; then
-		echo "$PROGNAME: DMS Cluster has $(($NUMUSERS - 1)) active sessions - aborting." 1>&2
+		echo "$PROGNAME: Cluster '$PGCLUSTER' has $(($NUMUSERS - 1)) active sessions - aborting." 1>&2
 		exit 2
 	fi
 	if file "$1" | grep -q 'gzip'; then
