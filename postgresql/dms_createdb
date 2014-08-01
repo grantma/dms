@@ -74,7 +74,7 @@ do_createdb () {
 		bzcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
 	elif file "$1" | grep -q 'XZ'; then
 		xzcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
-	elif file "$1" | grep -q 'ASCII\|UTF-8'; then
+	elif file "$1" | grep -q 'ASCII\|UTF-8\|UTF8'; then
 		cat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
 	else
 		echo "$PROGNAME: Non ASCII/UTF-8 input, exiting." 1>&2
@@ -103,7 +103,7 @@ do_restoredb () {
 		bzcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
 	elif file "$1" | grep -q 'XZ'; then
 		xzcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
-	elif file "$1" | grep -q 'ASCII\|UTF-8'; then
+	elif file "$1" | grep -q 'ASCII\|UTF-8\|UTF8'; then
 		cat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
 	else
 		echo "$PROGNAME: Non ASCII/UTF-8 input, exiting." 1>&2
