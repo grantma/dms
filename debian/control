@@ -25,8 +25,7 @@ Recommends:
   dnsutils
 Depends: ${misc:Depends}, ${python3:Depends},
   python3-magcode-core,
-  postgresql (>= 9.3), postgresql (<< 9.4),
-  postgresql-client (>= 9.3), postgresql-client (<< 9.4),
+  postgresql-9.4
   python3-sqlalchemy (>= 0.7),
   python3-psycopg2 (>= 2.4.5),
   python3-psutil (>= 0.4.1),
