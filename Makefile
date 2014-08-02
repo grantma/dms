@@ -76,7 +76,7 @@ else ifeq ($(OSNAME), FreeBSD)
 	VARCONFDIR = $(DESTDIR)/var/lib/dms
 	LOGDIR = $(DESTDIR)/var/log/dms
 	RUNDIR = $(DESTDIR)/var/run/dms
-	PYTHON_INTERPRETER ?= $(PREFIX)/bin/python3.2
+	PYTHON_INTERPRETER ?= $(PREFIX)/bin/python3.4
 	PYTHON_SETUP_OPTS =
 	PGUSER=pgsql
 	PGGROUP=pgsql
@@ -92,7 +92,7 @@ else
 	VARCONFDIR = $(DESTDIR)$(PREFIX)/dms/var
 	LOGDIR = $(DESTDIR)$(PREFIX)/dms/log
 	RUNDIR = $(DESTDIR)$(PREFIX)/dms/var
-	PYTHON_INTERPRETER ?= $(PREFIX)/bin/python3.2
+	PYTHON_INTERPRETER ?= $(PREFIX)/bin/python3.4
 	PYTHON_SETUP_OPTS =
 	PGUSER=pgsql
 	PGGROUP=pgsql
@@ -244,8 +244,8 @@ install-bin: install-python
 	done;
 	- $(INSTALL) -m 755 dr_scripts/etckeeper_git_shell $(SHAREDIR)/dr_scripts \
 	 	&& perl -pe 's~^#!/\S+/python3.[0-9]\s+.*$$~#!$(PYTHON_INTERPRETER)~' -i $(SHAREDIR)/dr_scripts/etckeeper_git_shell
-	- $(INSTALL) -m 644 postgresql/dms-schema-pg93.sql $(SHAREDIR)/postgresql
-	- $(INSTALL) -m 644 postgresql/dms-init-pg93.sql $(SHAREDIR)/postgresql
+	- $(INSTALL) -m 644 postgresql/dms-schema-pg94.sql $(SHAREDIR)/postgresql
+	- $(INSTALL) -m 644 postgresql/dms-init-pg94.sql $(SHAREDIR)/postgresql
 ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -m 755 postgresql/dms_createdb $(SHAREDIR)/postgresql \
 		&& perl -pe 's~^DBLIBDIR=.*$$~DBLIBDIR=$(PREFIX)/share/dms/postgresql~' -i $(SHAREDIR)/postgresql/dms_createdb
@@ -275,6 +275,7 @@ ifeq ($(OSNAME), Linux)
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_createdb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_admindb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_dropdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_restoredb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_dumpdb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_sqldb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_pg_basebackup
