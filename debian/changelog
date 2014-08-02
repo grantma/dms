@@ -1,3 +1,12 @@
+dms (1.0.2-1~1mag1) UNRELEASED; urgency=medium
+
+  * Update for postgresQL 9.4
+  * Added dms_restoredb command, and dumpfile arguments to dms_createdb
+    and dms_dumpdb.
+  * Update version number
+
+ -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 02 Aug 2014 12:50:48 +1200
+
 dms (1.0.1g-5) unstable; urgency=medium
 
   * Add required Uploaders line to debian/control
