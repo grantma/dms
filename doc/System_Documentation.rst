@@ -1011,79 +1011,89 @@ reconfigure is stored if the Master SM is in HOLD, escalated if needed, and then
                        state:                       HOLD
                zone_tool >
 
+.. _Named.conf-and-Zone-Templating:
+     
+:file:`Named.conf` and Zone Templating
+======================================
 
+On all the servers in the DMS system, the DNS server configuration is designed
+to use include files and per zone templates. The master and replica servers are
+currently BIND v9 only, but the DMS is designed to support different types of DNS servers
+(configured as slave servers) such as `NSD v3
+<http://www.nlnetlabs.nl/projects/nsd/>`, `Knot <http://www.knot-dns.cz>`, as
+well as `BIND 9 <http://www.isc.org>`.
 
+To simplify the authentication for the DNS servers, the network connection
+between the master and replica/slave servers is encrypted and integrity
+protected by using IPSEC. This enables the BIND 9 ACLs to specified by IP
+address only, simplifying the configuration segments that need to be generated
+for the DNS replica/slave servers.
 
-Named.conf and Zone Templating
-On all the servers in the DMS system, the DNS server configuration is designed to use include files and per zone
-templates. The master and replica servers are bind9 only, but the DMS is designed to support different types of
-DNS servers (configured as slave servers) such as nsd3, as well as bind9.
+The include files are generated on the master, rsynced to all the servers, and
+then the servers are reconfigured via the rndc protocol or by a local daemon on
+the server stating the rsynced include file. If one of the servers gets
+compromised, it can be cut off by disabling its IPSEC connection or halting it.
 
-To simplify the authentication for the DNS servers, the network connection between the master and replica/slave
-servers is encrypted and integrity protected by using IPSEC. This enables the bind9 ACLs to specified by IP
-address only, simplifying the configuration segments that need to be generated for the DNS replica/slave servers.
+===================================         =====================   ===============================
+File/Directory                              Server                  Description
+===================================         =====================   ===============================
 
-The include files are generated on the master, rsynced to all the servers, and then the servers are reconfigured via
-rndc or by a local daemon on the server stating the rsynced include file. If one of the servers gets compromised, it
-can be cut off by disabling its IPSEC connection or halting it.
+:file:`/var/lib/dms/rsync-config`           slaves and replicas     :file:`named.conf` include segments
+                                            (master as replica 
+                                            for DR)
 
- /etc/bind/rsync-config                 slaves and replicas                     named.conf include segments
+:file:`/var/lib/dms/master-config`          master (replica - DR)   Master :file:`named.conf` include
+                                                                    segment
 
- /etc/bind/master-config                master                                  Master named.conf include
-                                                                                segment
+:file:`/etc/dms/server-admin-config/bind9`  master (replica - DR)   :file:`named.conf` segments for ``bind9``
+                                                                    slaves. Seperate segments for
+                                                                    controls, logging, options and local.
+                                                                    :command:`zone_tool rsync_server_admin_config`
+                                                                    distributes these portions out.
 
- /etc/net24/server-admin-config/bind    master                                  named.conf segments for bind9
- 9                                                                              slaves. Seperate segments for
-                                                                                controls, logging, options and local.
-                                                                                zone_tool
-                                                                                rsync_server_admin_config
-                                                                                distributes these portions out.
+:file:`/etc/dms/server-config-templates`    master (replica - DR)   Zone templates for replicas and slaves. See below.
 
- /etc/net24/server-config-templates     master                                  Zone templates for replicas and
-                                                                                slaves. See below.
+:file:`/etc/dms/master-config-templates`    master (replica - DR)   zone templates for running master :file:`named.conf`
 
- /etc/net24/master-config-templates     master                                  zone templates for running master
-                                                                                named.conf
+:file:`/etc/dms/config-templates`           master (replica - DR)   :file:`rndc.conf` templates for creating
+                                                                    :file:`/etc/bind/rndc.conf`, and TSIG key
+                                                                    template for :command:`zone_tool tsig_key_generate`
 
- /etc/net24/config-templates            master                                  rndc.conf templates for creating
-                                                                                /etc/bind/rndc.conf, and TSIG key
-                                                                                template for zone_tool
-                                                                                tsig_key_generate
+:file:`/var/lib/dms/dms-sg`                 master (replica - DR)   Per SG include dirs for configuration segments to be rsynced.
 
- /var/lib/net24/dms-sg                  master                                  Per SG include dirs for
-                                                                                configuration segments to be
-                                                                                rsynced.
+:file:`/etc/dms/bind`                       master (replicas - DR)  Configuration generated by :program:`dmsdmd` for :program:`named`.
 
- /etc/bind/named-dr-replica.conf        replicas                                Slave named configuration for
-                                                                                replicating running master
-                                                                                /var/lib/bind/dynamic zone
-                                                                                database. Contains DNSSEC
-                                                                                RRSIG and other non-database
-                                                                                bind9 master data that should be
-                                                                                replicated
+:file:`/etc/dms/bind/named-dr-replica.conf` master (replica - DR)   Slave :program:`named` configuration for
+                                                                    replicating running master
+                                                                    :file:`/var/lib/bind/dynamic` zone
+                                                                    database. Contains DNSSEC
+                                                                    RRSIG and other non-database
+                                                                    :program:`bind9` master data that should be
+                                                                    replicated.
 
- /var/lib/net24/dms-sg                    master                                  Per SG include dirs for
-                                                                                  configuration segments to be
-                                                                                  rsynced.
+:file:`/var/lib/dms/dms-sg`                  master (replica - DR)  Per SG include dirs for
+                                                                    configuration segments to be
+                                                                    rsynced.
 
- /var/lib/bind/dynamic                    master and replicas                     Named DNS dynamic database.
-                                                                                  Contains DNS cryptographic data
-                                                                                  that should be replicated between
-                                                                                  master servers. Replicated via
-                                                                                  Replica slave named process.
+:file:`/var/lib/bind/dynamic`                master and replicas    Named DNS dynamic database.
+                                                                    Contains DNS cryptographic data
+                                                                    that should be replicated between
+                                                                    master servers. Replicated via
+                                                                    Replica slave named process.
 
- /var/cache/bind/slave                    All slaves                              Slave zone cache database.
+:file:`/var/cache/bind/slave`                All slaves             Slave zone cache database.
 
-              All the directories listed above for the master should be manually synchronised with the all
-              replicas for reliable fail over.
+===================================          =====================  ===============================
 
+.. note::
+         
+        All the directories listed above for the master should be manually synchronised with the all
+        replicas for reliable fail over.
 
+In all the following templates, the keys used are the ones given in the files. They are of the Python string ``%/sprintf``
+form ``%(key_name)s``
 
-
-In all the following templates, the keys used are the ones given in the files. They are of the Python string %/sprintf
-form '%(key_name)s'
-
-Master named.conf include templates in /etc/net24/master-config-templates are:
+Master :file:`named.conf` include templates in /etc/dms/master-config-templates are:
 
  auto-dnssec-config.conf                                      DNSSEC dynamic DNS zone template
 
@@ -1226,126 +1236,9 @@ netscript ipfilter examples are:
 
 
 
-Overview
-
-Software Architecture
-
-Architecture Diagram
-
-Only one of the DR replica pairs is shown below for clarity.
- The standby replica runs as a server of the replica SG
-group. PostgresQL Replication is also live to the DR
-replica, carried over the IPSEC connection between the DR
-master and replica servers. The master/replica servers use
-iptables/ip6tables to filter access to services carried over
-IPSEC.
-
-Conceptual Network Diagram
-
-The DMS is designed to support anycast and unicast servers, as per best practise guidlines
-
-DMS Features
-      IPv6 fully supported in back end and front end
-      IPv6 DNS RRs (AAAA)
-      Dynamic DNS configuration of Master server reduces need for reconfig and reload operations.
-      DNS RRs supported include SOA NS A AAAA MX PTR TXT SPF RP SSHFP SRV NSAP NAPTR LOC KX
-      IPSECKEY HINFO CERT DS. DNSSEC handled by bind9 master
-      Auto DNSSEC via Bind9 dynamic DNS. Bind9 master server auto maintains zone DNSSEC operations
-      records and signing. NSEC3 and NSEC supported. DNSSEC key management on Master server file system
-      pending write of key management module. Key material directory is replicated via DR protocol (rsync)
-      though. DMS is fully enabled to use DNSSEC for securing our core domains.
-      Apex resource record (SOA and NS) management across all zones - can be turned off per zone.
-      Auto reverse PTR generation
-      Customer control of their own automated reverse DNS. Individual PTR records, and complete reverse zones.
-       Useful for business IPv6 and IPv4 blocks. Enables on site use of IP PABX, intranet and email for SMBs on
-      XDSL/Fibre.
-      zone_tool command line administrative tool on master servers
-      IPSEC secured communications between each of DR master replicas and slaves
-      Modular design. For example, Racoon IPSEC can be replaced if needed.
-      Multiple Slave DNS server software implementations. NL Netlabs nsd3 can be used as a slave server once
-      backend code is completed, and a simple configuration monitoring/HUP daemon implemented to run on each
-      slave.
-      slave server/Server Groups (SG) support. Live migration of zones.
-      Private SGs for internal Voyager/NET24 zones.
-      Retention of deleted zones in database for aged auto-deletion later.
-      Multiple Zone Instances per Zone. Roll forward and roll back changes. Again old ZIs aged for auto deletion
-      above a threshold number.
-
-       Templates used for generating name server configuration includes - master, replicas and slaves.
-       Rsync to distribute name server configuration to servers.
-       Central distribution of name server configuration segments.
-       Hot standby master replica for DR purposes with manually controlled fail over. Includes automatic
-       replica/slave server reconfiguration.
-       WSGI JSON RPC over HTTPS API for mulitple front ends
-       Security tags to control what front ends can see
-       Zone reference metadata to tag the zone with the owner/customer entity ID. Set by DMI when a zone is
-       created. Tag out of table in DB via foreign key for easy reference renaming.
-       zone_tool has built in pager support and editor support via standard shell environment variables.
-       zone_tool has a configurable restricted shell mode for Help Desk use
-       RR Groups and RR comments supported in DB for use in text editor and in Web Admin DMI
-       zone_tool has colourised diff support to display changes between different ZIs for a zone
-       Vim can be used as zone tool editor, giving DNS colourised Zone file syntax high lighting.
-
-
-
-Programming Language
-
-The DMS backend software is written in Python 3.x, which is a good choice given the code base size of 22,000
-lines. Python is well suited to larger projects, and fully object oriented, and very clear and systematically defined.
- Python 3.x was chosen over 2.x for future proofing.
-
-The Python JSON RPC interface is implemented with Apache2 mod_wsgi, with a back end DNS Manager Daemon.
- zone_tool is a command line shell environment that implements all the functionality of the JSON RPC calls, as well
-as DMS systems configuration and management functionality. This common code functionality allows the JSON
-RPC calls to be called from a terminal, where a debugger can be used, for ease of development.
-
-A state machine and event queue design is used, with state and event information recorded in PostgresQL. State
-machines exist for each:
-
-       DNS zone to track life-cycle state of zone
-       Master server configuration
-       DNS replica/slave server configuration and reload cycles.
-
-DNS server software
-
-Decided to go forward using ISC Bind 9 as DNSSEC is on the way, and Bind 9 will be the software used to roll this
-out. Other implementations of DNS software exist, Netlabs NL NSD3 is one, but it looks more suited to a TLD
-registry and large site/domain use than for DNS Provider use for small zones.
-
-The DNS server state machine classes are designed so that NL Netlabs nsd 3.x can be added latter on as a slave
-server. This is done achieved by the use of state machine design, object oriented code and modularity.
-
-A Hidden Master DNS architecture is implemented, with a DR replica master server.
-
-Backend Database.
-
-PosgresQL 9.1+. PostgresQL has a significant history of high end functionality including transactions and stored
-procedures. Replication is also baked in as well.
-
-DMI Server/Clients
-
-1st Domains will communicate with DMS via the WSGI server, along with the Net24 front page. An administrative
-help desk DNS Management Interface is being implemented. To begin with, the DMS will be administered via
-
-zone_tool by ssh into the Master DMS system.
-
-Network protocols and security
-
-DNS and logging traffic between the slave servers outside Net24 is be secured using IPSEC. Iptables filtering and
-IPSEC SAs are used to control the traffic that the slave servers accept from the network and Internet. IPSEC SAs
-exist for zone update and port 53 administrative traffic, and secure that traffic. Ie, DNS Traffic from the Master DNS
-server will be secured using IPSEC. This keeps all the cryptographic verbiage out of the DNS server configurations,
-and makes them a lot simpler to generate from templates. IP numbers and acls may need to be inserted in the
-named.conf files to identify the designation of administrative control and updates from the Master DNS server, but
-this is a lot easier that having to track of lot of configuration details about TSIG/SIG0 keys for each individual
-master-slave relationship, and where they are used....
-
-Web UI Framework.
-
-The Web GUI for the DMI will be rendered using ExtJS. Check logic, and business logic will be separated out and
-not mixed in (as much as possible) with the UI. This is basically a Mode View Controller programming model.
-
 Python WSGI and JSON/RPC over HTTPS
+===================================
+
 The interface between the DMS Web servers and the DMS server is a Web service. The DMI servers talk
 JSON/RPC over HTTPS to the DMS running master server. Failover is handled by a CNAME
 dms-server.failover.vygr.net, which updated by the dms_promote_replica script. The HTTP connections are integrity
