@@ -25,14 +25,14 @@ PROGNAME="`basename $0`"
 DBNAME="dms"
 DBADMIN="root"
 PGCLUSTER="dms"
-PGVERSION="9.3"
+PGVERSION="9.4"
 PGPASSWORDFILE="/etc/dms/pgpassfile"
 DBREPLICA="ip6-localhost"
 DBLIBDIR="/usr/local/share/dms/postgresql"
 VARDIR="/var/lib/dms/postgresql"
 DBDUMPDIR="/var/backups"
-DBSCHEMA="dms-schema-pg93.sql"
-DBSEEDDATA="dms-init-pg93.sql"
+DBSCHEMA="dms-schema-pg94.sql"
+DBSEEDDATA="dms-init-pg94.sql"
 DBALTXLOGDIR="/srv/postgresql"
 DBMOVEXLOG=false
 SETTINGSFILE="/etc/dms/dr-settings.sh"
@@ -65,13 +65,50 @@ do_createdb () {
 	echo "$PROGNAME: starting DB cluster ${PGCLUSTER}..."
 	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" start
 	echo "$PROGNAME: creating databases on cluster ${PGCLUSTER}..."
-	su - postgres -c "psql -p `get_pgport` -f $DBLIBDIR/$DBSCHEMA > /dev/null"
-	su - postgres -c "psql -p `get_pgport` -f $DBLIBDIR/$DBSEEDDATA  $DBNAME > /dev/null"
+	if [ -z "$1" ]; then
+		su - postgres -c "psql -p `get_pgport` -f $DBLIBDIR/$DBSCHEMA > /dev/null"
+		su - postgres -c "psql -p `get_pgport` -f $DBLIBDIR/$DBSEEDDATA  $DBNAME > /dev/null"
+	elif file "$1" | grep -q 'gzip'; then
+		zcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
+	elif file "$1" | grep -q 'bzip2'; then
+		bzcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
+	elif file "$1" | grep -q 'XZ'; then
+		xzcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
+	elif file "$1" | grep -q 'ASCII\|UTF-8\|UTF8'; then
+		cat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
+	else
+		echo "$PROGNAME: Non ASCII/UTF-8 input, exiting." 1>&2
+		exit 1
+	fi
 }
 
 do_dropdb () {
         echo "$PROGNAME: dropping cluster ${PGCLUSTER}..."
 	pg_dropcluster --stop-server "$PGVERSION" "$PGCLUSTER"
+}
+
+do_restoredb () {
+	if [ $# -ne 1 ]; then
+		echo "$PROGNAME: No dump file given, exiting." 1>&2
+		exit 1
+	fi
+	NUMUSERS=`su - postgres -c "psql -p 5432 -qtc 'SELECT usesysid, usename FROM pg_stat_activity;'" | grep -v "^$" | wc -l`
+	if [ $NUMUSERS -ne 1 ]; then
+		echo "$PROGNAME: Cluster '$PGCLUSTER' has $(($NUMUSERS - 1)) active sessions - aborting." 1>&2
+		exit 2
+	fi
+	if file "$1" | grep -q 'gzip'; then
+		zcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
+	elif file "$1" | grep -q 'bzip2'; then
+		bzcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
+	elif file "$1" | grep -q 'XZ'; then
+		xzcat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
+	elif file "$1" | grep -q 'ASCII\|UTF-8\|UTF8'; then
+		cat "$1" | su - postgres -c "psql -p `get_pgport` > /dev/null"
+	else
+		echo "$PROGNAME: Non ASCII/UTF-8 input, exiting." 1>&2
+		exit 1
+	fi
 }
 
 do_changeuser () {
@@ -204,7 +241,7 @@ admindb () {
 
 createdb_usage () {
 	local BLAH="
-  Usage: $PROGNAME [-hf] [-u DB-admin] 
+  Usage: $PROGNAME [-hf] [-u DB-admin] [pg_dumpallgz-dump]
 
 "
 	echo -n "$BLAH" 1>&2
@@ -246,7 +283,7 @@ createdb () {
 	done
 	shift $(( $OPTIND - 1 ))
 
-	if [ $# -ne 0 ]; then
+	if [ $# -ne 0 -a $# -ne 1 ]; then
 		createdb_usage
 		exit 1
 	fi
@@ -260,7 +297,7 @@ createdb () {
 		fi
 	fi
 	
-	do_createdb
+	do_createdb "$1"
 }
 
 dropdb_usage () {
@@ -316,9 +353,68 @@ dropdb () {
 	do_dropdb
 }
 
+restoredb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-fh] <pg_dumpallgz-dump>
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+restoredb_vusage () {
+	local BLAH="
+         -h        print this help
+         -f        force restore of existing database
+
+"
+
+	restoredb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+restoredb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts fh F; do
+		case $F in
+		f)
+			FORCE=1
+			;;
+		h)
+			restoredb_vusage
+			exit 1
+			;;
+		\?)
+			restoredb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 1 ]; then
+		restoredb_usage
+		exit 1
+	fi
+
+	local PORT=`get_pgport`
+	if [ -z "$PORT" ]; then
+		echo "$PROGNAME: can't obtain port number - database configuration?" 1>&2
+		exit 2
+	fi
+
+	if [ $FORCE -lt 1 ]; then
+		echo "$PROGNAME: must give -f argument to restore the database" 1>&2
+		exit 1
+	fi
+
+	do_restoredb "$1"
+}
+
 dumpdb_usage () {
 	local BLAH="
-  Usage: $PROGNAME [-hf]
+  Usage: $PROGNAME [-h] [pg_dumpallgz-dump]
 
 "
 	echo -n "$BLAH" 1>&2
@@ -327,7 +423,6 @@ dumpdb_usage () {
 dumpdb_vusage () {
 	local BLAH="
          -h        print this help
-         -f        force drop of existing database
 
 "
 
@@ -339,7 +434,7 @@ dumpdb () {
 	check_root
 	local FORCE=0
 	OPTIND=1
-	while getopts hf F; do
+	while getopts h F; do
 		case $F in
 		h)
 			dumpdb_vusage
@@ -353,7 +448,7 @@ dumpdb () {
 	done
 	shift $(( $OPTIND - 1 ))
 
-	if [ $# -ne 0 ]; then
+	if [ $# -ne 0 -a $# -ne 1 ]; then
 		dumpdb_usage
 		exit 1
 	fi
@@ -365,8 +460,12 @@ dumpdb () {
 	fi
 	# Save anyone from just reading the dump files...
 	umask 077
-	savelog -nlq $DBDUMPDIR/$DBDUMPFILE
-	pg_dumpallgz -p "$PORT" -c -f $DBDUMPDIR/$DBDUMPFILE
+	if [ -z "$1" ]; then
+		savelog -nlq $DBDUMPDIR/$DBDUMPFILE
+		pg_dumpallgz -p "$PORT" -c -f $DBDUMPDIR/$DBDUMPFILE
+	else
+		pg_dumpallgz -p "$PORT" -c -f "$1"
+	fi
 }
 
 
@@ -660,6 +759,9 @@ case $0 in
 	;;
 *dropdb)
 	dropdb "$@"
+	;;
+*restoredb)
+	restoredb "$@"
 	;;
 *dumpdb)
 	dumpdb "$@"
