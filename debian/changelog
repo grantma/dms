@@ -1,4 +1,4 @@
-dms (1.0.2-1~1mag2) UNRELEASED; urgency=medium
+dms (1.0.2-1) unstable; urgency=medium
 
   * Update for postgresQL 9.4
   * Added dms_restoredb command, and dumpfile arguments to dms_createdb
@@ -8,6 +8,8 @@ dms (1.0.2-1~1mag2) UNRELEASED; urgency=medium
   * Update version number in NEWS file
   * Update dms-core.NEWS for with pg_upgradecluster.
   * Properly depend postgresql-9.4 (Closes: #756352)
+  * Fix syntax typo
+  * Put a sensible version number on dms-core.NEWS
 
  -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 02 Aug 2014 12:50:48 +1200
 
