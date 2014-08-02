@@ -9,6 +9,7 @@ usr/share/dms/postgresql/dms_createdb usr/sbin/dms_dropdb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_admindb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_sqldb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_dumpdb
+usr/share/dms/postgresql/dms_createdb usr/sbin/dms_restoredb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_pg_basebackup
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_write_recovery_conf
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_move_xlog
