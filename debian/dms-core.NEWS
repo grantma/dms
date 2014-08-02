@@ -1,4 +1,4 @@
-dms-core (1.0.2-1~1mag1) unstable; urgency=low
+dms-core (1.0.2-1~1mag2) unstable; urgency=low
 
     This version is an upgrade to support Postgresql-9.4. Please following the
     following process when upgrading on the DMS master server to upgrade from
@@ -11,30 +11,22 @@ dms-core (1.0.2-1~1mag1) unstable; urgency=low
        'postgresql-9.3-dms.sql.gz'
     3. Upgrade packages
     4. Set PGVERSION="9.4" in /etc/dms/dr-settings.sh
-    5. Manually create the DMS cluster using dms_createdb <last-backup> as
-       root, or you can just run dms_createdb, and then use dms_restoredb
-       <last-backup>
-    6a. Edit /etc/postgresql/9.4/dms/postgresql.conf and set 'port = 5432'
-    6b. Edit /etc/postgresql/9.4/main/postgresql.conf and set 'port = 5433'
-    6c. Edit /etc/postgresql/9.4/main/start.conf and set to 'manual'
-    6d. Stop and restart postgresql to change ports being listened on.
+    5  Run 'pg_upgradecluster 9.3 dms' as root
     7. Start named, rsyslog, and dmsdmd.
-    8. Purge postgresql-9.3 with dpkg --purge postgresql-9.3
+    8. Once happy, remove old cluster with 'pg_dropcluster 9.3 dms'.  
+       Afterwards, purge postgresql-9.3 with dpkg --purge postgresql-9.3
 
     On the DR server:
 
     1. Stop named, rsyslog and dmsdmd.
     2. Upgrade packages
     3. Set PGVERSION="9.4" in /etc/dms/dr-settings.sh
-    4. Manually create the DMS cluster using dms_createdb <last-backup> as
-       root.
-    5a. Edit /etc/postgresql/9.4/dms/postgresql.conf and set 'port = 5432'
-    5b. Edit /etc/postgresql/9.4/main/postgresql.conf and set 'port = 5433'
-    5c. Edit /etc/postgresql/9.4/main/start.conf and set to 'manual'
-    5d. Stop postgresql It will be started in the next step.
-    7. As root, run dms_start_as_replica to replicate the master DB, and start
+    4  Run 'pg_upgradecluster 9.3 dms' as root
+    5. Stop postgresql It will be started in the next step.
+    6. As root, run dms_start_as_replica to replicate the master DB, and start
        postgresql in hot-standby mode.
-    8. Purge postgresql-9.3 with dpkg --purge postgresql-9.3
+    8. Once happy, remove old cluster with 'pg_dropcluster 9.3 dms'.  
+       Afterwards, purge postgresql-9.3 with dpkg --purge postgresql-9.3
 
     After this on the master server, run zone_tool show_dms_status to check
     that everything is alright.
