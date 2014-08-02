@@ -4,6 +4,7 @@ dms (1.0.2-1~1mag1) UNRELEASED; urgency=medium
   * Added dms_restoredb command, and dumpfile arguments to dms_createdb
     and dms_dumpdb.
   * Update version number
+  * Put Debian NEWS files in correct place.
 
  -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 02 Aug 2014 12:50:48 +1200
 
