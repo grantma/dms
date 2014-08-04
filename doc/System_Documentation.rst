@@ -396,17 +396,17 @@ Event Queue Inspection
 
 The :command:`zone_tool` event queue inspection commands are:
 
-===================================   =======================================================
-:command:`show_event <event-id>`      Given an event ID, show the contents of the event
+====================================   =======================================================
+:command:`show_event <event-id>`       Given an event ID, show the contents of the event
 
-:command:`ls_pending_events [-v]`     List all pending events
+:command:`ls_pending_events [-v]`      List all pending events
 
-:command:`ls_failed_events [-v] [n]`  List last *n* failed events, by default 25
+:command:`ls_failed_events [-v] [n]`   List last *n* failed events, by default 25
 
-:command:`ls_events [-v] [n]`         List *n* events in queue in reverse order, by default 25
+:command:`ls_events [-v] [n]`          List *n* events in queue in reverse order, by default 25
 
-:command:`fail_event <event-id>`      Manually fail an event
-===================================   =======================================================
+:command:`fail_event <event-id>`       Manually fail an event
+====================================   =======================================================
 
 The ``-v`` switch is for verbose output.
 
@@ -1034,56 +1034,56 @@ then the servers are reconfigured via the rndc protocol or by a local daemon on
 the server stating the rsynced include file. If one of the servers gets
 compromised, it can be cut off by disabling its IPSEC connection or halting it.
 
-===================================         =====================   ===============================
+==========================================  =====================   ====================================================================
 File/Directory                              Server                  Description
-===================================         =====================   ===============================
+==========================================   =====================   ====================================================================
 
-:file:`/var/lib/dms/rsync-config`           slaves and replicas     :file:`named.conf` include segments
-                                            (master as replica 
-                                            for DR)
+:file:`/var/lib/dms/rsync-config`            slaves and replicas     :file:`named.conf` include segments
+                                             (master as replica 
+                                             for DR)
 
-:file:`/var/lib/dms/master-config`          master (replica - DR)   Master :file:`named.conf` include
+:file:`/var/lib/dms/master-config`           master (replica - DR)   Master :file:`named.conf` include
                                                                     segment
 
-:file:`/etc/dms/server-admin-config/bind9`  master (replica - DR)   :file:`named.conf` segments for ``bind9``
-                                                                    slaves. Seperate segments for
-                                                                    controls, logging, options and local.
-                                                                    :command:`zone_tool rsync_server_admin_config`
-                                                                    distributes these portions out.
+:file:`/etc/dms/server-admin-config/bind9`   master (replica - DR)   :file:`named.conf` segments for ``bind9``
+                                                                     slaves. Seperate segments for
+                                                                     controls, logging, options and local.
+                                                                     :command:`zone_tool rsync_server_admin_config`
+                                                                     distributes these portions out.
 
-:file:`/etc/dms/server-config-templates`    master (replica - DR)   Zone templates for replicas and slaves. See below.
+:file:`/etc/dms/server-config-templates`     master (replica - DR)   Zone templates for replicas and slaves. See below.
 
-:file:`/etc/dms/master-config-templates`    master (replica - DR)   zone templates for running master :file:`named.conf`
+:file:`/etc/dms/master-config-templates`     master (replica - DR)   zone templates for running master :file:`named.conf`
 
-:file:`/etc/dms/config-templates`           master (replica - DR)   :file:`rndc.conf` templates for creating
-                                                                    :file:`/etc/bind/rndc.conf`, and TSIG key
-                                                                    template for :command:`zone_tool tsig_key_generate`
+:file:`/etc/dms/config-templates`            master (replica - DR)   :file:`rndc.conf` templates for creating
+                                                                     :file:`/etc/bind/rndc.conf`, and TSIG key
+                                                                     template for :command:`zone_tool tsig_key_generate`
 
-:file:`/var/lib/dms/dms-sg`                 master (replica - DR)   Per SG include dirs for configuration segments to be rsynced.
+:file:`/var/lib/dms/dms-sg`                  master (replica - DR)   Per SG include dirs for configuration segments to be rsynced.
 
-:file:`/etc/dms/bind`                       master (replicas - DR)  Configuration generated by :program:`dmsdmd` for :program:`named`.
+:file:`/etc/dms/bind`                        master (replicas - DR)  Configuration generated by :program:`dmsdmd` for :program:`named`.
 
-:file:`/etc/dms/bind/named-dr-replica.conf` master (replica - DR)   Slave :program:`named` configuration for
-                                                                    replicating running master
-                                                                    :file:`/var/lib/bind/dynamic` zone
-                                                                    database. Contains DNSSEC
-                                                                    RRSIG and other non-database
-                                                                    :program:`bind9` master data that should be
-                                                                    replicated.
+:file:`/etc/dms/bind/named-dr-replica.conf`  master (replica - DR)   Slave :program:`named` configuration for
+                                                                     replicating running master
+                                                                     :file:`/var/lib/bind/dynamic` zone
+                                                                     database. Contains DNSSEC
+                                                                     RRSIG and other non-database
+                                                                     :program:`bind9` master data that should be
+                                                                     replicated.
 
-:file:`/var/lib/dms/dms-sg`                  master (replica - DR)  Per SG include dirs for
-                                                                    configuration segments to be
-                                                                    rsynced.
+:file:`/var/lib/dms/dms-sg`                   master (replica - DR)  Per SG include dirs for
+                                                                     configuration segments to be
+                                                                     rsynced.
 
-:file:`/var/lib/bind/dynamic`                master and replicas    Named DNS dynamic database.
-                                                                    Contains DNS cryptographic data
-                                                                    that should be replicated between
-                                                                    master servers. Replicated via
-                                                                    Replica slave named process.
+:file:`/var/lib/bind/dynamic`                 master and replicas    Named DNS dynamic database.
+                                                                     Contains DNS cryptographic data
+                                                                     that should be replicated between
+                                                                     master servers. Replicated via
+                                                                     Replica slave named process.
 
-:file:`/var/cache/bind/slave`                All slaves             Slave zone cache database.
+:file:`/var/cache/bind/slave`                 All slaves             Slave zone cache database.
 
-===================================          =====================  ===============================
+==========================================    =====================   ====================================================================
 
 .. note::
          
@@ -1095,70 +1095,101 @@ form ``%(key_name)s``
 
 Master :file:`named.conf` include templates in /etc/dms/master-config-templates are:
 
- auto-dnssec-config.conf                                      DNSSEC dynamic DNS zone template
+ =====================================================        ===================================
 
- dynamic-config.conf                                          dynamic DNS zone template
+ :file:`auto-dnssec-config.conf`                              DNSSEC dynamic DNS zone template
 
- server-acl.conf                                              template for server ACLs
+ :file:`dynamic-config.conf`                                  dynamic DNS zone template
 
- slave-config.conf                                            Slave DNS zone template - not used
+ :file:`server-acl.conf`                                      template for server ACLs
 
- static-config.conf                                           Static zone template - not used
+ :file:`slave-config.conf`                                    Slave DNS zone template - not used
 
-Server named.conf include templates in /etc/net24/server-config-templates and segments are:
+ :file:`static-config.conf`                                   Static zone template - not used
 
- bind9.conf                                                   Bind9 slave zone template
+ =====================================================        ===================================
 
- bind9-replica.conf                                           Bind9 replica zone template
+Server :file:`named.conf` include templates in :file:`/etc/dms/server-config-templates` and segments are:
 
-Nsd3 server zone config templates would have 'nsd3' in their name.
+ =====================================================        ========================================
 
-Administration server named.conf segments in /etc/net24/server-admin-config/bind9 are:
+ :file:`bind9.conf`                                           :program:`Bind9` slave zone template
 
- controls.conf                                                Controls segment of named.conf. Used to control rndc
-                                                              access
+ :file:`bind9-replica.conf`                                   :program:`Bind9` replica zone template
 
- logging.conf                                                 Logging named.conf segment. Configures named to log
-                                                              to local7 facility.
+ =====================================================        =========================================
 
- options.conf                                                 Options include segment. Needs to be included as it is
-                                                              better to manually specify listen-on directives on each
-                                                              individual server
+:program:`Nsd3` server zone config templates would have ``nsd3`` in their name.
 
- rndc-remote.key                                              Rndc remote key used in /etc/bind/rndc.conf on
-                                                              masters, and in controls.conf above.
+Administration server :file:`named.conf` segments in :file:`/etc/net24/server-admin-config/bind9` are:
 
-The above segments are free form, and can be rearranged. No fields are filled in from net24dmd.
+ ==============================    ==========================================================
 
-Miscellaneous templates in /etc/net24/config-templates are:
+ :file:`controls.conf`             Controls segment of named.conf. Used to control :command:`rndc`
+                                   access
 
- rndc.conf-header                                               Top of rndc.conf. Contains defailt settings and key
-                                                                includes
+ :file:`logging.conf`              Logging :file:`named.conf` segment. Configures named to log
+                                   to ``local7`` facility.
 
- rndc.conf-server                                               Per server rndc.conf template
+ :file:`options.conf`              Options include segment. Needs to be included as it is
+                                   better to manually specify ``listen-on`` directives on each
+                                   individual server
 
- tsig.key                                                       zone_tool tsig_key_generate TSIG key template
+ :file:`rndc-remote.key`           :command:`Rndc` remote key used in :file:`/etc/bind/rndc.conf` on
+                                   masters, and in :file:`controls.conf` above.
+
+ ==============================    ==========================================================
+
+The above segments are free form, and can be rearranged. No fields are filled in from :program:`dmsdmd`.
+
+Miscellaneous templates in :file:`/etc/net24/config-templates` are:
+
+ ==============================    =================================================================
+
+ :file:`rndc.conf-header`          Top of :file:`rndc.conf`. Contains default settings and key
+                                   includes
+
+ :file:`rndc.conf-server`          Per server :file:`rndc.conf` template
+
+ :file:`tsig.key`                  :command:`zone_tool tsig_key_generate` TSIG key template
+
+ ==============================    =================================================================
 
 Netscript, Iptables and Filtering Incoming IPSEC
-As the servers over seas and across other networks are connected to using IPSEC transport mode to secure the
-zone traffic for business confidentiality and competition reasons, and for ease of named.conf configuration, the
-incoming traffic has to be filtered on the DMS master server. The IPSEC Security Policy Database is not stateful,
-and is just IP address based when in comes to multiple ports being opened, especially many to one in both
-directions. If one of the slaves is compromised the SPD cannot prevent any one on that host from connecting back
-to any port on the Master DMS servers. The SPD can only really deal with many to one port type IPSEC
-relationships.
+================================================
 
-Netscript-2.4 is one of my tools for managing network configuration and iptables under Debian. It uses
-iptables-save/iptables-restore with roll back. It is inspired by my experience with programming routers, in terms of
-interface manipulation and IP filtering. It replaces ifupdown, which is probably fundamentally broken according to
-the router RFC1812 in terms of interface manipulation and addressing (pseudo-device concept for each address,
+
+As the servers over seas and across other networks are connected to using IPSEC
+transport mode to secure the zone traffic for business confidentiality and
+competition reasons, and for ease of :file:`named.conf` configuration, the
+incoming traffic has to be filtered on the DMS master server. The IPSEC
+Security Policy Database is not stateful, and is just IP address based when in
+comes to multiple ports being opened, especially many to one in both
+directions. If one of the slaves is compromised the SPD cannot prevent any one
+on that host from connecting back to any port on the Master DMS servers. The
+SPD can only really deal with many to one port type IPSEC relationships.
+
+.. note::
+
+   :program:`Netscript-ipfilter` is the package that most of you will want to use.
+   The filtering below functionality been made available in it.  As part of the move
+   to systemd, DMS will be made to work with :program:`ifupdown` when it comes to DR.
+
+:program:`Netscript-2.4` is one of my tools for managing network configuration
+and :program:`iptables` under Debian. It uses
+:command:`iptables-save`/:command:`iptables-restore` with roll back. It is
+inspired by my experience with programming routers, in terms of interface
+manipulation and IP filtering. It replaces :program:`ifupdown`, which is
+probably fundamentally broken according to the router RFC1812 in terms of
+interface manipulation and addressing (pseudo-device concept for each address,
 whereas kernel complies with this.)
 
-The network configuration is in /etc/netscript/network.conf. This file is a actually sourced as a shell script by
-/sbin/netscript. IP addresses are set in the eth0_IPADDR variable, with IF_AUTO specifying the interfaces brought
-up on boot.
+The network configuration is in :file:`/etc/netscript/network.conf`. This file
+is a actually sourced as a shell script by :file:`/sbin/netscript`. IP
+addresses are set in the ``eth0_IPADDR`` variable, with ``IF_AUTO`` specifying
+the interfaces brought up on boot.
 
-The netscript command has the following help:
+The :command:`netscript` command has the following help::
 
 
        dms-chc: -root- [/etc/net24/conf-templates]
@@ -1178,63 +1209,58 @@ The netscript command has the following help:
               netscript ip6filter exec icmphost|laptopfw|log
                                       [chain p1 p2 ...]
 
+as well as man pages. The :command:`netscript ipfilter`/:command:`ip6filter`
+verbs are the ones used to save and load/reload the firewall configuration. The
+:program:`iptables` files are saved as
+:file:`/etc/netscript/iptables{,.1,.2,.3}` and
+:file:`/etc/netscript/ip6tables{,.1,.2,.3}`.
 
-
-
-as well as man pages. The netscript ipfilter/ip6filter verbs are the ones used to save and load/reload the firewall
-configuration. The iptables files are saved as /etc/netscript/iptables{,.1,.2,.3} and /etc/netscript/ip6tables{,.1,.2,.3}.
-
- The number of roll back files can be altered in the network.conf file. The netscript ipfilter exec creates a chain of the
-given name, with addresses and networks possibly given as variables in network.conf. ICMP host and router
-grooming packet chains are there. For ICMPv6 I did:
-
+The number of roll back files can be altered in the :file:`network.conf` file.
+The :command:`netscript ipfilter exec` shell functions create a chain of the
+given name, with addresses and networks possibly given as variables in
+network.conf. ICMP host and router grooming packet chains are there. For ICMPv6
+I did::
 
        # netscript ip6filter exec icmphost
        # netscript ip6filter exec log
 
+which created chains I could hook into INPUT to groom ICMP for the host, and at
+the end of INPUT to log all no-accepted traffic. The log chain has a
+rate-limiter applied to save on runaway syslog messages.
 
+:command:`iptables`/:command:`ip6tables` commands are used directly to configure the kernel Netfilter filters. The :command:`iptables -I` (insert), :command:`-R` (replace) arguments take a line number after the filter name. The line numbers can be printed by specifying
+:command:`--line-numbers` to :command:`iptables -vnL <chain-name>`
 
-which created chains I could hook into INPUT to groom ICMP for the host, and at the end of INPUT to log all
-no-accepted traffic. The log chain has a rate-limiter applied to save on runaway syslog messages.
+:command:`netscript ipfilter` examples are::
 
-iptables/ip6tables commands are used directly to configure the kernel Netfilter filters. The iptables -I (insert), -R
-(replace) arguments take a line number after the filter name. The line numbers can be printed by specifying
---line-numbers to iptables -vnL <chain-name>
-
-netscript ipfilter examples are:
-
-
-       dms-chc: -root- [/etc/net24/conf-templates]
+       dms-chc: -root- [/etc/dms/conf-templates]
        # netscript ip6filter save
        Saving IPv6 filters...done.
 
 
-       dms-chc: -root- [/etc/net24/conf-templates]
+       dms-chc: -root- [/etc/dms/conf-templates]
        # netscript ipfilter save
        Saving IPv4 filters...done.
 
 
-       dms-chc: -root- [/etc/net24/conf-templates]
+       dms-chc: -root- [/etc/dms/conf-templates]
        # netscript ipfilter usebackup 2
        Loading IPv4 filters...done.
 
-       dms-chc: -root- [/etc/net24/conf-templates]
+       dms-chc: -root- [/etc/dms/conf-templates]
        # netscript ip6filter usebackup 2
        Loading IPv6 filters...done.
 
-       dms-chc: -root- [/etc/net24/conf-templates]
+       dms-chc: -root- [/etc/dms/conf-templates]
        # netscript ip6filter reload
        Loading IPv6 filters...done.
 
-       dms-chc: -root- [/etc/net24/conf-templates]
+       dms-chc: -root- [/etc/dms/conf-templates]
        # netscript ipfilter reload
        Loading IPv4 filters...done.
 
-       dms-chc: -root- [/etc/net24/conf-templates]
+       dms-chc: -root- [/etc/dms/conf-templates]
        #
-
-
-
 
 Python WSGI and JSON/RPC over HTTPS
 ===================================
@@ -1398,6 +1424,8 @@ crumbs idea so that you can easily find your way through it. Useful sub commands
  restart                                                     Restart everything.
 
 References
+==========
+
 A reference is a customer and organisation identity string that is taken by the DMS when a domain is initially
 created. It is used to track the zones belonging to a customer for listing and for auto reverse record operations.
 Sample references are as follows:
@@ -1476,12 +1504,11 @@ The zone_tool commands to do with sectags are as follows:
 
  show_zone_sectags                                           Show the sectag list for a zone
 
-
-
-
 Servers (replica & slave) and Server Groups (SGs)
+=================================================
 
 Servers
+-------
 
 In the DMS, servers (replicas and slaves) are defined with a human name, an IP address(v6 or v4), and the SG the
 server belongs to. Each server has a configuration state machine, which tracks if the the server is up to date for all
