@@ -230,6 +230,7 @@ the remote name::
 
 Do test each cron command by running it from the root command line.
 
+.. _IPSEC-set-up:
 
 IPSEC set up
 ------------

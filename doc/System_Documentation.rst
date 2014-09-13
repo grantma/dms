@@ -1155,6 +1155,8 @@ Miscellaneous templates in :file:`/etc/net24/config-templates` are:
 
  ==============================    =================================================================
 
+.. _Netscript-Iptables-and-Filtering-Incoming-IPSEC:
+
 Netscript, Iptables and Filtering Incoming IPSEC
 ================================================
 
@@ -1228,8 +1230,11 @@ which created chains I could hook into INPUT to groom ICMP for the host, and at
 the end of INPUT to log all no-accepted traffic. The log chain has a
 rate-limiter applied to save on runaway syslog messages.
 
-:command:`iptables`/:command:`ip6tables` commands are used directly to configure the kernel Netfilter filters. The :command:`iptables -I` (insert), :command:`-R` (replace) arguments take a line number after the filter name. The line numbers can be printed by specifying
-:command:`--line-numbers` to :command:`iptables -vnL <chain-name>`
+:command:`iptables`/:command:`ip6tables` commands are used directly to
+configure the kernel Netfilter filters. The :command:`iptables -I` (insert),
+:command:`-R` (replace) arguments take a line number after the filter name. The
+line numbers can be printed by specifying :command:`--line-numbers` to
+:command:`iptables -vnL <chain-name>`
 
 :command:`netscript ipfilter` examples are::
 
@@ -1262,114 +1267,156 @@ rate-limiter applied to save on runaway syslog messages.
        dms-chc: -root- [/etc/dms/conf-templates]
        #
 
-Python WSGI and JSON/RPC over HTTPS
+.. _Python WSGI and JSON/RPC over HTTPS:
+
+Python 
+WSGI and JSON/RPC over HTTPS
 ===================================
 
-The interface between the DMS Web servers and the DMS server is a Web service. The DMI servers talk
-JSON/RPC over HTTPS to the DMS running master server. Failover is handled by a CNAME
-dms-server.failover.vygr.net, which updated by the dms_promote_replica script. The HTTP connections are integrity
-protected by SSL, and use HTTP basic auth to authenticate to the URL attachment upon the DMS server, which is
-configured with that DMIs sectag.
+The interface between the DMS Web servers and the DMS server is a Web service.
+The DMI servers talk JSON/RPC over HTTPS to the DMS running master server. Fail
+over is handled by a CNAME `dms-server.failover.some.org`, which updated by the
+:command:`dms_promote_replica script`. The HTTP connections are integrity
+protected by SSL, and use HTTP basic-auth to authenticate to the URL attachment
+upon the DMS server, which is configured with that DMIs sectag.
 
-The web service is set up as a Python3 WSGI script, running under apache mod_wsgi. WSGI is defined in PEP
-3333 The WSGI scripts are configured to run in separate apache2 daemon processes. The hook point URLs are as
-follows:
+The web service is set up as a Python3 WSGI script, running under
+:program:`apache2` `mod_wsgi`. WSGI is defined in PEP 3333 The WSGI scripts are
+configured to run in separate :program:`apache2` daemon processes. The hook
+point URLs are as follows:
 
- /list_zone                                                    Just for listing all zones. For Admin DMI use only
+============================  ==================================================
+    
+ :file:`/list_zone`           Just for listing all zones. For Admin DMI use only
 
- /admin_dms                                                    Admin DMS access point. For systems
-                                                               administrators/NOC
+ :file:`/admin_dms`           Admin DMS access point. For systems
+                              administrators/NOC
 
- /helpdesk_dms                                                 Helpdesk DMS access point
+ :file:`/helpdesk_dms`        Help desk DMS access point
 
- /1stdomains_dms                                               1st Domains customer DMS access point.
+ :file:`/value_reseller_dms`  1st Domains customer DMS access point.
 
- /net24_dms                                                    Net24 customer DMS access point
+ :file:`/hosted_dms`          Hosted customer DMS access point
 
+============================  ==================================================
+
+.. _WSGI-configuration-files-and-directories:
 
 WSGI configuration files and directories
+----------------------------------------
 
-All of these files are in the /etc tree to comply with Debian configuration policy.
+All of these files are in the :file:`/etc` tree to comply with Debian configuration policy.
 
- /etc/net24/dms-wsgi-apache.conf                               Apache 2 Debian style include file
+========================================      ===================================
 
- /etc/net24/wsgi-scripts                                       WSGI scripts
+ :file:`/etc/dms/dms-wsgi-apache.conf`        Apache 2 Debian style include file
 
- /etc/net24/htpasswd-dms                                       Apache 2 htpasswd file for DMS basic auththentication
+ :file:`/etc/dms/wsgi-scripts`                WSGI scripts
 
-The /etc/net24/dms-wsgi-apache.conf contains all the apache2 configuration for the URL hook points and basic
-authentication in Location directives, as well as defining the mod_wsgi daemon processes for each type of access.
- The list_zone access for the administrator and helpdesk DMIs uses a separate daemon to the rest as it allocates
-lots of memory each time it is run, and has to die off quickly to prevent resource consumption. The rest of the RPC
+ :file:`/etc/dms/htpasswd-dms`                Apache 2 :command:`htpasswd` file 
+                                              for DMS basic authentication
 
-call profile is for only per zone or small listing requests each time, and these are configured into longer running
-daemon processes, with far more threads.
+========================================      ===================================
 
-The RSS memory of the apache daemons should be monitored, as this is where a memory leak problem is most
-likely to occur in the system. Zone_tool hardly uses any memory, as it is typically not a long running process.
- Net24dmd uses server side data base cursors and self monitors its RSS usage. If the configured
-memory_exec_threshold of 250MB is exceeded, it will re exec() itself when once the event queue is empty, thus
-releasing all the sparsely allocated RSS memory.
+The :file:`/etc/dms/dms-wsgi-apache.conf` contains all the :program:`apache2`
+configuration for the URL hook points and basic authentication in Location
+directives, as well as defining the ``mod_wsgi`` daemon processes for each type
+of access.  The list_zone access for the administrator and help desk DMIs uses a
+separate daemon to the rest as it allocates lots of memory each time it is run,
+and has to die off quickly to prevent resource consumption. The rest of the RPC
+call profile is for only per zone or small listing requests each time, and
+these are configured into longer running daemon processes, with far more
+threads.
 
-Racoon and IPSEC
-The IPSEC part of the application stack is done using racoon. Any IPSEC IKE daemon that does the job can be
-used, and another possibility would be Strongswan.
+The RSS memory of the apache daemons should be monitored, as this is where a
+memory leak problem is most likely to occur in the system. :command:`Zone_tool`
+hardly uses any memory, as it is typically not a long running process.
+:program:`dmsdmd` uses server side data base cursors and self monitors its RSS
+usage. If the configured ``memory_exec_threshold`` of 250MB is exceeded, it
+will re exec() itself when once the event queue is empty, thus releasing all
+the sparsely allocated RSS memory.
 
-The reasons for using racoon are:
+.. _IPSEC
 
-       compatibility cross platform, FreeBSD, NetBSD and Linux
-       protocol compatibility, both IPv6 and IPv4
-       historically the native IPSEC IKE and key management tools for NetBSD, FreeBSD, and Linux
-       historically native IPv6 and IPv4, as they are from the KAME project.
-       maturity
-       strongswan later implementation. Originally Linux only. Not as fully tested with IPv6 as racoon/setkey Not
-       too sure about its cross platform capabilities.
+IPSEC
+=====
 
-On the DMS, racoon-tool is used to wrap racoon and setkey. This is a Perl script that has been ported to FreeBSD,
-and is software I originally wrote to help make racoon more manageable for VPN network use. It was inspired in
-part by FreeSWAN, but it has a sensible set of defaults such as hmac-sha1, AES/3DES. Most things you need to
-configure for run of the mill IPSEC can be done with it. Can do PSK and X509 certificate authentication.
+.. note::
+   Any IPSEC IKE daemon can be used, and Strongswan is recommended. See :ref:`IPSEC-set-up`
+   
+Racoon
+------
+     
+Initially The reasons for using :program:`racoon`:
 
-When installing in Debian, choose racoon-tool configuration mode. racoon-tool is made to operate as an Init.d script
-would. Its configuration is in /etc/racoon/racoon-tool.conf, with a directory /etc/racoon/racoon-tool.conf.d for
-configuration segments. Once the %default is set in racoon-tool.conf, it only takes a PSK added to
-/etc/racoon/psk.txt and 5 lines in a configuration segment to get one end of an IPSEC connection configured.
+ * compatibility cross platform, FreeBSD, NetBSD and Linux
+         
+ * protocol compatibility, both IPv6 and IPv4
+
+ * historically the native IPSEC IKE and key management tools for NetBSD,
+   FreeBSD, and Linux
+ 
+ * historically native IPv6 and IPv4, as they are from the KAME project.
+  
+ * maturity
+ 
+ * strongswan is a later implementation. Originally Linux only. A few years ago
+   it was as fully tested with IPv6 as :program:`racoon`/:command:`setkey`. 
+
+On the DMS, :command:`racoon-tool` is used to wrap :command:`racoon` and
+:program:`setkey`. This is a Perl script that has been ported to FreeBSD, and
+is software I originally wrote to help make :program:`racoon` more manageable
+for VPN network use. It was inspired in part by FreeSWAN, but it has a sensible
+set of defaults such as ``hmac-sha1``, AES/3DES. Most things you need to
+configure for run of the mill IPSEC can be done with it. Can do PSK and X509
+certificate authentication.
+
+When installing in Debian, choose ``racoon-tool`` configuration mode.
+:command:`racoon-tool` is made to operate as an Init.d script would. Its
+configuration is in :file:`/etc/racoon/racoon-tool.conf`, with a directory
+:file:`/etc/racoon/racoon-tool.conf.d` for configuration segments. Once the
+``%default`` is set in :file:`racoon-tool.conf`, it only takes a PSK added to
+:file:`/etc/racoon/psk.txt` and 5 lines in a configuration segment to get one
+end of an IPSEC connection configured.
 
 Racoon directories and files:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- /etc/racoon                                                  Racoon configuration
+========================================    =================================
 
- /etc/racoon/racoon-tool.conf                                 Master racoon-tool configuration file
+ :file:`/etc/racoon`                        :program:`Racoon` configuration
 
- /etc/racoon/racoon-tool.conf.d                               Racoon-tool per segment configuration directory
+ :file:`/etc/racoon/racoon-tool.conf`       Master :command:`racoon-tool` 
+                                            configuration file
 
- /var/lib/racoon/racoon.conf                                  racoon-tool generated racoon.conf
+ :file:`/etc/racoon/racoon-tool.conf.d`     :command:`Racoon-tool` per segment 
+                                            configuration directory
 
-The racoon-tool segment configuration directory could be used for a shell script to automate adding a new DNS
-slave server quickly.
+ :file:`/var/lib/racoon/racoon.conf`        :command:`racoon-tool` generated 
+                                            :file:`racoon.conf`
 
-racoon-tool has a full man page and has an entry README.Debian:
+========================================    =================================
+
+.. note::
+ The :command:`racoon-tool` segment configuration directory could be used for a
+ shell script to automate adding a new DNS slave server quickly.
+
+:command:`racoon-tool` has a full man page and has an entry :file:`README.Debian`::
 
       racoon-tool
       -----------
       racoon-tool is back. It is a management script that simplifies looking
-      after
-      setkey SPD rules, and basic racoon.conf on a connection oriented basis. It
-      now functions in transport mode and tunnel mode, with anonymous VPN
-      service,
-      and supports PSK/X509 authentication and IPv6. It should also function on
-      the
-      FreeBSD kernel.
+      after setkey SPD rules, and basic racoon.conf on a connection oriented
+      basis. It now functions in transport mode and tunnel mode, with anonymous
+      VPN service, and supports PSK/X509 authentication and IPv6. It should
+      also function on the FreeBSD kernel.
 
       Yes, racoon-tool is debian specific, upstream doesn't like it, it does
-      have all the features when compared to racoon.conf(5). If you're interested
-      in
-      using the latest and greatest feature in racoon, and advanced functionality
-      use /etc/racoon/racoon.conf directly.
+      have all the features when compared to racoon.conf(5). If you're
+      interested in using the latest and greatest feature in racoon, and
+      advanced functionality use /etc/racoon/racoon.conf directly.
 
-
-
-Here is a sample racoon-tool.conf from dms-chc:
+Here is a sample :file:`racoon-tool.conf` from dms-chc::
 
 
       #
@@ -1389,7 +1436,7 @@ Here is a sample racoon-tool.conf from dms-chc:
 
 
 
-with a racoon-tool.conf.d segment dms-akl.conf
+with a :file:`racoon-tool.conf.d` segment :file:`dms-akl.conf`::
 
 
       peer(2406:1e00:1001:1::2):
@@ -1398,111 +1445,153 @@ with a racoon-tool.conf.d segment dms-akl.conf
               dst_ip: 2406:1e00:1001:1::2
               admin_status: enabled
 
+:command:`racoon-tool` will print out a summary of its sub commands if -h or no
+arguments are given. It follows the bread crumbs idea so that you can easily
+find your way through it. Useful sub commands are:
 
+==================    ========================================
 
-racoon-tool will print out a summary of its sub commands if -h or no arguments are given. It follows the bread
-crumbs idea so that you can easily find your way through it. Useful sub commands are:
+ :command:`vlist`     List all VPN connections
 
- vlist                                                       List all VPN connections
+ :command:`vup`       start a VPN connection
 
- vup                                                         start a VPN connection
+ :command:`vdown`     stop a VPN connection
 
- vdown                                                       stop a vpn connection
+ :command:`vreload`   reload a connection
 
- vreload                                                     reload a connection
+ :command:`vmenu`     Start VPN menu management mode. Lists all
+                      connections in SPD, and you can shut down 
+                      VPN connections from here.
 
- vmenu                                                       Start VPN menu management mode. Lists all
-                                                             connections in SPD, and you can shut down VPN
-                                                             connections from here.
+ :command:`start`     Initialize kernel SPD, and start 
+                      :program:`racoon`
 
- start                                                       Initialize kernel SPD, and start racoon
+ :command:`stop`      Stop :program:`racoon`, and flush SPD
 
- stop                                                        Stop racoon, and flush SPD
+ :command:`reload`    Reload SPD and reload :command:`racoon`
 
- reload                                                      Reload SPD and reload racoon
+ :command:`restart`   Restart everything.
 
- restart                                                     Restart everything.
+==================    ========================================
+
+.. _References:
 
 References
 ==========
 
-A reference is a customer and organisation identity string that is taken by the DMS when a domain is initially
-created. It is used to track the zones belonging to a customer for listing and for auto reverse record operations.
-Sample references are as follows:
+A reference is a customer and organisation identity string that is taken by the
+DMS when a domain is initially created. It is used to track the zones belonging
+to a customer for listing and for auto reverse record operations.  Sample
+references are as follows:
 
- reference                                                   description
+=======================       =================================================
 
- 24866@1STDOMAINS-NZ                                         Customer ID for 1st Domains, made of account number
-                                                             and 1STDOMAINS-NZ
+ Reference                    Description
 
- anathoth                                                    Anathoth reference
+=======================       =================================================
 
- NET24-NZ                                                    Default Net24 reference
+ ``24866@SOMEISP-NET``        Customer ID for a Hosted ISP, made of account 
+                              number and SOMEISP-NET
 
- VOYAGERNET-NZ                                               Default Voyager reference
+ ``anathoth``                 Anathoth reference
 
-To the DMS they are just a string, conforming loosely to the format requirements for an email address or domain.
-They are case insensitive for comparison and searching purposes, but keep their case when saved. In the DB, they
-are assigned using foreign keys and ref_id - in other words, they are easily renamed. They are enough like an email
-address so that accountants and customers find them digestible for accounting purposes, but don't finish in a valid
-domain so that people know they are not straight email addresses.
+ VALUEADDEDRESELLER-NZ        Default reference
 
-The zone_tool commands for references are:
+ HOSTEDDNS-NET                Default Hosted DNS reference
 
- create_reference                                            create a reference
+=======================       =================================================
 
- delete_reference                                            delete a reference
+To the DMS they are just a string, conforming loosely to the format
+requirements for an email address or domain.  They are case insensitive for
+comparison and searching purposes, but keep their case when saved. In the DB,
+they are assigned using foreign keys and ref_id - in other words, they are
+easily renamed. They are enough like an email address so that accountants and
+customers find them digestible for accounting purposes, but don't finish in a
+valid domain so that people know they are not straight email addresses.
 
- lsref/ls_reference                                          list references Can take wild cards, and multiple
-                                                             reference arguments
+The :command:`zone_tool` commands for references are:
 
- rename_reference                                            rename a reference
+=========================================  =====================================
 
- set_zone_reference                                          Set the reference for a zone to an existing reference.
+ :command:`create_reference`               Create a reference
 
-The create_zone and ls zone_tool commands take a -r argument to either set/create the reference a new zone
-belongs to, and to show only the zones for a reference. The show_zone command will display the reference as a
+ :command:`delete_reference`               Delete a reference
 
-REF: RR flag against the SOA record. The load_zone commands also take the -r argument, and recognize the
-;!REF: SOA RR flag to set the reference for the zone being loaded.
+ :command:`lsref`/:command:`ls_reference`  List references. Can take wild cards, 
+                                           and multiple reference arguments
+
+ :command:`rename_reference`               Rename a reference
+
+ :command:`set_zone_reference`             Set the reference for a zone to an 
+                                           existing reference.
+
+=========================================  =====================================
+
+The :command:`create_zone` and :command:`ls` :command:`zone_tool` commands take 
+a ``-r`` argument to either set/create the reference a new zone
+belongs to, and to show only the zones for a reference. The :command:`show_zone`
+command will display the reference as a ``REF: RR`` flag against the SOA record.
+The :command:`load_zone` commands also take the ``-r`` argument, and recognize the
+``;!REF:`` SOA RR flag to set the reference for the zone being loaded.
+
+.. _Security-Tags:
 
 Security Tags (sectags)
-Sectags are used to control what is visible and changeable from a particular DMI front end. They are also used
-when evaluating whether an auto reverse operation can be carried out or not. Zone_tool and the administrative
-DMIs use the 'Admin' sectag if it is not set in the database, it is implied. The Sectags are NEVER changeable from
-a non-administrative DMI, and customer DMIs will never be configured with the WSGI calls to access them or list
-them. They will only be visible to a non-administrative DMI via the changed_by or locked_by attributes of a zone.
+=======================
 
-Each zone has a list of sectags attached. The DMIs do not use sectags at all with the WSGI JSON API. A
-separate administrative only call must be given to return the sectags for a zone. A zone may have multiple sectags,
-so that it can be accessed from 2 or more customer DMI front ends.
+Sectags are used to control what is visible and changeable from a particular
+DMI front end. They are also used when evaluating whether an auto reverse
+operation can be carried out or not. :command:`Zone_tool` and the
+administrative DMIs use the ``Admin`` sectag -- if it is not set in the
+database, it is implied. The Sectags are NEVER changeable from a
+non-administrative DMI, and customer DMIs will never be configured with the
+WSGI calls to access them or list them. They will only be visible to a
+non-administrative DMI via the ``changed_by`` or ``locked_by`` attributes of a
+zone.
 
-A zone has its initial sectag added when it is created. It is set to the sectag for the DMI it comes from.
-Authorisation is defined by the exact HTTPS URI for the JSON /RPC over http. The sectag is defined in the Python
-WSGI script attached to the URI.
+Each zone has a list of sectags attached. The DMIs do not use sectags at all
+with the WSGI JSON API. A separate administrative only call must be given to
+return the sectags for a zone. A zone may have multiple sectags, so that it can
+be accessed from 2 or more customer DMI front ends.
 
-As the DMS system is a central point for a lot of administrative information, it has to be more secure than the Web
-servers in front of it. Because of this the authentication and security code has to be separate from any part of the
-DMS implementation, widely used, and reviewed. Nginx requires authentication scripts to be written, and at the time
-of implementation could not define basic authentication in combination with URI Location access lists within its
-configuration file. With Apache, this code already exists, along with a comprehensive WSGI module that is similar to
-the Fast CGI model.
+A zone has its initial sectag added when it is created. It is set to the sectag
+for the DMI it comes from.  Authorisation is defined by the exact HTTPS URI for
+the JSON/RPC over http. The sectag is defined in the Python WSGI script
+attached to the URI.
 
-The zone_tool commands to do with sectags are as follows:
+As the DMS system is a central point for a lot of administrative information,
+it has to be more secure than the Web servers in front of it. Because of this
+the authentication and security code has to be separate from any part of the
+DMS implementation, widely used, and reviewed. :program:`Nginx` requires
+authentication scripts to be written, and at the time of implementation could
+not define basic authentication in combination with URI Location access lists
+within its configuration file. With :program:`Apache`, this code already
+exists, along with a comprehensive WSGI module that is similar to the Fast CGI
+program model.
 
- add_zone_sectag                                             Add a security tag to a zone
+The :command:`zone_tool` commands to do with sectags are as follows:
 
- create_sectag                                               Create a new sectag
+====================================    =======================================
 
- delete_sectag                                               Delete a sectag. It must not be attached to any zones
+ :command:`add_zone_sectag`             Add a security tag to a zone
 
- delete_zone_sectag                                          Delete a security tag from a zone
+ :command:`create_sectag`               Create a new sectag
 
- replace_zone_sectags                                        Replace the whole list of sectags for a zone
+ :command:`delete_sectag`               Delete a sectag. It must not be 
+                                        attached to any zones
 
- show_sectags                                                Show defined sectags
+ :command:`delete_zone_sectag`          Delete a security tag from a zone
 
- show_zone_sectags                                           Show the sectag list for a zone
+ :command:`replace_zone_sectags`        Replace the whole list of sectags 
+                                        for a zone
+
+ :command:`show_sectags`                Show defined sectags
+
+ :command:`show_zone_sectags`           Show the sectag list for a zone
+
+====================================    =======================================
+
+.. _Servers-and-Server-Groups:
 
 Servers (replica & slave) and Server Groups (SGs)
 =================================================
@@ -1510,44 +1599,51 @@ Servers (replica & slave) and Server Groups (SGs)
 Servers
 -------
 
-In the DMS, servers (replicas and slaves) are defined with a human name, an IP address(v6 or v4), and the SG the
-server belongs to. Each server has a configuration state machine, which tracks if the the server is up to date for all
-the zones in its SG.
+In the DMS, servers (replicas and slaves) are defined with a human name, an IP
+address(v6 or v4), and the :abbr:`SG (Server Group)` the server belongs to.
+Each server has a configuration state machine, which tracks if the server is up
+to date for all the zones in its :abbr:`SG (Server Group)`.
 
-The commands to use with servers are create_server, delete_server, ls_slave, ls_server, show_server,
+The commands to use with servers are :command:`create_server`,
+:command:`delete_server`, :command:`ls_slave`, :command:`ls_server`,
+:command:`show_server`, :command:`show_server_byaddr`,
+:command:`enable_server`, :command:`disable_server`, :command:`rename_server`,
+:command:`move_server_sg`, :command:`set_server_address`,
+:command:`set_server_ssh_address`, :command:`reset_server`,
+:command:`set_server_type`. Type :command:`help <command>` at the
+:command:`zone_tool` prompt to get a full description of arguments and switches
+that are usable with these commands.
 
-show_server_byaddr, enable_server, disable_server, rename_server, move_server_sg, set_server_address,
-set_server_ssh_address, reset_server, set_server_type. Type 'help <command> at the zone_tool prompt to get a
-full description of arguments and switches that are usable with these commands.
+Other commands used when setting up a server are :command:`write_rndc_conf`,
+and :command:`rsync_server_admin_config`.
 
-Other commands used when setting up a server are write_rndc_conf, and rsync_server_admin_config
+When a slave is created in DMS, it is disabled for the creation of a new
+:program:`rndc` config, and so that initial configuration of the slave via
+:program:`rsync` can be sent, and the :program:`rsync`/:program:`rndc` hookup
+can be tested by using the :command:`rsync_admin_config` command. Details of
+this are in :ref:`Adding-a-DNS-Slave-to-DMS`
 
-When a slave is created in DMS, it is disabled for the creation of a new rndc config, and so that initial configuration
-of the slave via rsync can be sent, and the rsync/rndc hookup can be tested by using the rsync_admin_config
-command. Details of this are in Adding a DNS Slave to DMS
-
-Some examples:
-
+Some examples::
 
        zone_tool > ls_server -jv
-       dns-slave0                     Thu Nov 8 14:22:55 2012                                           OK
+       dns-slave0                     Thu Nov 8 14:22:55 2012               OK
                2001:470:c:110e::2                       111.65.238.10
-               ping: 5 packets transmitted, 5 received, 0.00% packet                          loss
-       dns-slave1                     Thu Nov 8 14:19:38 2012                                           OK
+               ping: 5 packets transmitted, 5 received, 0.00% packet loss
+       dns-slave1                     Thu Nov 8 14:19:38 2012               OK
                2001:470:66:23::2                        111.65.238.11
-               ping: 5 packets transmitted, 5 received, 0.00% packet                          loss
-       en-gedi-auth                   Thu Nov 8 14:16:23 2012                                           OK
+               ping: 5 packets transmitted, 5 received, 0.00% packet loss
+       en-gedi-auth                   Thu Nov 8 14:16:23 2012               OK
                fd14:828:ba69:6:5054:ff:fe39:54f9        172.31.12.2
-               ping: 5 packets transmitted, 5 received, 0.00% packet                          loss
-       shalom                         Thu Nov 8 14:18:57 2012                                           OK
+               ping: 5 packets transmitted, 5 received, 0.00% packet loss
+       shalom                         Thu Nov 8 14:18:57 2012               OK
                fd14:828:ba69:1:21c:f0ff:fefa:f3c0       192.168.110.1
-               ping: 5 packets transmitted, 5 received, 0.00% packet                          loss
-       shalom-dr                      Thu Nov 8 14:23:10 2012                                           OK
+               ping: 5 packets transmitted, 5 received, 0.00% packet loss
+       shalom-dr                      Thu Nov 8 14:23:10 2012               OK
                2001:470:f012:2::3                       172.31.10.4
-               ping: 5 packets transmitted, 5 received, 0.00% packet                          loss
-       shalom-ext                     Thu Nov 8 14:20:35 2012                                           OK
+               ping: 5 packets transmitted, 5 received, 0.00% packet loss
+       shalom-ext                     Thu Nov 8 14:20:35 2012               OK
                2001:470:f012:2::2                       172.31.10.2
-               ping: 5 packets transmitted, 5 received, 0.00% packet                          loss
+               ping: 5 packets transmitted, 5 received, 0.00% packet loss
        zone_tool > show_server en-gedi-auth
                server_name:      en-gedi-auth
                address:          fd14:828:ba69:6:5054:ff:fe39:54f9
@@ -1562,91 +1658,102 @@ Some examples:
                ssh_address:      172.31.12.2
                state:            OK
                zone_count:       28
-               retry_msg:
-                  None
+               retry_msg:        
+                 None
        zone_tool > disable_server en-gedi-auth
        zone_tool > show_server en-gedi-auth
                server_name:      en-gedi-auth
                address:          fd14:828:ba69:6:5054:ff:fe39:54f9
                ctime:            Sat Feb 25 18:19:12 2012
+               is_master:        False
+               last_reply:       None
+               mtime:            None
+               server_id:        15
+               server_type:      bind9
+               sg_id:            8
+               sg_name:          anathoth-internal
+               ssh_address:      172.31.12.2
+               state:            DISABLED
+               zone_count:       28
+               retry_msg:        
+                 None
+       zone_tool > enable_server en-gedi-auth
+       zone_tool > enable_server en-gedi-auth
+       ***   Event ServerSMEnable(892463) failed - ServerAlreadyEnabled:
+             server already enabled
+       zone_tool > show_server en-gedi-auth
+               server_name:      en-gedi-auth
+               address:          fd14:828:ba69:6:5054:ff:fe39:54f9
+               ctime:            Sat Feb 25 18:19:12 2012
+               is_master:        False
+               last_reply:       Thu Nov 8 14:24:37 2012
+               mtime:            None
+               server_id:        15
+               server_type:      bind9
+               sg_id:            8
+               sg_name:          anathoth-internal
+               ssh_address:      172.31.12.2
+               state:            OK
+               zone_count:       28
+               retry_msg:
+                 None
+        zone_tool >
 
-        is_master:       False
-        last_reply:      None
-        mtime:           None
-        server_id:       15
-        server_type:     bind9
-        sg_id:           8
-        sg_name:         anathoth-internal
-        ssh_address:     172.31.12.2
-        state:           DISABLED
-        zone_count:      28
-        retry_msg:
-          None
-zone_tool > enable_server en-gedi-auth
-zone_tool > enable_server en-gedi-auth
-***   Event ServerSMEnable(892463) failed - ServerAlreadyEnabled:
-      server already enabled
-zone_tool > show_server en-gedi-auth
-        server_name:     en-gedi-auth
-        address:         fd14:828:ba69:6:5054:ff:fe39:54f9
-        ctime:           Sat Feb 25 18:19:12 2012
-        is_master:       False
-        last_reply:      Thu Nov 8 14:24:37 2012
-        mtime:           None
-        server_id:       15
-        server_type:     bind9
-        sg_id:           8
-        sg_name:         anathoth-internal
-        ssh_address:     172.31.12.2
-        state:           OK
-        zone_count:      28
-        retry_msg:
-
-                None
-      zone_tool >
-
-
-
+.. _Server-Groups:
+ 
 Server Groups (SGs)
+-------------------
 
-The Server Groups would ideally be of 4 servers each (configured as DNS slaves), handling about 100,000 zones.
- Once the first SG is full up, a second SG should be started. Rebalancing the SGs by moving zones between them
-is possible, but the registries would have to have their DNS server settings updated at the same time.
+The Server Groups would ideally be of 4 servers each (configured as DNS
+slaves), handling about 100,000 zones.  Once the first :abbr:`SG (Server
+Group)` is full up, a second :abbr:`SG (Server Group)` should be started.
+Rebalancing the :abbr:`SG (Server Group)` s by moving zones between them is
+possible, but the registries would have to have their DNS server settings
+updated at the same time.
 
-Each zone can have an alternate SG to its primary one, for the purposes of republishing the zone into a private SG
-consisting of RFC1989 and IPv6 fc::/7 site local addresses (IPv6 equivalent of IPv4 RFC 1918 private addressing).
+Each zone can have an alternate :abbr:`SG (Server Group)` to its primary one,
+for the purposes of republishing the zone into a private :abbr:`SG` consisting of
+RFC 1918 and IPv6 fc::/7 site local addresses (IPv6 equivalent of IPv4 RFC 1918
+private addressing).
 
-Each SG has a configured:
+Each :abbr:`SG` has a configured:
 
-      set of Apex name servers, and soa_mname for the purpose of setting the Apex NS records for Zones for
-      which it is the primary SG.
-      set of apex_ns records via the edit_apex_ns command, an soa_mname via set_config -g <soa mname>
-      soa_mname <mname>
-      master_address of the master DMS server
-      master_alt_address of the main DMS DR replica
+  * set of Apex name servers, and ``soa_mname`` for the purpose of setting the
+    apex NS records for zones for which it is the primary SG.
 
+  * set of ``apex_ns`` records via the :command:`edit_apex_ns` command, an
+    ``soa_mname`` via :command:`set_config -g <soa mname> soa_mname <mname>`
+    
+  * ``master_address`` of the master DMS server
+  
+  * ``master_alt_address`` of the main DMS DR replica
+
+::
 
       zone_tool > show_replica_sg
-              sg_name:                        anathoth-replica
-              config_dir:                     /etc/bind/anathoth-master
-              master_address:                 2001:470:f012:2::2
-              master_alt_address:             2001:470:f012:2::3
-              replica_sg:                     True
-              zone_count:                     14
+              sg_name:             anathoth-replica
+              config_dir:          /etc/bind/anathoth-master
+              master_address:      2001:470:f012:2::2
+              master_alt_address:  2001:470:f012:2::3
+              replica_sg:          True
+              zone_count:          14
 
-                 Replica SG named status:
-                 shalom-dr                              2001:470:f012:2::3
+              Replica SG named status:
+              shalom-dr                   2001:470:f012:2::3
 
-                            OK
+
+                      OK
       zone_tool >
 
-
-
-SGs are created using the create_sg command. Other zone_tool commands are ls_sg, reconfig_sg,
-reconfig_replica_sg, refresh_sg, set_sg_config, set_sg_master_address, set_sg_alt_master_address,
-set_sg_replica_sg, show_sg, and show_master_sg.
+SGs are created using the :command:`create_sg` command. Other
+:program:`zone_tool` commands are :command:`ls_sg`, :command:`reconfig_sg`,
+:command:`reconfig_replica_sg`, :command:`refresh_sg`,
+:command:`set_sg_config`, :command:`set_sg_master_address`,
+:command:`set_sg_alt_master_address`, :command:`set_sg_replica_sg`,
+:command:`show_sg`, and :command:`show_master_sg`.
 
 Alternate SG for Zone
+^^^^^^^^^^^^^^^^^^^^^
 
 In addition to the primary SG that a zone belongs to, it may
 be a member of an alternate SG for the purposes of
@@ -1656,13 +1763,16 @@ those of its alternate SG, the Apex records are always set
 from a zone's primary SG.
 
 Moving Zones between SGs
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-Zones may be moved between SGs via the dupe_zone_alt_sg command, one hour later the swap_zone_sg
-command (to ensure that the zone is flooded to all servers to cover all possible values of NS records during apex
-changeover), followed by the delete_zone_alt_sg command 24 hours later.
+Zones may be moved between SGs via the :command:`dupe_zone_alt_sg` command, one
+hour later the :command:`swap_zone_sg` command (to ensure that the zone is
+flooded to all servers to cover all possible values of NS records during apex
+changeover), followed by the :command:`delete_zone_alt_sg` command 24 hours
+later.
 
-The first two commands add the new SG as an alternate SG, and then swap the zone's primary and alt SGs
-
+The first two commands add the new SG as an alternate SG, and then swap the
+zone's primary and alt SGs::
 
       zone_tool > dupe_zone_alt_sg bad-thing.org
 
@@ -1697,75 +1807,71 @@ The first two commands add the new SG as an alternate SG, and then swap the zone
               zone_id:         101449
               zone_type:       DynDNSZoneSM
 
-                 zi_id:                 102602
-                 change_by:             grantma@shalom-ext.internal.anathoth.net/Admin
-                 ctime:                 Thu Aug 23 14:54:07 2012
-                 mtime:                 Thu Aug 30 09:40:32 2012
-                 ptime:                 Thu Aug 30 09:40:32 2012
-                 soa_expire:            7d
-                 soa_minimum:           600
-                 soa_mname:             ns1.anathoth.net.
-                 soa_refresh:           600
-                 soa_retry:             600
+              zi_id:           102602
+              change_by:       grantma@shalom-ext.internal.anathoth.net/Admin
+              ctime:           Thu Aug 23 14:54:07 2012
+              mtime:           Thu Aug 30 09:40:32 2012
+              ptime:           Thu Aug 30 09:40:32 2012
+              soa_expire:      7d
+              soa_minimum:     600
+              soa_mname:       ns1.anathoth.net.
+              soa_refresh:     600
+              soa_retry:       600
+              soa_rname:       matthewgrant5.gmail.com.
+              soa_serial:      2012082300
+              soa_ttl:         None
+              zone_id:         101449
+              zone_ttl:        24h
+      .
+      .
+      1 hour later
+      .
+      zone_tool > swap_zone_sg bad-thing.org
+      ***    Do really you wish to do this?
+       --y/[N]> y
 
-        soa_rname:       matthewgrant5.gmail.com.
-        soa_serial:      2012082300
-        soa_ttl:         None
-        zone_id:         101449
-        zone_ttl:        24h
-.
-.
-1 hour later
-.
-zone_tool > swap_zone_sg bad-thing.org
-***    Do really you wish to do this?
-  --y/[N]> y
+      zone_tool > show_zonesm bad-thing.org
+              name:            bad-thing.org.
+              alt_sg_name:     anathoth-external
+              auto_dnssec:     False
+              ctime:           Thu Aug 23 14:54:07 2012
+              deleted_start:   None
+              edit_lock:       True
+              edit_lock_token: None
+              inc_updates:     False
+              lock_state:      EDIT_UNLOCK
+              locked_by:       None
+              mtime:           Thu Aug 30 09:11:45 2012
+              nsec3:           True
+              reference:       anathoth
+              soa_serial:      2012082300
+              sg_name:         anathoth-internal
+              state:           PUBLISHED
+              use_apex_ns:     True
+              zi_candidate_id: 102602
+              zi_id:           102602
+              zone_id:         101449
+              zone_type:       DynDNSZoneSM
 
-zone_tool > show_zonesm bad-thing.org
-        name:            bad-thing.org.
-        alt_sg_name:     anathoth-external
-        auto_dnssec:     False
-        ctime:           Thu Aug 23 14:54:07 2012
-        deleted_start:   None
-        edit_lock:       True
-        edit_lock_token: None
-        inc_updates:     False
-        lock_state:      EDIT_UNLOCK
-        locked_by:       None
-        mtime:           Thu Aug 30 09:11:45 2012
-        nsec3:           True
-        reference:       anathoth
-        soa_serial:      2012082300
-        sg_name:         anathoth-internal
-        state:           PUBLISHED
-        use_apex_ns:     True
-        zi_candidate_id: 102602
-        zi_id:           102602
-        zone_id:         101449
-        zone_type:       DynDNSZoneSM
-
-        zi_id:           102602
-        change_by:       grantma@shalom-ext.internal.anathoth.net/Admin
-        ctime:           Thu Aug 23 14:54:07 2012
-        mtime:           Thu Aug 30 09:40:32 2012
-        ptime:           Thu Aug 30 09:40:32 2012
-        soa_expire:      7d
-        soa_minimum:     600
-        soa_mname:       ns1.anathoth.net.
-        soa_refresh:     600
-        soa_retry:       600
-        soa_rname:       matthewgrant5.gmail.com.
-        soa_serial:      2012082300
-        soa_ttl:         None
-        zone_id:         101449
-        zone_ttl:        24h
+              zi_id:           102602
+              change_by:       grantma@shalom-ext.internal.anathoth.net/Admin
+              ctime:           Thu Aug 23 14:54:07 2012
+              mtime:           Thu Aug 30 09:40:32 2012
+              ptime:           Thu Aug 30 09:40:32 2012
+              soa_expire:      7d
+              soa_minimum:     600
+              soa_mname:       ns1.anathoth.net.
+              soa_refresh:     600
+              soa_retry:       600
+              soa_rname:       matthewgrant5.gmail.com.
+              soa_serial:      2012082300
+              soa_ttl:         None
+              zone_id:         101449
+              zone_ttl:        24h
 
       zone_tool >
 
-
-
-
-Followed up 24 hours late by:
+Followed up 24 hours later by::
 
 
       zone_tool > delete_zone_alt_sg bad-thing.org
@@ -1792,40 +1898,43 @@ Followed up 24 hours late by:
               zone_id:         101449
               zone_type:       DynDNSZoneSM
 
-              zi_id:            102602
-              change_by:        grantma@shalom-ext.internal.anathoth.net/Admin
-              ctime:            Thu Aug 23 14:54:07 2012
-              mtime:            Thu Aug 30 09:40:32 2012
-              ptime:            Thu Aug 30 09:40:32 2012
-              soa_expire:       7d
-              soa_minimum:      600
-              soa_mname:        ns1.anathoth.net.
-              soa_refresh:      600
-              soa_retry:        600
-              soa_rname:        matthewgrant5.gmail.com.
-              soa_serial:       2012082300
-              soa_ttl:          None
-              zone_id:          101449
-              zone_ttl:         24h
+              zi_id:           102602
+              change_by:       grantma@shalom-ext.internal.anathoth.net/Admin
+              ctime:           Thu Aug 23 14:54:07 2012
+              mtime:           Thu Aug 30 09:40:32 2012
+              ptime:           Thu Aug 30 09:40:32 2012
+              soa_expire:      7d
+              soa_minimum:     600
+              soa_mname:       ns1.anathoth.net.
+              soa_refresh:     600
+              soa_retry:       600
+              soa_rname:       matthewgrant5.gmail.com.
+              soa_serial:      2012082300
+              soa_ttl:         None
+              zone_id:         101449
+              zone_ttl:        24h
       zone_tool >
 
-
-
-
 Private SGs
+^^^^^^^^^^^
 
-Private SGs typically have a specified named.conf template directory, which has templates that restrict query access
-to its primary Zones. Such SGs are typically used for behind firewall or backend DNS information, which can either
-consist of RFC 1918 address space, or RFC 4193 IPv6 ULAs (fd13::/16 or fd14::/16). These SGs are usually
-configured with private master_address and master_alt_address records.
+Private SGs typically have a specified :file:`named.conf` template directory,
+which has templates that restrict query access to its primary Zones. Such SGs
+are typically used for behind firewall or backend DNS information, which can
+either consist of RFC 1918 address space, or RFC 4193 IPv6 ULAs (fd13::/16 or
+fd14::/16). These SGs are usually configured with private ``master_address``
+and ``master_alt_address`` records.
 
 Replica SG
+^^^^^^^^^^
 
-The replica_sg is a special SG covering all zones. It is used to replicate all zones to all DMS replicas (running
-named as DNS slaves), which save the information into what would be dynamic DNS directory if the replica became
-the Master server. PostgresQL is typically configured to replicate to each DMS replica alongside the named zone
-slave replication.
+The ``replica_sg`` is a special SG covering all zones. It is used to replicate
+all zones to all DMS replicas (running named as DNS slaves), which save the
+information into what would be dynamic DNS directory if the replica became the
+Master server. PostgresQL is typically configured to replicate to each DMS
+replica alongside the named zone slave replication.
 
+::
 
       zone_tool > show_replica_sg
               sg_name:                        anathoth-replica
@@ -1835,21 +1944,32 @@ slave replication.
               replica_sg:                     True
               zone_count:                     14
 
-                 Peer NAMED slave configuration state:
+              Replica SG named status:
                  shalom-dr                    2001:470:f012:2::3
-
-                            OK
+                         OK
       zone_tool >
 
-
+.. _State-Machine-Diagrams:
 
 State Machine Diagrams
+======================
 
 Zone State Machine
+------------------
 
-Master State Machine - drives DNS server configuration
+.. fig:: images/Zone_state_machine.png
+
+Master State Machine
+^^^^^^^^^^^^^^^^^^^^
+
+* drives DNS server configuration
+
+.. fig:: images/Master_sm.png
 
 Server State Machine
+^^^^^^^^^^^^^^^^^^^^
+
+.. fig:: images/Server_sm.png
 
 Vacuuming Deleted Zones and Old ZIs
 There are 3 things in the DMS database that need daily ageing and cleaning done. They are Zone Instatnces (ZIs),
