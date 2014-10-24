@@ -1594,6 +1594,7 @@ The :command:`zone_tool` commands to do with sectags are as follows:
 .. _Servers-and-Server-Groups:
 
 Servers (replica & slave) and Server Groups (SGs)
+
 =================================================
 
 Servers
@@ -1960,84 +1961,117 @@ Zone State Machine
 .. fig:: images/Zone_state_machine.png
 
 Master State Machine
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 * drives DNS server configuration
 
 .. fig:: images/Master_sm.png
 
 Server State Machine
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 .. fig:: images/Server_sm.png
 
-Vacuuming Deleted Zones and Old ZIs
-There are 3 things in the DMS database that need daily ageing and cleaning done. They are Zone Instatnces (ZIs),
-deleted zones, and the syslog table. As it is PostgresQL, they are 'vacuumed'.
 
-The default ages for the history are set in the DMS config table, shown by show_config, and mostly changed by
-set_config
+Vacuuming Deleted Zones and Old ZIs
+===================================
+
+There are 3 things in the DMS database that need daily ageing and cleaning
+done. They are Zone Instances (ZIs), deleted zones, and the syslog table. As
+it is PostgresQL, they are 'vacuumed'.
+
+The default ages for the history are set in the DMS config table, shown by
+:command:`show_config`, and mostly changed by :command:`set_config`.
 
 The commands for vacuuming are:
 
- vacuum_event_queue                                        Age the event queue
+==================================================       ====================================================
 
- vacuum_zis                                                Age a zone's unpublished ZIs
+ :command:`vacuum_event_queue`                             Age the event queue
 
- vacuum_zones                                              Age deleted zones out of the DMS
+ :command:`vacuum_zis`                                     Age a zone's unpublished ZIs
 
- vacuum_syslog                                             Age syslog messages
+ :command:`vacuum_zones`                                   Age deleted zones out of the DMS
 
- vacuum_pare_deleted_zone_zis                              Pare deleted zone ZIs down to last published ZI
+ :command:`vacuum_syslog`                                  Age syslog messages
 
- vacuum_all                                                Do all the the above, using default ages
+ :command:`vacuum_pare_deleted_zone_zis`                   Pare deleted zone ZIs down to last published ZI
+
+ :command:`vacuum_all`                                     Do all of the above, using default ages
+
+==================================================       ====================================================
 
 The default ages for the above when the dms database was first installed are as follows:
 
+===========================             ===========================================================
+
+ Events                                  Anything older than ``event_max_age`` (120.0) days.
+
+ Zone Instances                          Anything less than ``zi_max_age`` (90.0 days),
+                                         down to ``zi_max_num`` limit (25) thereafter.
+
+ Deleted Zones                           Anything older than 1000 years (``zone_del_age`` 0.0 days)
+
+ Paring Deleted Zones                    Anything older than zone_del_pare_age, 90.0 days
+
+ Log messages                            Anything older than syslog_max_age (120.0) days.
+
+==========================              ===========================================================
+
+.. _Wrapping-Incrementing-and-Setting-Zone-Serial-Numbers:
 
 
- Events                                                    Anything older than event_max_age (120.0) days.
+Wrapping, Incrementing and Setting Zone Serial Numbers
+======================================================
 
- Zone Instances                                            Anything less than zi_max_age (90.0 days), down to
-                                                           zi_max_num limit (25) thereafter.
+:program:`Zone_tool` also provides a way to manipulate a zones SOA serial
+number administratively. The serial numbers can be set, if it is greater than
+that in :program:`named`, or incremented, or wrapped via the :command:`poke_*`
+commands.
 
- Deleted Zones                                                   Anything older than 1000 years (zone_del_age 0.0
-                                                                 days)
+=================================    ==================================================
 
- Paring Deleted Zones                                            Anything older than zone_del_pare_age, 90.0 days
+ :command:`poke_zone_set_serial`      Set a zone's SOA serial number, or increment it
 
- Log messages                                                    Anything older than syslog_max_age (120.0) days.
+ :command:`poke_zone_wrap_serial`     Wrap a zone's SOA serial number.
 
-Wrapping, Incrementing and Setting Zone serial numbers
-Zone_tool also provides a way to manipulate a zones SOA serial number administratively. The serial numbers can
-be set, if it is greater than that in named, or incremented, or wrapped via the poke_ commands.
+=================================    ==================================================
 
- poke_zone_set_serial                                            Set a zone's SOA serial number, or increment it
-
- poke_zone_wrap_serial                                           Wrap a zone's SOA serial number.
+.. _zone-tool-Shell-Notes:
 
 Zone_tool Shell Notes
+=====================
 
 Environment Variables
+---------------------
 
-Zone_tool takes the standard environment variables, and uses them if you are not in restricted shell mode. You can
-use these to effect changes for your own login.
+:program:`Zone_tool` takes the standard environment variables, and uses them if
+you are not in restricted shell mode. You can use these to effect changes for
+your own login.
 
-All these can be set globally in /etc/net24/net24.conf, using the appropriate setting names, in the [zone_tool] section
+All these can be set globally in :file:`/etc/dms/dms.conf`, using the appropriate
+setting names, in the ``[zone_tool]`` section.
 
-The usage of the variables for the pager and editor is determine by the privilege of the user account. The user must
-be a member of the sudo, root, or wheel groups by default (groups can be set via net24.conf admin_group_list) for
-the shell variables to be used.
+The usage of the variables for the pager and editor is determine by the
+privilege of the user account. The user must be a member of the ``sudo``,
+``root``, or ``wheel`` groups by default (groups can be set via
+:file:`dms.conf` ``admin_group_list``) for the shell variables to be used.
 
 Editor
+^^^^^^
 
- Admin Shell              restricted               restricted default        administrator            description
- Variable                 /etc/net24/net24.co                                default
-                          nf
+==============  ===========================  ===================    ================    ================
 
- VISUAL                   'editor'                 rvim, rnano               system default           zone_tool editor
+ Admin Shell     restricted                   restricted default      administrator     description
+ Variable        :file:`/etc/dms/dms.conf`                               default
 
- EDITOR                   'editor'                 rvim, rnano               system default           zone_tool editor
+==============  ===========================  ===================    ================    ================
+
+ VISUAL                 'editor'                 rvim, rnano         system default     zone_tool editor
+
+ EDITOR                 'editor'                 rvim, rnano         system default     zone_tool editor
+
+==============  ===========================  ====================    ================   ================
 
 Pager
 
