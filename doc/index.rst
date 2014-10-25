@@ -18,6 +18,7 @@ Contents:
    Install_from_Source.rst
    README.Debian.rst
    Best_Practice_Guidelines.rst
+   Programming_Information.rst
 
 * :ref:`search`
 

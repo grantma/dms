@@ -396,17 +396,17 @@ Event Queue Inspection
 
 The :command:`zone_tool` event queue inspection commands are:
 
-====================================   =======================================================
-:command:`show_event <event-id>`       Given an event ID, show the contents of the event
-
-:command:`ls_pending_events [-v]`      List all pending events
-
-:command:`ls_failed_events [-v] [n]`   List last *n* failed events, by default 25
-
-:command:`ls_events [-v] [n]`          List *n* events in queue in reverse order, by default 25
-
-:command:`fail_event <event-id>`       Manually fail an event
-====================================   =======================================================
++--------------------------------------+----------------------------------------------------------+
+| :command:`show_event <event-id>`     | Given an event ID, show the contents of the event        |
++--------------------------------------+----------------------------------------------------------+
+| :command:`ls_pending_events [-v]`    | List all pending events                                  |
++--------------------------------------+----------------------------------------------------------+
+| :command:`ls_failed_events [-v] [n]` | List last *n* failed events, by default 25               |
++--------------------------------------+----------------------------------------------------------+
+| :command:`ls_events [-v] [n]`        | List *n* events in queue in reverse order, by default 25 |
++--------------------------------------+----------------------------------------------------------+
+| :command:`fail_event <event-id>`     | Manually fail an event                                   |
++--------------------------------------+----------------------------------------------------------+
 
 The ``-v`` switch is for verbose output.
 
@@ -607,26 +607,26 @@ The settings for the :command:`dms_` scripts are in the
 :file:/etc/dms/dr-settings.sh file. The full list of the DMS fail over scripts
 is:
 
-=======================                ====================================================
-DMS DR script                          Function
-=======================                ====================================================
 
-:command:`dms_master_down`             Manually take master down
-
-:command:`dms_master_up`               Manually bring master up from above operation
-
-:command:`dms_promote_replica`         Promote replica server to master
-
-:command:`dms_start_as_replica`        Restart/start a machine as a replica
-
-:command:`dms_pg_basebackup`           Component operation - create PG host standby replica
-                                       data base
-
-:command:`dms_write_recovery_conf`     Component operation - create PG recovery.conf file
-
-:command:`dms_update_wsgi_dns`         Component operation - update DMS failover CNAME
-                                       record
-=======================                ====================================================
++------------------------------------+------------------------------------------------------+
+|  DMS DR script                     |     Function                                         |
++====================================+======================================================+
+| :command:`dms_master_down`         | Manually take master down                            |
++------------------------------------+------------------------------------------------------+
+| :command:`dms_master_up`           | Manually bring master up from above operation        |
++------------------------------------+------------------------------------------------------+
+| :command:`dms_promote_replica`     | Promote replica server to master                     |
++------------------------------------+------------------------------------------------------+
+| :command:`dms_start_as_replica`    | Restart/start a machine as a replica                 |
++------------------------------------+------------------------------------------------------+
+| :command:`dms_pg_basebackup`       | Component operation - create PG host standby replica |
+|                                    | data base                                            |
++------------------------------------+------------------------------------------------------+
+| :command:`dms_write_recovery_conf` | Component operation - create PG recovery.conf file   |
++------------------------------------+------------------------------------------------------+
+| :command:`dms_update_wsgi_dns`     | Component operation - update DMS failover CNAME      |
+|                                    | record                                               |
++------------------------------------+------------------------------------------------------+
 
 ::
 
@@ -1013,7 +1013,7 @@ reconfigure is stored if the Master SM is in HOLD, escalated if needed, and then
 
 .. _Named.conf-and-Zone-Templating:
      
-:file:`Named.conf` and Zone Templating
+Named.conf and Zone Templating
 ======================================
 
 On all the servers in the DMS system, the DNS server configuration is designed
@@ -1034,56 +1034,50 @@ then the servers are reconfigured via the rndc protocol or by a local daemon on
 the server stating the rsynced include file. If one of the servers gets
 compromised, it can be cut off by disabling its IPSEC connection or halting it.
 
-==========================================  =====================   ====================================================================
-File/Directory                              Server                  Description
-==========================================   =====================   ====================================================================
-
-:file:`/var/lib/dms/rsync-config`            slaves and replicas     :file:`named.conf` include segments
-                                             (master as replica 
-                                             for DR)
-
-:file:`/var/lib/dms/master-config`           master (replica - DR)   Master :file:`named.conf` include
-                                                                    segment
-
-:file:`/etc/dms/server-admin-config/bind9`   master (replica - DR)   :file:`named.conf` segments for ``bind9``
-                                                                     slaves. Seperate segments for
-                                                                     controls, logging, options and local.
-                                                                     :command:`zone_tool rsync_server_admin_config`
-                                                                     distributes these portions out.
-
-:file:`/etc/dms/server-config-templates`     master (replica - DR)   Zone templates for replicas and slaves. See below.
-
-:file:`/etc/dms/master-config-templates`     master (replica - DR)   zone templates for running master :file:`named.conf`
-
-:file:`/etc/dms/config-templates`            master (replica - DR)   :file:`rndc.conf` templates for creating
-                                                                     :file:`/etc/bind/rndc.conf`, and TSIG key
-                                                                     template for :command:`zone_tool tsig_key_generate`
-
-:file:`/var/lib/dms/dms-sg`                  master (replica - DR)   Per SG include dirs for configuration segments to be rsynced.
-
-:file:`/etc/dms/bind`                        master (replicas - DR)  Configuration generated by :program:`dmsdmd` for :program:`named`.
-
-:file:`/etc/dms/bind/named-dr-replica.conf`  master (replica - DR)   Slave :program:`named` configuration for
-                                                                     replicating running master
-                                                                     :file:`/var/lib/bind/dynamic` zone
-                                                                     database. Contains DNSSEC
-                                                                     RRSIG and other non-database
-                                                                     :program:`bind9` master data that should be
-                                                                     replicated.
-
-:file:`/var/lib/dms/dms-sg`                   master (replica - DR)  Per SG include dirs for
-                                                                     configuration segments to be
-                                                                     rsynced.
-
-:file:`/var/lib/bind/dynamic`                 master and replicas    Named DNS dynamic database.
-                                                                     Contains DNS cryptographic data
-                                                                     that should be replicated between
-                                                                     master servers. Replicated via
-                                                                     Replica slave named process.
-
-:file:`/var/cache/bind/slave`                 All slaves             Slave zone cache database.
-
-==========================================    =====================   ====================================================================
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| File/Directory                              |  Server                | Description                                                        |
++=============================================+========================+====================================================================+
+| :file:`/var/lib/dms/rsync-config`           | slaves and replicas    | :file:`named.conf` include segments                                |
+|                                             | (master as replica     |                                                                    |
+|                                             | for DR)                |                                                                    |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/var/lib/dms/master-config`          | master (replica - DR)  | Master :file:`named.conf` include                                  |
+|                                             |                        | segment                                                            |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/etc/dms/server-admin-config/bind9`  | master (replica - DR)  | :file:`named.conf` segments for ``bind9``                          |
+|                                             |                        | slaves. Seperate segments for                                      |
+|                                             |                        | controls, logging, options and local.                              |
+|                                             |                        | :command:`zone_tool rsync_server_admin_config`                     |
+|                                             |                        | distributes these portions out.                                    |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/etc/dms/server-config-templates`    | master (replica - DR)  | Zone templates for replicas and slaves. See below.                 |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/etc/dms/master-config-templates`    | master (replica - DR)  | zone templates for running master :file:`named.conf`               |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/etc/dms/config-templates`           | master (replica - DR)  | :file:`rndc.conf` templates for creating                           |
+|                                             |                        | :file:`/etc/bind/rndc.conf`, and TSIG key                          |
+|                                             |                        | template for :command:`zone_tool tsig_key_generate`                |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/var/lib/dms/dms-sg`                 | master (replica - DR)  | Per SG include dirs for configuration segments to be rsynced.      |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/etc/dms/bind`                       | master (replicas - DR) | Configuration generated by :program:`dmsdmd` for :program:`named`. |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/etc/dms/bind/named-dr-replica.conf` | master (replica - DR)  | Slave :program:`named` configuration for                           |
+|                                             |                        | replicating running master                                         |
+|                                             |                        | :file:`/var/lib/bind/dynamic` zone                                 |
+|                                             |                        | database. Contains DNSSEC                                          |
+|                                             |                        | RRSIG and other non-database                                       |
+|                                             |                        | :program:`bind9` master data that should be                        |
+|                                             |                        | replicated.                                                        |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/var/lib/dms/dms-sg`                 | master (replica - DR)  | Per SG include dirs for configuration segments to be rsynced.      |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/var/lib/bind/dynamic`               | master and replicas    | Named DNS dynamic database. Contains DNS cryptographic data that   |
+|                                             |                        | should be replicated between master servers. Replicated via        |
+|                                             |                        | Replica slave named process.                                       |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
+| :file:`/var/cache/bind/slave`               | All slaves             | Slave zone cache database.                                         |
++---------------------------------------------+------------------------+--------------------------------------------------------------------+
 
 .. note::
          
@@ -1095,65 +1089,65 @@ form ``%(key_name)s``
 
 Master :file:`named.conf` include templates in /etc/dms/master-config-templates are:
 
- =====================================================        ===================================
-
- :file:`auto-dnssec-config.conf`                              DNSSEC dynamic DNS zone template
-
- :file:`dynamic-config.conf`                                  dynamic DNS zone template
-
- :file:`server-acl.conf`                                      template for server ACLs
-
- :file:`slave-config.conf`                                    Slave DNS zone template - not used
-
- :file:`static-config.conf`                                   Static zone template - not used
-
- =====================================================        ===================================
++---------------------------------+------------------------------------+
+| File                            | Description                        |
++=================================+====================================+
+| :file:`auto-dnssec-config.conf` | DNSSEC dynamic DNS zone template   |
++---------------------------------+------------------------------------+
+| :file:`dynamic-config.conf`     | dynamic DNS zone template          |
++---------------------------------+------------------------------------+
+| :file:`server-acl.conf`         | template for server ACLs           |
++---------------------------------+------------------------------------+
+| :file:`slave-config.conf`       | Slave DNS zone template - not used |
++---------------------------------+------------------------------------+
+| :file:`static-config.conf`      | Static zone template - not used    |
++---------------------------------+------------------------------------+
 
 Server :file:`named.conf` include templates in :file:`/etc/dms/server-config-templates` and segments are:
 
- =====================================================        ========================================
-
- :file:`bind9.conf`                                           :program:`Bind9` slave zone template
-
- :file:`bind9-replica.conf`                                   :program:`Bind9` replica zone template
-
- =====================================================        =========================================
++----------------------------+----------------------------------------+
+| File                       | Description                            |
++============================+========================================+
+| :file:`bind9.conf`         | :program:`Bind9` slave zone template   |
++----------------------------+----------------------------------------+
+| :file:`bind9-replica.conf` | :program:`Bind9` replica zone template |
++----------------------------+----------------------------------------+
 
 :program:`Nsd3` server zone config templates would have ``nsd3`` in their name.
 
 Administration server :file:`named.conf` segments in :file:`/etc/net24/server-admin-config/bind9` are:
 
- ==============================    ==========================================================
-
- :file:`controls.conf`             Controls segment of named.conf. Used to control :command:`rndc`
-                                   access
-
- :file:`logging.conf`              Logging :file:`named.conf` segment. Configures named to log
-                                   to ``local7`` facility.
-
- :file:`options.conf`              Options include segment. Needs to be included as it is
-                                   better to manually specify ``listen-on`` directives on each
-                                   individual server
-
- :file:`rndc-remote.key`           :command:`Rndc` remote key used in :file:`/etc/bind/rndc.conf` on
-                                   masters, and in :file:`controls.conf` above.
-
- ==============================    ==========================================================
++-------------------------+-------------------------------------------------------------------+
+| File                    | Description                                                       |
++=========================+===================================================================+
+| :file:`controls.conf`   | Controls segment of named.conf. Used to control :command:`rndc`   |
+|                         | access                                                            |
++-------------------------+-------------------------------------------------------------------+
+| :file:`logging.conf`    | Logging :file:`named.conf` segment. Configures named to log       |
+|                         | to ``local7`` facility.                                           |
++-------------------------+-------------------------------------------------------------------+
+| :file:`options.conf`    | Options include segment. Needs to be included as it is            |
+|                         | better to manually specify ``listen-on`` directives on each       |
+|                         | individual server                                                 |
++-------------------------+-------------------------------------------------------------------+
+| :file:`rndc-remote.key` | :command:`Rndc` remote key used in :file:`/etc/bind/rndc.conf` on |
+|                         | masters, and in :file:`controls.conf` above.                      |
++-------------------------+-------------------------------------------------------------------+
 
 The above segments are free form, and can be rearranged. No fields are filled in from :program:`dmsdmd`.
 
 Miscellaneous templates in :file:`/etc/net24/config-templates` are:
 
- ==============================    =================================================================
-
- :file:`rndc.conf-header`          Top of :file:`rndc.conf`. Contains default settings and key
-                                   includes
-
- :file:`rndc.conf-server`          Per server :file:`rndc.conf` template
-
- :file:`tsig.key`                  :command:`zone_tool tsig_key_generate` TSIG key template
-
- ==============================    =================================================================
++--------------------------+-------------------------------------------------------------+
+| File                     | Description                                                 |
++==========================+=============================================================+
+| :file:`rndc.conf-header` | Top of :file:`rndc.conf`. Contains default settings and key |
+|                          | includes                                                    |
++--------------------------+-------------------------------------------------------------+
+| :file:`rndc.conf-server` | Per server :file:`rndc.conf` template                       |
++--------------------------+-------------------------------------------------------------+
+| :file:`tsig.key`         | :command:`zone_tool tsig_key_generate` TSIG key template    |
++--------------------------+-------------------------------------------------------------+
 
 .. _Netscript-Iptables-and-Filtering-Incoming-IPSEC:
 
@@ -1269,8 +1263,7 @@ line numbers can be printed by specifying :command:`--line-numbers` to
 
 .. _Python WSGI and JSON/RPC over HTTPS:
 
-Python 
-WSGI and JSON/RPC over HTTPS
+Python WSGI and JSON/RPC over HTTPS
 ===================================
 
 The interface between the DMS Web servers and the DMS server is a Web service.
@@ -1285,20 +1278,18 @@ The web service is set up as a Python3 WSGI script, running under
 configured to run in separate :program:`apache2` daemon processes. The hook
 point URLs are as follows:
 
-============================  ==================================================
-    
- :file:`/list_zone`           Just for listing all zones. For Admin DMI use only
-
- :file:`/admin_dms`           Admin DMS access point. For systems
-                              administrators/NOC
-
- :file:`/helpdesk_dms`        Help desk DMS access point
-
- :file:`/value_reseller_dms`  1st Domains customer DMS access point.
-
- :file:`/hosted_dms`          Hosted customer DMS access point
-
-============================  ==================================================
++-----------------------------+----------------------------------------------------+
+| :file:`/list_zone`          | Just for listing all zones. For Admin DMI use only |
++-----------------------------+----------------------------------------------------+
+| :file:`/admin_dms`          | Admin DMS access point. For systems                |
+|                             | administrators/NOC                                 |
++-----------------------------+----------------------------------------------------+
+| :file:`/helpdesk_dms`       | Help desk DMS access point                         |
++-----------------------------+----------------------------------------------------+
+| :file:`/value_reseller_dms` | 1st Domains customer DMS access point.             |
++-----------------------------+----------------------------------------------------+
+| :file:`/hosted_dms`         | Hosted customer DMS access point                   |
++-----------------------------+----------------------------------------------------+
 
 .. _WSGI-configuration-files-and-directories:
 
@@ -1307,16 +1298,14 @@ WSGI configuration files and directories
 
 All of these files are in the :file:`/etc` tree to comply with Debian configuration policy.
 
-========================================      ===================================
-
- :file:`/etc/dms/dms-wsgi-apache.conf`        Apache 2 Debian style include file
-
- :file:`/etc/dms/wsgi-scripts`                WSGI scripts
-
- :file:`/etc/dms/htpasswd-dms`                Apache 2 :command:`htpasswd` file 
-                                              for DMS basic authentication
-
-========================================      ===================================
++---------------------------------------+------------------------------------+
+| :file:`/etc/dms/dms-wsgi-apache.conf` | Apache 2 Debian style include file |
++---------------------------------------+------------------------------------+
+| :file:`/etc/dms/wsgi-scripts`         | WSGI scripts                       |
++---------------------------------------+------------------------------------+
+| :file:`/etc/dms/htpasswd-dms`         | Apache 2 :command:`htpasswd` file  |
+|                                       | for DMS basic authentication       |
++---------------------------------------+------------------------------------+
 
 The :file:`/etc/dms/dms-wsgi-apache.conf` contains all the :program:`apache2`
 configuration for the URL hook points and basic authentication in Location
@@ -1336,7 +1325,7 @@ usage. If the configured ``memory_exec_threshold`` of 250MB is exceeded, it
 will re exec() itself when once the event queue is empty, thus releasing all
 the sparsely allocated RSS memory.
 
-.. _IPSEC
+.. _IPSEC:
 
 IPSEC
 =====
@@ -1382,20 +1371,18 @@ end of an IPSEC connection configured.
 Racoon directories and files:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-========================================    =================================
-
- :file:`/etc/racoon`                        :program:`Racoon` configuration
-
- :file:`/etc/racoon/racoon-tool.conf`       Master :command:`racoon-tool` 
-                                            configuration file
-
- :file:`/etc/racoon/racoon-tool.conf.d`     :command:`Racoon-tool` per segment 
-                                            configuration directory
-
- :file:`/var/lib/racoon/racoon.conf`        :command:`racoon-tool` generated 
-                                            :file:`racoon.conf`
-
-========================================    =================================
++----------------------------------------+------------------------------------+
+| :file:`/etc/racoon`                    | :program:`Racoon` configuration    |
++----------------------------------------+------------------------------------+
+| :file:`/etc/racoon/racoon-tool.conf`   | Master :command:`racoon-tool`      |
+|                                        | configuration file                 |
++----------------------------------------+------------------------------------+
+| :file:`/etc/racoon/racoon-tool.conf.d` | :command:`Racoon-tool` per segment |
+|                                        | configuration directory            |
++----------------------------------------+------------------------------------+
+| :file:`/var/lib/racoon/racoon.conf`    | :command:`racoon-tool` generated   |
+|                                        | :file:`racoon.conf`                |
++----------------------------------------+------------------------------------+
 
 .. note::
  The :command:`racoon-tool` segment configuration directory could be used for a
@@ -1449,30 +1436,28 @@ with a :file:`racoon-tool.conf.d` segment :file:`dms-akl.conf`::
 arguments are given. It follows the bread crumbs idea so that you can easily
 find your way through it. Useful sub commands are:
 
-==================    ========================================
-
- :command:`vlist`     List all VPN connections
-
- :command:`vup`       start a VPN connection
-
- :command:`vdown`     stop a VPN connection
-
- :command:`vreload`   reload a connection
-
- :command:`vmenu`     Start VPN menu management mode. Lists all
-                      connections in SPD, and you can shut down 
-                      VPN connections from here.
-
- :command:`start`     Initialize kernel SPD, and start 
-                      :program:`racoon`
-
- :command:`stop`      Stop :program:`racoon`, and flush SPD
-
- :command:`reload`    Reload SPD and reload :command:`racoon`
-
- :command:`restart`   Restart everything.
-
-==================    ========================================
++--------------------+-------------------------------------------+
+| :command:`vlist`   | List all VPN connections                  |
++--------------------+-------------------------------------------+
+| :command:`vup`     | start a VPN connection                    |
++--------------------+-------------------------------------------+
+| :command:`vdown`   | stop a VPN connection                     |
++--------------------+-------------------------------------------+
+| :command:`vreload` | reload a connection                       |
++--------------------+-------------------------------------------+
+| :command:`vmenu`   | Start VPN menu management mode. Lists all |
+|                    | connections in SPD, and you can shut down |
+|                    | VPN connections from here.                |
++--------------------+-------------------------------------------+
+| :command:`start`   | Initialize kernel SPD, and start          |
+|                    | :program:`racoon`                         |
++--------------------+-------------------------------------------+
+| :command:`stop`    | Stop :program:`racoon`, and flush SPD     |
++--------------------+-------------------------------------------+
+| :command:`reload`  | Reload SPD and reload :command:`racoon`   |
++--------------------+-------------------------------------------+
+| :command:`restart` |  Restart everything.                      |
++--------------------+-------------------------------------------+
 
 .. _References:
 
@@ -1484,22 +1469,18 @@ DMS when a domain is initially created. It is used to track the zones belonging
 to a customer for listing and for auto reverse record operations.  Sample
 references are as follows:
 
-=======================       =================================================
-
- Reference                    Description
-
-=======================       =================================================
-
- ``24866@SOMEISP-NET``        Customer ID for a Hosted ISP, made of account 
-                              number and SOMEISP-NET
-
- ``anathoth``                 Anathoth reference
-
- VALUEADDEDRESELLER-NZ        Default reference
-
- HOSTEDDNS-NET                Default Hosted DNS reference
-
-=======================       =================================================
++-----------------------+-----------------------------------------------+
+| Reference             | Description                                   |
++=======================+===============================================+
+| ``24866@SOMEISP-NET`` | Customer ID for a Hosted ISP, made of account |
+|                       | number and SOMEISP-NET                        |
++-----------------------+-----------------------------------------------+
+| ``anathoth``          | Anathoth reference                            |
++-----------------------+-----------------------------------------------+
+| VALUEADDEDRESELLER-NZ | Default reference                             |
++-----------------------+-----------------------------------------------+
+| HOSTEDDNS-NET         | Default Hosted DNS reference                  |
++-----------------------+-----------------------------------------------+
 
 To the DMS they are just a string, conforming loosely to the format
 requirements for an email address or domain.  They are case insensitive for
@@ -1511,21 +1492,19 @@ valid domain so that people know they are not straight email addresses.
 
 The :command:`zone_tool` commands for references are:
 
-=========================================  =====================================
-
- :command:`create_reference`               Create a reference
-
- :command:`delete_reference`               Delete a reference
-
- :command:`lsref`/:command:`ls_reference`  List references. Can take wild cards, 
-                                           and multiple reference arguments
-
- :command:`rename_reference`               Rename a reference
-
- :command:`set_zone_reference`             Set the reference for a zone to an 
-                                           existing reference.
-
-=========================================  =====================================
++------------------------------------------+---------------------------------------+
+| :command:`create_reference`              | Create a reference                    |
++------------------------------------------+---------------------------------------+
+| :command:`delete_reference`              | Delete a reference                    |
++------------------------------------------+---------------------------------------+
+| :command:`lsref`/:command:`ls_reference` | List references. Can take wild cards, |
+|                                          | and multiple reference arguments      |
++------------------------------------------+---------------------------------------+
+| :command:`rename_reference`              | Rename a reference                    |
++------------------------------------------+---------------------------------------+
+| :command:`set_zone_reference`            | Set the reference for a zone to an    |
+|                                          | existing reference.                   |
++------------------------------------------+---------------------------------------+
 
 The :command:`create_zone` and :command:`ls` :command:`zone_tool` commands take 
 a ``-r`` argument to either set/create the reference a new zone
@@ -1571,30 +1550,27 @@ program model.
 
 The :command:`zone_tool` commands to do with sectags are as follows:
 
-====================================    =======================================
-
- :command:`add_zone_sectag`             Add a security tag to a zone
-
- :command:`create_sectag`               Create a new sectag
-
- :command:`delete_sectag`               Delete a sectag. It must not be 
-                                        attached to any zones
-
- :command:`delete_zone_sectag`          Delete a security tag from a zone
-
- :command:`replace_zone_sectags`        Replace the whole list of sectags 
-                                        for a zone
-
- :command:`show_sectags`                Show defined sectags
-
- :command:`show_zone_sectags`           Show the sectag list for a zone
-
-====================================    =======================================
++---------------------------------+-----------------------------------+
+| :command:`add_zone_sectag`      | Add a security tag to a zone      |
++---------------------------------+-----------------------------------+
+| :command:`create_sectag`        | Create a new sectag               |
++---------------------------------+-----------------------------------+
+| :command:`delete_sectag`        | Delete a sectag. It must not be   |
+|                                 | attached to any zones             |
++---------------------------------+-----------------------------------+
+| :command:`delete_zone_sectag`   | Delete a security tag from a zone |
++---------------------------------+-----------------------------------+
+| :command:`replace_zone_sectags` | Replace the whole list of sectags |
+|                                 | for a zone                        |
++---------------------------------+-----------------------------------+
+| :command:`show_sectags`         | Show defined sectags              |
++---------------------------------+-----------------------------------+
+| :command:`show_zone_sectags`    | Show the sectag list for a zone   |
++---------------------------------+-----------------------------------+
 
 .. _Servers-and-Server-Groups:
 
 Servers (replica & slave) and Server Groups (SGs)
-
 =================================================
 
 Servers
@@ -1874,7 +1850,6 @@ zone's primary and alt SGs::
 
 Followed up 24 hours later by::
 
-
       zone_tool > delete_zone_alt_sg bad-thing.org
       zone_tool > show_zonesm bad-thing.org
               name:            bad-thing.org.
@@ -1958,19 +1933,19 @@ State Machine Diagrams
 Zone State Machine
 ------------------
 
-.. fig:: images/Zone_state_machine.png
+.. figure:: images/Zone_state_machine.png
 
 Master State Machine
 --------------------
 
 * drives DNS server configuration
 
-.. fig:: images/Master_sm.png
+.. figure:: images/Master_sm.png
 
 Server State Machine
 --------------------
 
-.. fig:: images/Server_sm.png
+.. figure:: images/Server_sm.png
 
 
 Vacuuming Deleted Zones and Old ZIs
@@ -1985,41 +1960,36 @@ The default ages for the history are set in the DMS config table, shown by
 
 The commands for vacuuming are:
 
-==================================================       ====================================================
-
- :command:`vacuum_event_queue`                             Age the event queue
-
- :command:`vacuum_zis`                                     Age a zone's unpublished ZIs
-
- :command:`vacuum_zones`                                   Age deleted zones out of the DMS
-
- :command:`vacuum_syslog`                                  Age syslog messages
-
- :command:`vacuum_pare_deleted_zone_zis`                   Pare deleted zone ZIs down to last published ZI
-
- :command:`vacuum_all`                                     Do all of the above, using default ages
-
-==================================================       ====================================================
++-----------------------------------------+-------------------------------------------------+
+| :command:`vacuum_event_queue`           | Age the event queue                             |
++-----------------------------------------+-------------------------------------------------+
+| :command:`vacuum_zis`                   | Age a zone's unpublished ZIs                    |
++-----------------------------------------+-------------------------------------------------+
+| :command:`vacuum_zones`                 | Age deleted zones out of the DMS                |
++-----------------------------------------+-------------------------------------------------+
+| :command:`vacuum_syslog`                | Age syslog messages                             |
++-----------------------------------------+-------------------------------------------------+
+| :command:`vacuum_pare_deleted_zone_zis` | Pare deleted zone ZIs down to last published ZI |
++-----------------------------------------+-------------------------------------------------+
+| :command:`vacuum_all`                   | Do all of the above, using default ages         |
++-----------------------------------------+-------------------------------------------------+
 
 The default ages for the above when the dms database was first installed are as follows:
 
-===========================             ===========================================================
-
- Events                                  Anything older than ``event_max_age`` (120.0) days.
-
- Zone Instances                          Anything less than ``zi_max_age`` (90.0 days),
-                                         down to ``zi_max_num`` limit (25) thereafter.
-
- Deleted Zones                           Anything older than 1000 years (``zone_del_age`` 0.0 days)
-
- Paring Deleted Zones                    Anything older than zone_del_pare_age, 90.0 days
-
- Log messages                            Anything older than syslog_max_age (120.0) days.
-
-==========================              ===========================================================
++----------------------+------------------------------------------------------------+
+| Events               | Anything older than ``event_max_age`` (120.0) days.        |
++----------------------+------------------------------------------------------------+
+| Zone Instances       | Anything less than ``zi_max_age`` (90.0 days),             |
+|                      | down to ``zi_max_num`` limit (25) thereafter.              |
++----------------------+------------------------------------------------------------+
+| Deleted Zones        | Anything older than 1000 years (``zone_del_age`` 0.0 days) |
++----------------------+------------------------------------------------------------+
+| Paring Deleted Zones | Anything older than zone_del_pare_age, 90.0 days           |
++----------------------+------------------------------------------------------------+
+| Log messages         | Anything older than syslog_max_age (120.0) days.           |
++----------------------+------------------------------------------------------------+
 
 .. _Wrapping-Incrementing-and-Setting-Zone-Serial-Numbers:
-
 
 Wrapping, Incrementing and Setting Zone Serial Numbers
 ======================================================
@@ -2029,13 +1999,11 @@ number administratively. The serial numbers can be set, if it is greater than
 that in :program:`named`, or incremented, or wrapped via the :command:`poke_*`
 commands.
 
-=================================    ==================================================
-
- :command:`poke_zone_set_serial`      Set a zone's SOA serial number, or increment it
-
- :command:`poke_zone_wrap_serial`     Wrap a zone's SOA serial number.
-
-=================================    ==================================================
++----------------------------------+-------------------------------------------------+
+| :command:`poke_zone_set_serial`  | Set a zone's SOA serial number, or increment it |
++----------------------------------+-------------------------------------------------+
+| :command:`poke_zone_wrap_serial` | Wrap a zone's SOA serial number.                |
++----------------------------------+-------------------------------------------------+
 
 .. _zone-tool-Shell-Notes:
 
@@ -2060,49 +2028,49 @@ privilege of the user account. The user must be a member of the ``sudo``,
 Editor
 ^^^^^^
 
-==============  ===========================  ===================    ================    ================
-
- Admin Shell     restricted                   restricted default      administrator     description
- Variable        :file:`/etc/dms/dms.conf`                               default
-
-==============  ===========================  ===================    ================    ================
-
- VISUAL                 'editor'                 rvim, rnano         system default     zone_tool editor
-
- EDITOR                 'editor'                 rvim, rnano         system default     zone_tool editor
-
-==============  ===========================  ====================    ================   ================
++-------------+---------------------------+--------------------+----------------+------------------+
+| Admin Shell | Setting name in           | Restricted Default | Administrator  | Description      |
+| Variable    | :file:`/etc/dms/dms.conf` |                    | Default        |                  |
++=============+===========================+====================+================+==================+
+| VISUAL      | editor                    | rvim, rnano        | system default | zone_tool editor |
++-------------+---------------------------+--------------------+----------------+------------------+
+| EDITOR      | editor                    | rvim, rnano        | system default | zone_tool editor |
++-------------+---------------------------+--------------------+----------------+------------------+
 
 Pager
+^^^^^
 
-zone_tool is aware of stdout not being a terminal, so if you redirect output from it, it will not try to put it through the
+Zone_tool is aware of stdout not being a terminal, so if you redirect output from it, it will not try to put it through the
 pager.
 
- Shell Variable           /etc//net24/net24.c      restricted default        administrator            description
-                          onf                                                default
-
- PAGER (admin             pager (restricted)       less                      system default           pager program
- only)
-
- NET24_PAGER_AR           pager_args               -REX                                               pager arguments
- GS
++--------------------+-------------------------------------------+----------------------------------+-----------------------+-----------------+
+| Shell Variable     | Setting Name in :file:`/etc/dms/dms.conf` | Restricted shell default setting | Administrator setting | Description     |
++====================+===========================================+==================================+=======================+=================+
+| PAGER (admin only) | pager (hard wired for restricted)         | less                             | system default        | pager program   |
++--------------------+-------------------------------------------+----------------------------------+-----------------------+-----------------+
+| MAGCODE_PAGER_ARGS | pager_args                                | -REX                             |                       | pager arguments |
++--------------------+-------------------------------------------+----------------------------------+-----------------------+-----------------+
 
 
 Diff
+^^^^
 
- Shell Variable                  /etc/net24/net24.conf          default                        description
-
- NET24_DIFF                                                     colordiff, then diff           diff program
-
- NET24_DIFF_ARGS                 diff_args                      -uNw                           diff program args
-
++-------------------+-------------------------------------------+----------------------------------+-------------------+
+| Shell Variable    | Setting Name in :file:`/etc/dms/dms.conf` | Restricted shell default setting |  Description      |
++===================+===========================================+==================================+===================+
+| MAGCODE_DIFF      |                                           | colordiff, then diff             | diff program      |
++-------------------+-------------------------------------------+----------------------------------+-------------------+
+| MAGCODE_DIFF_ARGS | diff_args                                 | -uNw                             | diff program args |
++-------------------+-------------------------------------------+----------------------------------+-------------------+
 
 Tail
+^^^^
 
- Shell variable                  /etc/net24/net24.conf          default                        description
-
- NET24_TAIL                                                     tail                           tail program
-
- NET24_TAIL_ARGS                 tail_args                      tail arguments                 tail program
-
++-------------------+-------------------------------------------+----------------+--------------+
+| Shell variable    | Setting Name in :file:`/etc/dms/dms.conf` | Default        | Description  |
++===================+===========================================+================+==============+
+| MAGCODE_TAIL      |                                           | tail           | tail program |
++-------------------+-------------------------------------------+----------------+--------------+
+| MAGCODE_TAIL_ARGS | tail_args                                 | tail arguments | tail program |
++-------------------+-------------------------------------------+----------------+--------------+
 
