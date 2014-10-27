@@ -82,7 +82,7 @@ DB Schema - Zone Diagram
 
 .. _Zone-DB-Schema-detail:
 
-.. figure:: images/Zone Table structure.jpg
+.. figure:: images/Zone_Table_Structure.jpg
 
    Zone DB Schema detail.
 
