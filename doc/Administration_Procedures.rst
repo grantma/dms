@@ -35,7 +35,7 @@ The following are detailed elsewhere in the documentation
  :file:`/etc/dms`                          Various passwords, templates and things
  ======================================    ==================================================
 
-See :ref:`Named.conf and Zone Templating<>` for more details.
+See :ref:`Named.conf and Zone Templating <Named.conf-and-Zone-Templating>` for more details.
 
 .. _Checking-DMS-Status:
 
@@ -808,7 +808,7 @@ Failed Master, Replica /etc not up to date
 
 The master and DR replica have the :command:`etckeeper` git archive mirrored
 every 4 hours to the alternate server.  See :ref:`etckeeper and /etc on Replica
-and Master Servers <>`
+and Master Servers <etckeeper-and-/etc-on-Replica-and-Master-Servers>`
 
 .. _Recovering-DB-from-Backup:
 
