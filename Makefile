@@ -293,8 +293,10 @@ doc:
 	make -C $(DOCDIR) $(DOCTARGETS)
 
 install-doc: doc
-	install -d $(DOCUMENTATIONDIR)/html
-	cp -R $(DOCDIR)/_build/html/* $(DOCUMENTATIONDIR)/html
+	- for D in $(DOCTARGETS); do \
+		install -d $(DOCUMENTATIONDIR)/$${D}; \
+		cp -R $(DOCDIR)/_build/$${D}/* $(DOCUMENTATIONDIR)/$${D}; \
+	done;
 
 clean: clean-python
 	make -C $(DOCDIR) clean
