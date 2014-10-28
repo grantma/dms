@@ -23,4 +23,5 @@ build
 /debian/*.debhelper*
 /debian/*.substvars
 /debian/files
-
+# Sphinx doc files to ignore
+doc/_build/

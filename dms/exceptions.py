@@ -32,15 +32,16 @@ class DMSError(BaseJsonRpcError):
     """
     Base DMS Error Exception
 
-    JSONRPC Error: JSONRPC_INTERNAL_ERROR
+    * JSONRPC Error: JSONRPC_INTERNAL_ERROR
     """
 
 class ZoneTTLNotSetError(DMSError):
     """
     The zone ttl needs to be set in the RR database row
     
-    JSONRPC Error: -1
-    JSONRPC data keys: 'rr_id'  - Resource Record ID
+    * JSONRPC Error: -1
+    * JSONRPC data keys:
+        * 'rr_id'  - Resource Record ID
     """
     def __init__(self, rr_id):
         message = "RR (%s) does not have its zone_ttl set" % rr_id
@@ -52,8 +53,9 @@ class UpdateError(DMSError):
     """
     Error during update of zone
     
-    JSONRPC Error: -2
-    JSONRPC data keys: 'name'  - domain name
+    * JSONRPC Error: -2
+    * JSONRPC data keys:
+        * 'name'  - domain name
     """
     def __init__(self, domain, *args):
         message = "Error updating domain '%s'." % domain
@@ -68,10 +70,11 @@ class SOASerialError(DMSError):
 
 class SOASerialArithmeticError(SOASerialError):
     """
-    SOA Serial Arithmetic Error.  Possibly due to memory corruption.
+    SOA Serial Arithmetic Error.  Possibly due to memory corruption
 
-    JSONRPC Error: -3
-    JSONRPC data keys: 'name'  - domain name
+    * JSONRPC Error: -3
+    * JSONRPC data keys:
+        * 'name'  - domain name
     """
     def __init__(self, domain):
         message = ("Zone '%s' - Error calculating SOA serial number - something impossible happened." % domain)
@@ -83,8 +86,9 @@ class DynDNSUpdateError(UpdateError):
     """
     Error during update of zone
     
-    JSONRPC Error: -4
-    JSONRPC data keys: 'name'  - domain name
+    * JSONRPC Error: -4
+    * JSONRPC data keys:
+        * 'name'  - domain name
     """
     def __init__(self, domain, *args):
         message = "Error updating domain '%s'." % domain
@@ -96,8 +100,9 @@ class DynDNSCantReadKeyError(DynDNSUpdateError):
     """
     Can't read in configured TSIG for Dynamic DNS update
 
-    JSONRPC Error: -5
-    JSONRPC data keys: 'name'  - None
+    * JSONRPC Error: -5
+    * JSONRPC data keys:
+        * 'name'  - None
     """
     def __init__(self, file_, key_name):
         message = ("Error updating domain - can't read key '%s' from file '%s'"
@@ -112,12 +117,13 @@ class DynDNSCantReadKeyError(DynDNSUpdateError):
 
 class NoSuchZoneOnServerError(UpdateError):
     """
-    No zone found in DNS server 
+    No zone found in DNS server
     
-    JSONRPC Error: -6
-    JSONRPC data keys:  'name'      - zone name
-                        'server'    - server hostname/address
-                        'port'      - server port
+    * JSONRPC Error: -6
+    * JSONRPC data keys:
+        * 'name'      - zone name
+        * 'server'    - server hostname/address
+        * 'port'      - server port
 
     This exception only occurs internally in dmsdmd, and dyndns_tool. It is
     not returned at all over HTTP JSON RPC.
@@ -136,8 +142,9 @@ class NoPreviousLabelParseError(DMSError):
     """
     No Previous Label seen. - This should not be reached in code
 
-    JSONRPC Error:     -7
-    JSONRPC data keys:  'name'  - domain name
+    * JSONRPC Error:     -7
+    * JSONRPC data keys:
+        * 'name'  - domain name
     """
     def __init__(self, domain):
         message = "There is no previous RR seen with a valid label"
@@ -149,12 +156,12 @@ class ZoneParseError(DMSError):
     """
     Parent class for zi RR errors
 
-    JSONRPC Error:      JSONRPC_INTERNAL_ERROR
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      JSONRPC_INTERNAL_ERROR
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data, 
             msg=None, use_pyparsing=True, rewind_loc=False, 
@@ -234,12 +241,12 @@ class UnhandledClassError(ZoneParseError):
     """
     Unhandled class for record - we only ever do IN
     
-    JSONRPC Error:      -8
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -8
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "class '%s' is not 'IN'." % rr_data['class']
@@ -250,12 +257,12 @@ class UnhandledTypeError(ZoneParseError):
     """
     RR type is one we don't handle.
     
-    JSONRPC Error:      -9
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -9
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "type '%s' is not supported." % rr_data['type']
@@ -266,13 +273,13 @@ class Not7ValuesSOAParseError(ZoneParseError):
     """
     7 fields were not supplied as required by RFC 1035
     
-    JSONRPC Error:      -10
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
-                        'num_soa_rdata_values' - number of SOA fields given
+    * JSONRPC Error:      -10
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
+        * 'num_soa_rdata_values' - number of SOA fields given
     """
     def __init__(self, domain, rr_data):
         num_soa_rdata_values = len(rr_data['rdata'].split())
@@ -286,13 +293,13 @@ class SOASerialMustBeInteger(ZoneParseError):
     """
     SOA serial number must be an integer value.
     
-    JSONRPC Error:      -11
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
-                        'soa_serial_thing'  - thing given as SOA serial no.
+    * JSONRPC Error:      -11
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
+        * 'soa_serial_thing'  - thing given as SOA serial no.
     """
     def __init__(self, domain, rr_data):
         soa_serial_thing = rr_data['rdata'].split()[2]
@@ -306,14 +313,13 @@ class LabelNotInDomain(ZoneParseError):
     """
     FQDN Label outside of domain
     
-    JSONRPC Error:      -12
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
-                        'label_thing'       - thing given as RR label
-
+    * JSONRPC Error:      -12
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
+        * 'label_thing'       - thing given as RR label
     """
     def __init__(self, domain, rr_data):
         label_thing = rr_data['label']
@@ -326,13 +332,13 @@ class BadNameOwnerError(ZoneParseError):
     """
     Owner name of an A AAAA or MX record is not a valid hostname
     
-    JSONRPC Error:      -13
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
-                        'label_thing'       - thing given as RR label
+    * JSONRPC Error:      -13
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
+        * 'label_thing'       - thing given as RR label
     """
     def __init__(self, domain, rr_data):
         label_thing = rr_data['label']
@@ -346,14 +352,14 @@ class BadNameRdataError(ZoneParseError):
     """
     Name in the rdata of a record is not a valid hostname
     
-    JSONRPC Error:      -14
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
-                        'rdata_thing'   - bad RDATA of RR
-                        'bad_name'      - bad hostname in RDATA
+    * JSONRPC Error:      -14
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
+        * 'rdata_thing'   - bad RDATA of RR
+        * 'bad_name'      - bad hostname in RDATA
     """
     def __init__(self, domain, rr_data, bad_name):
         rdata_thing = rr_data['rdata']
@@ -369,12 +375,12 @@ class ZoneError(ZoneParseError):
     """
     Zone related resource record error.
     
-    JSONRPC Error:      JSONRPC_INTERNAL_ERROR
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      JSONRPC_INTERNAL_ERROR
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     pass
 
@@ -382,12 +388,12 @@ class ZoneAlreadyHasSOARecord(ZoneError):
     """
     Zone already has an SOA record.
 
-    JSONRPC Error:      -15
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -15
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "An SOA record already exists for this domain"
@@ -398,12 +404,12 @@ class ZoneSOARecordNotAtApex(ZoneError):
     """
     Zone already has an SOA record.
 
-    JSONRPC Error:      -16
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -16
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         self.label_thing = rr_data['label']
@@ -415,12 +421,12 @@ class DuplicateRecordInZone(ZoneError):
     """
     Zone already has a record for this.
 
-    JSONRPC Error:      -17
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -17
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "Record already exists - duplicate."
@@ -431,12 +437,12 @@ class ZoneCNAMEExists(ZoneError):
     """
     Zone already has a CNAME using this label.
 
-    JSONRPC Error:      -18
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -18
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = ("CNAME exists using this label '%s' - can't create RR."
@@ -448,12 +454,12 @@ class ZoneCNAMELabelExists(ZoneError):
     """
     Zone already has a CNAME using this label.
 
-    JSONRPC Error:      -19
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -19
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = ("Label '%s' already exists - can't create CNAME RR." 
@@ -465,12 +471,12 @@ class DuplicateRecordInZone(ZoneError):
     """
     Zone already has a record for this.
 
-    JSONRPC Error:      -20
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -20
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "Record already exists - duplicate."
@@ -481,12 +487,12 @@ class ZoneCheckIntegrityNoGlue(ZoneError):
     """
     Record in zone does not have valid in zone glue
 
-    JSONRPC Error:      -21
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -21
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data, glue_name):
         msg = "In Zone glue '%s' does not exist." % glue_name
@@ -498,8 +504,9 @@ class ZoneHasNoSOARecord(DMSError):
     """
     Zone has No SOA record.
 
-    JSONRPC Error:      -22
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -22
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, domain):
         message = "Zone '%s' has no SOA record - please fix." % domain
@@ -511,12 +518,12 @@ class ZoneHasNoNSRecord(ZoneError):
     """
     Zone has No NS records.
 
-    JSONRPC Error:      -23
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -23
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "Zone has no apex NS record."
@@ -528,13 +535,13 @@ class RdataParseError(ZoneParseError):
     Somewhere in the rdata processing (probably within dnspython)
     sense could not be made of the data
 
-    JSONRPC Error:      -24
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
-                        'rdata_thing'       - given invalid RDATA 
+    * JSONRPC Error:      -24
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
+        * 'rdata_thing'       - given invalid RDATA
     """
     def __init__(self, domain, rr_data, msg=None):
         rdata_thing = rr_data['rdata']
@@ -549,24 +556,24 @@ class PrivilegeNeeded(ZoneParseError):
     """
     Privilege is needed to set this RR field
 
-    JSONRPC Error:      JSONRPC_INTERNAL_ERROR
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      JSONRPC_INTERNAL_ERROR
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
 
 class AdminPrivilegeNeeded(PrivilegeNeeded):
     """
     Administrative privilege is needed to set this RR field
 
-    JSONRPC Error:      -26
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -26
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data, field_name, msg=None):
         msg = ("Administrator privilege required for '%s'." % field_name)
@@ -579,12 +586,12 @@ class HelpdeskPrivilegeNeeded(PrivilegeNeeded):
     """
     Help desk privilege is needed to set this RR field
 
-    JSONRPC Error:      -27
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -27
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data, field_name, msg=None):
         msg = ("Help desk privilege required for '%s'." % field_name)
@@ -596,8 +603,9 @@ class ZoneNotFound(DMSError):
     """
     For a DMI, can't find the requested zone.
     
-    JSONRPC Error:      -28
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -28
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' not found." % name
@@ -609,8 +617,9 @@ class ZoneNotFoundByZoneId(ZoneNotFound):
     """
     For a DMI, can't find the requested zone.
     
-    JSONRPC Error:      -29
-    JSONRPC data keys:  'zone_id'      - Zone ID
+    * JSONRPC Error:      -29
+    * JSONRPC data keys:
+        * 'zone_id'      - Zone ID
     """
     def __init__(self, zone_id):
         message = "Zone ID '%s' not found." % zone_id
@@ -622,10 +631,11 @@ class ZiNotFound(ZoneNotFound):
     """
     For a DMI, can't find the requested zi.
     
-    JSONRPC Error:      -30
-    JSONRPC data keys:  'name'      - domain name
-    JSONRPC data keys:  'zi_id'     - Zone Instance ID
-                                        (can be None/Null)
+    * JSONRPC Error:      -30
+    * JSONRPC data keys:
+        * 'name'  - domain name
+    * JSONRPC data keys:
+        * 'zi_id' - Zone Instance ID (can be None/Null)
     """
     def __init__(self, name, zi_id):
         message = "Zi for '%s', zone '%s' not found." % (zi_id, name)
@@ -638,8 +648,9 @@ class ZoneExists(DMSError):
     """
     For a DMI, can't create the requested zone as it already exists.
     
-    JSONRPC Error:      -31
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -31
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, domain):
         message = "Zone '%s' already exists, can't create it." % domain
@@ -651,8 +662,9 @@ class NoZonesFound(DMSError):
     """
     For a DMI, can't find the requested zones.
     
-    JSONRPC Error:      -32
-    JSONRPC data keys:  'name_pattern'  - wildcard name pattern
+    * JSONRPC Error:      -32
+    * JSONRPC data keys:
+        * 'name_pattern'  - wildcard name pattern
     """
     def __init__(self, name_pattern):
         if name_pattern:
@@ -669,10 +681,11 @@ class ZoneSmFailure(DMSError):
     Zone SM Failure - synchronous execution of the Zone SM
     was not successful.
 
-    JSONRPC Error: -80
-    JSONRPC data keys:  'name'          - domain name
-    JSONRPC data keys:  'event_message' - Event Message
-    JSONRPC data keys:  'event_results' - Event results object
+    * JSONRPC Error: -80
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'event_message' - Event Message
+        * 'event_results' - Event results object
     """
     def __init__(self, name, event_message, event_results):
         if event_message:
@@ -690,10 +703,11 @@ class CancelEditLockFailure(ZoneSmFailure):
     """
     For a DMI, can't clear edit_lock for zone.
     
-    JSONRPC Error:      -33
-    JSONRPC data keys:  'name'          - domain name
-    JSONRPC data keys:  'event_message' - Cancel Event Message
-    JSONRPC data keys:  'event_results' - Event results object
+    * JSONRPC Error:      -33
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'event_message' - Cancel Event Message
+        * 'event_results' - Event results object
     """
     def __init__(self, name, event_message, event_results):
         super().__init__(name, event_message, event_results)
@@ -703,10 +717,11 @@ class EditLockFailure(ZoneSmFailure):
     """
     For a DMI, can't obtain an edit_lock for zone.
     
-    JSONRPC Error:      -34
-    JSONRPC data keys:  'name'          - domain name
-    JSONRPC data keys:  'event_message' - Lock Event Message
-    JSONRPC data keys:  'event_results' - Event results object
+    * JSONRPC Error:      -34
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'event_message' - Lock Event Message
+        * 'event_results' - Event results object
     """
     def __init__(self, name, event_message, event_results):
         super().__init__(name, event_message, event_results)
@@ -717,10 +732,11 @@ class TickleEditLockFailure(ZoneSmFailure):
     Can't tickle the edit lock timeout event due to an incorrect
     edit_lock_token
 
-    JSONRPC Error:      -35
-    JSONRPC data keys:  'name'          - domain name
-    JSONRPC data keys:  'event_message' - Timeout Event Message
-    JSONRPC data keys:  'event_results' - Event results object
+    * JSONRPC Error:      -35
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'event_message' - Timeout Event Message
+        * 'event_results' - Event results object
     """
     def __init__(self, name, event_message, event_results):
         super().__init__(name, event_message, event_results)
@@ -730,11 +746,12 @@ class UpdateZoneFailure(ZoneSmFailure):
     """
     Can't update zone as it is locked.
 
-    JSONRPC Error:      -35
-    JSONRPC data keys:  'name'          - domain name
-    JSONRPC data keys:  'event_message' - Timeout Event Message
-    JSONRPC data keys:  'event_results' - Event results object
-    JSONRPC data keys:  'zi_id' -         ID of saved ZI
+    * JSONRPC Error:      -35
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'event_message' - Timeout Event Message
+        * 'event_results' - Event results object
+        * 'zi_id' -         ID of saved ZI
     """
     def __init__(self, name, event_message, event_results, zi_id=None):
         super().__init__(name, event_message, event_results)
@@ -745,8 +762,9 @@ class ZoneExists(DMSError):
     """
     Trying to create a zone that already exists
 
-    JSONRPC Error:      -36
-    JSONRPC data keys:  'name'        - domain name
+    * JSONRPC Error:      -36
+    * JSONRPC data keys:
+        * 'name'        - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' already exists." % name
@@ -758,8 +776,9 @@ class ZoneNotDeleted(DMSError):
     """
     Trying to destroy a zone that is active
 
-    JSONRPC Error:      -37
-    JSONRPC data keys:  'name'        - domain name
+    * JSONRPC Error:      -37
+    * JSONRPC data keys:
+        * 'name'        - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' is not DELETED" % name
@@ -771,8 +790,9 @@ class ZiInUse(DMSError):
     """
     Trying to delete a zi that is currently published.
 
-    JSONRPC Error:      -38
-    JSONRPC data keys:  'name'        - domain name
+    * JSONRPC Error:      -38
+    * JSONRPC data keys:
+        * 'name'        - domain name
     """
     def __init__(self, name, zi_id):
         message = "Zone '%s', zi '%s' is in use." % (name, zi_id)
@@ -785,8 +805,9 @@ class BinaryFileError(DMSError):
     """
     Trying to load a binary file.
 
-    JSONRPC Error:      -39
-    JSONRPC data keys:  'file_name'   - file name
+    * JSONRPC Error:      -39
+    * JSONRPC data keys:
+        * 'file_name'   - file name
     """
     def __init__(self, file_name):
         message = "%s: appears to be a binary file." % (file_name)
@@ -798,8 +819,9 @@ class ZoneSecTagExists(DMSError):
     """
     Trying to create a security tag that already exists.
 
-    JSONRPC Error:      -40
-    JSONRPC data keys:  'sectag_label'   - security tag label
+    * JSONRPC Error:      -40
+    * JSONRPC data keys:
+        * 'sectag_label'   - security tag label
     """
     def __init__(self, sectag_label):
         message = "Zone security tag '%s' already exists." % (sectag_label)
@@ -811,8 +833,9 @@ class ZoneSecTagDoesNotExist(DMSError):
     """
     Zone security tag does not exist. 
 
-    JSONRPC Error:      -41
-    JSONRPC data keys:  'sectag_label'   - security tag label
+    * JSONRPC Error:      -41
+    * JSONRPC data keys:
+        * 'sectag_label'   - security tag label
     """
     def __init__(self, sectag_label):
         message = "Zone security tag '%s' does not exist." % (sectag_label)
@@ -824,8 +847,9 @@ class ZoneSecTagConfigError(ZoneSecTagDoesNotExist):
     """
     Zone security tag for DMS server does not exist. 
 
-    JSONRPC Error:      -42
-    JSONRPC data keys:  'sectag_label'   - security tag label
+    * JSONRPC Error:      -42
+    * JSONRPC data keys:
+        * 'sectag_label'   - security tag label
     """
     def __init__(self, sectag_label):
         message = ("Zone security tag '%s' misconfigured - does not exist." 
@@ -838,8 +862,9 @@ class ZoneSecTagStillUsed(DMSError):
     """
     Zone security tag is still in use 
 
-    JSONRPC Error:      -43
-    JSONRPC data keys:  'sectag_label'   - security tag label
+    * JSONRPC Error:      -43
+    * JSONRPC data keys:
+        * 'sectag_label'   - security tag label
     """
     def __init__(self, sectag_label):
         message = ("Zone security tag '%s' is still in use." 
@@ -852,8 +877,9 @@ class NoZoneSecTagsFound(DMSError):
     """
     No zone security tags found for this domain. 
 
-    JSONRPC Error:      -44
-    JSONRPC data keys:  'name'   - domain name
+    * JSONRPC Error:      -44
+    * JSONRPC data keys:
+        * 'name'   - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' - no security tags found." % name
@@ -865,7 +891,7 @@ class NoSecTagsExist(DMSError):
     """
     No zone security tags found for this domain. 
 
-    JSONRPC Error:      -45
+    * JSONRPC Error:      -45
     """
     def __init__(self):
         message = "No security tags exist. This is REALLY BAD."
@@ -876,8 +902,9 @@ class SecTagPermissionDenied(DMSError):
     """
     Operations on security tags can only be done with Admin privilege
 
-    JSONRPC Error:      -46
-    JSONRPC data keys:  'sectag_label'   - security tag label
+    * JSONRPC Error:      -46
+    * JSONRPC data keys:
+        * 'sectag_label'   - security tag label
     """
     def __init__(self, sectag_label):
         message = "Security tag '%s' - Permission denied." % sectag_label
@@ -889,8 +916,9 @@ class ZoneNameUndefined(DMSError):
     """
     Name of the Zone can not be determined.
 
-    JSONRPC Error:      -47
-    JSONRPC data keys:  'file_name'   - file name being loaded.
+    * JSONRPC Error:      -47
+    * JSONRPC data keys:
+        * 'file_name'   - file name being loaded.
     """
     def __init__(self, file_name):
         message = "%s: - zone name cannot be determined." % file_name
@@ -902,10 +930,11 @@ class ZiParseError(DMSError):
     """
     Zi related SOA/TTL data error.
     
-    JSONRPC Error:      JSONRPC_INTERNAL_ERROR
-    JSONRPC data keys:  'name'      - domain name
-                        'zi_field'  - ZI field where error found
-                        'value'     - value in error
+    * JSONRPC Error:      JSONRPC_INTERNAL_ERROR
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'zi_field'  - ZI field where error found
+        * 'value'     - value in error
     """
     def __init__(self, name, zi_field, value, exc_msg=None):
         # Some name messing for setting default values from zone_tool
@@ -928,10 +957,11 @@ class HostnameZiParseError(ZiParseError):
     """
     Zi related SOA mname or rname value error.
     
-    JSONRPC Error:      -48
-    JSONRPC data keys:  'name'      - domain name
-                        'zi_field'  - ZI field where error found
-                        'value'     - value in error
+    * JSONRPC Error:      -48
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'zi_field'  - ZI field where error found
+        * 'value'     - value in error
     """
     def __init__(self, name, zi_field, value, exc_msg=None):
         super().__init__(name, zi_field, value, exc_msg)
@@ -942,10 +972,11 @@ class TtlZiParseError(ZiParseError):
     """
     Zi related ttl value error.
     
-    JSONRPC Error:      -49
-    JSONRPC data keys:  'name'      - domain name
-                        'zi_field'  - ZI field where error found
-                        'value'     - value in error
+    * JSONRPC Error:      -49
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'zi_field'  - ZI field where error found
+        * 'value'     - value in error
     """
     def __init__(self, name, zi_field, value, exc_msg=None):
         super().__init__(name, zi_field, value, exc_msg)
@@ -955,12 +986,12 @@ class IncludeNotSupported(ZoneParseError):
     """
     Our zone parser does not support the $INCLUDE statement
     
-    JSONRPC Error:      -50
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -50
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "$INCLUDE is not supported by the Net24 DMS zone file parser."
@@ -975,12 +1006,12 @@ class HostnameParseError(DirectiveParseError):
     """
     Hostname parse error while parsing zone file.
     
-    JSONRPC Error:      -51
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -51
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data, value, info=None):
         directive = rr_data['directive']
@@ -996,12 +1027,12 @@ class TtlParseError(DirectiveParseError):
     """
     Hostname parse error while parsing zone file.
     
-    JSONRPC Error:      -52
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -52
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data, value, info=None):
         directive = rr_data['directive']
@@ -1017,12 +1048,12 @@ class TtlInWrongPlace(DirectiveParseError):
     """
     $TTL not at top of zone file.
     
-    JSONRPC Error:      -53
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -53
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data, file_name=None):
         msg = "$TTL can only be at the top of a zone."
@@ -1035,12 +1066,12 @@ class GenerateNotSupported(ZoneParseError):
     """
     Our zone parser does not support the $GENERATE statement
     
-    JSONRPC Error:      -54
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -54
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "$GENERATE is not supported by the Net24 DMS zone file parser."
@@ -1052,8 +1083,9 @@ class BadInitialZoneName(DMSError):
     """
     Name of the Zone can not be determined.
 
-    JSONRPC Error:      -55
-    JSONRPC data keys:  'file_name'   - file name being loaded.
+    * JSONRPC Error:      -55
+    * JSONRPC data keys:
+        * 'file_name'   - file name being loaded.
     """
     def __init__(self, file_name, value, exc_msg=None):
         if not exc_msg:
@@ -1070,7 +1102,7 @@ class ConfigBatchHoldFailed(DMSError):
     """
     Configuration SM Failed to enter CONFIG_HOLD for batch zone creation
 
-    JSONRPC Error:      -56
+    * JSONRPC Error:      -56
     """
     def __init__(self):
         message = "MasterSM failed to enter CONFIG_HOLD for batch zone creation"
@@ -1081,8 +1113,9 @@ class ZoneMultipleResults(DMSError):
     """
     For a DMI, search for one requested zone found multiple entities
     
-    JSONRPC Error:      -57
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -57
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' multiple results found." % name
@@ -1094,8 +1127,9 @@ class SgMultipleResults(DMSError):
     """
     For a DMI, search for one requested SG found multiple entities
     
-    JSONRPC Error:      -58
-    JSONRPC data keys:  'sg_name'      - SG name
+    * JSONRPC Error:      -58
+    * JSONRPC data keys:
+        * 'sg_name'      - SG name
     """
     def __init__(self, sg_name):
         message = "SG '%s' - multiple results found." % sg_name
@@ -1107,8 +1141,9 @@ class NoSgFound(DMSError):
     """
     For a DMI, requested SG not found
     
-    JSONRPC Error:      -59
-    JSONRPC data keys:  'sg_name'      - SG name
+    * JSONRPC Error:      -59
+    * JSONRPC data keys:
+        * 'sg_name'      - SG name
     """
     def __init__(self, sg_name):
         message = "SG '%s' - not found." % sg_name
@@ -1120,8 +1155,9 @@ class ZoneNotDnssecEnabled(DMSError):
     """
     Zone is not DNSSEC enabled.
     
-    JSONRPC Error:      -60
-    JSONRPC data keys:  'name'          - domain name
+    * JSONRPC Error:      -60
+    * JSONRPC data keys:
+        * 'name'          - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' - not DNSSEC enabled." % name
@@ -1136,8 +1172,9 @@ class ZoneCfgItemNotFound(ZoneCfgItem):
     """
     An item with the given key name can not be found in the zone_cfg table
 
-    JSONRPC Error:      -61
-    JSONRPC data keys:  'key'      - item key name
+    * JSONRPC Error:      -61
+    * JSONRPC data keys:
+        * 'key'      - item key name
     """
     def __init__(self, key):
         message = "ZoneCfg Item '%s' - not found." % key
@@ -1149,10 +1186,11 @@ class ZoneBeingCreated(DMSError):
     """
     A zone in the creation process can not be deleted or undeleted
 
-    JSONRPC Error:      -62
-    JSONRPC data keys:  'name'          - domain name
-    JSONRPC data keys:  'event_message' - event message
-    JSONRPC data keys:  'event_results' - event results object
+    * JSONRPC Error:      -62
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'event_message' - event message
+        * 'event_results' - event results object
     """
     def __init__(self, name, event_message, event_results):
         super().__init__(name, event_message, event_results)
@@ -1162,8 +1200,9 @@ class SgNameRequired(DMSError):
     """
     SG Name is required for this configuration parameter
     
-    JSONRPC Error:      -63
-    JSONRPC data keys:  'config_key'      - config parameter key
+    * JSONRPC Error:      -63
+    * JSONRPC data keys:
+        * 'config_key'      - config parameter key
     """
     def __init__(self, config_key):
         message = "Config_key '%s' - requires sg_name" % config_key
@@ -1175,8 +1214,9 @@ class ReferenceExists(DMSError):
     """
     Trying to create a reference that already exists.
 
-    JSONRPC Error:      -64
-    JSONRPC data keys:  'reference'   - reference code
+    * JSONRPC Error:      -64
+    * JSONRPC data keys:
+        * 'reference'   - reference code
     """
     def __init__(self, reference):
         message = "Reference '%s' already exists." % (reference)
@@ -1188,8 +1228,9 @@ class ReferenceDoesNotExist(DMSError):
     """
     Reference does not exist. 
 
-    JSONRPC Error:      -65
-    JSONRPC data keys:  'reference'   - reference code
+    * JSONRPC Error:      -65
+    * JSONRPC data keys:
+        * 'reference'   - reference code
     """
     def __init__(self, reference):
         message = "Reference '%s' does not exist." % (reference)
@@ -1201,8 +1242,9 @@ class ReferenceStillUsed(DMSError):
     """
     Reference is still in use 
 
-    JSONRPC Error:      -66
-    JSONRPC data keys:  'reference'   - reference code
+    * JSONRPC Error:      -66
+    * JSONRPC data keys:
+        * 'reference'   - reference code
     """
     def __init__(self, reference):
         message = ("Reference '%s' is still in use." 
@@ -1215,8 +1257,9 @@ class NoReferenceFound(DMSError):
     """
     No Reference found.
 
-    JSONRPC Error:      -67
-    JSONRPC data keys:  'reference'   - reference code
+    * JSONRPC Error:      -67
+    * JSONRPC data keys:
+        * 'reference'   - reference code
     """
     def __init__(self, reference):
         message = "Reference '%s' - not found." % reference
@@ -1228,8 +1271,9 @@ class MultipleReferencesFound(DMSError):
     """
     Multiple references were found 
 
-    JSONRPC Error:      -68
-    JSONRPC data keys:  'reference'   - reference code
+    * JSONRPC Error:      -68
+    * JSONRPC data keys:
+        * 'reference'   - reference code
     """
     def __init__(self, reference):
         message = "Reference '%s' - multiple references found!" % reference
@@ -1241,10 +1285,11 @@ class ActiveZoneExists(ZoneSmFailure):
     """
     Another zone instance is active - this one cannot be activated.
 
-    JSONRPC Error:      -69
-    JSONRPC data keys:  'name'          - domain name
-    JSONRPC data keys:  'event_message' - event message
-    JSONRPC data keys:  'event_results' - event results object
+    * JSONRPC Error:      -69
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'event_message' - event message
+        * 'event_results' - event results object
     """
     def __init__(self, name, event_message, event_results):
         super().__init__(name, event_message, event_results)
@@ -1254,10 +1299,11 @@ class ZoneFilesStillExist(ZoneSmFailure):
     """
     Can't destroy/nuke a zone as its zone files still exist
 
-    JSONRPC Error:      -70
-    JSONRPC data keys:  'name'          - domain name
-    JSONRPC data keys:  'event_message' - Event Message
-    JSONRPC data keys:  'event_results' - Event results object
+    * JSONRPC Error:      -70
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'event_message' - Event Message
+        * 'event_results' - Event results object
     """
     def __init__(self, name, event_message, event_results):
         super().__init__(name, event_message, event_results)
@@ -1269,9 +1315,10 @@ class ZoneCfgItemValueError(ZoneCfgItem):
 
     This can happen for string -> boolean conversions
 
-    JSONRPC Error:      -71
-    JSONRPC data keys:  'key'      - item key name
-    JSONRPC data keys:  'value'    - item value
+    * JSONRPC Error:      -71
+    * JSONRPC data keys:
+        * 'key'      - item key name
+        * 'value'    - item value
     """
     def __init__(self, key, value):
         message = ("ZoneCfg Item '%s' - value '%s' cannot be interpolated"
@@ -1285,8 +1332,9 @@ class SgExists(DMSError):
     """
     For a DMI, SG already exists
     
-    JSONRPC Error:      -72
-    JSONRPC data keys:  'sg_name'      - SG name
+    * JSONRPC Error:      -72
+    * JSONRPC data keys:
+        * 'sg_name'      - SG name
     """
     def __init__(self, sg_name):
         message = "SG '%s' - already exists" % sg_name
@@ -1304,8 +1352,9 @@ class SgStillHasZones(SgStillUsed):
     """
     For a DMI, attempted deletion, SG still has zones
     
-    JSONRPC Error:      -73
-    JSONRPC data keys:  'sg_name'      - SG name
+    * JSONRPC Error:      -73
+    * JSONRPC data keys:
+        * 'sg_name'      - SG name
     """
     def __init__(self, sg_name):
         message = "SG '%s' - is still in use, has zones" % sg_name
@@ -1322,8 +1371,9 @@ class ServerExists(ServerError):
     """
     Server already exists
     
-    JSONRPC Error:      -74
-    JSONRPC data keys:  'server_name'      - server name
+    * JSONRPC Error:      -74
+    * JSONRPC data keys:
+        * 'server_name'      - server name
     """
     def __init__(self, server_name):
         message = "Server '%s' - already exists" % server_name
@@ -1335,8 +1385,9 @@ class NoServerFound(ServerError):
     """
     Server does not exist
     
-    JSONRPC Error:      -75
-    JSONRPC data keys:  'server_name'      - server name
+    * JSONRPC Error:      -75
+    * JSONRPC data keys:
+        * 'server_name'      - server name
     """
     def __init__(self, server_name):
         message = "Server '%s' - does not exist" % server_name
@@ -1348,8 +1399,9 @@ class NoServerFoundByAddress(ServerError):
     """
     Server does not exist
     
-    JSONRPC Error:      -76
-    JSONRPC data keys:  'address'      - server address
+    * JSONRPC Error:      -76
+    * JSONRPC data keys:
+        * 'address'      - server address
     """
     def __init__(self, address):
         message = "Server '%s' - not found" % address
@@ -1361,8 +1413,9 @@ class ServerAddressExists(ServerError):
     """
     Server with the given address exists
     
-    JSONRPC Error:      -77
-    JSONRPC data keys:  'address'      - server address
+    * JSONRPC Error:      -77
+    * JSONRPC data keys:
+        * 'address'      - server address
     """
     def __init__(self, address):
         message = ("Server '%s' - with this address already exists"
@@ -1375,8 +1428,9 @@ class ServerNotDisabled(ServerError):
     """
     Server must be disabled for operation to proeceed.
     
-    JSONRPC Error:      -78
-    JSONRPC data keys:  'server_name'      - server name
+    * JSONRPC Error:      -78
+    * JSONRPC data keys:
+        * 'server_name'      - server name
     """
     def __init__(self, server_name):
         message = ("Server '%s' - server must be disabled for operation"
@@ -1390,10 +1444,11 @@ class ServerSmFailure(DMSError):
     Server SM Failure - synchronous execution of the Server SM
     was not successful.
 
-    JSONRPC Error: -79
-    JSONRPC data keys:  'server_name'    - server name
-    JSONRPC data keys:  'event_message' - Event Message
-    JSONRPC data keys:  'event_results' - Event results object
+    * JSONRPC Error: -79
+    * JSONRPC data keys:
+        * 'server_name'    - server name
+        * 'event_message' - Event Message
+        * 'event_results' - Event results object
     """
     def __init__(self, server_name, event_message, event_results):
         if event_message:
@@ -1411,8 +1466,9 @@ class RrQueryDomainError(DMSError):
     """
     For query an RR, domain cannot start with '.'
     
-    JSONRPC Error:      -81
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -81
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = "Domain '%s' - name cannot start with '.'" % name
@@ -1426,10 +1482,10 @@ class ReferenceFormatError(DMSError):
     and must start with a letter or numeral.  It also must be less than
     1024 characters long.
 
-    JSONRPC Error:      -82
-    JSONRPC data keys:  'reference' - reference name
-                        'error'     - error message
-
+    * JSONRPC Error:      -82
+    * JSONRPC data keys:
+        * 'reference' - reference name
+        * 'error'     - error message
     """
     def __init__(self, reference, error):
         message = "Reference '%s' - format error - %s" % (reference, error)
@@ -1442,12 +1498,12 @@ class InvalidUpdateOperation(ZoneParseError):
     """
     RR type is one we don't handle.
     
-    JSONRPC Error:      -83
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -83
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "invalid update operation '%s'." % rr_data['update_op']
@@ -1459,8 +1515,9 @@ class IncrementalUpdateNotInTrialRun(DMSError):
     Error in Incremental Update mechanism.  Update mechanism not in
     Trial Run Mode.
     
-    JSONRPC Error:      JSON_RPC_INTERNAL_ERROR
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      JSON_RPC_INTERNAL_ERROR
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' - ZiUpdate should be in trial mode." % name
@@ -1471,12 +1528,12 @@ class UpdateTypeNotSupported(ZoneParseError):
     """
     Our zone parser does not support the $UPDATE_TYPE statement in edit mode
     
-    JSONRPC Error:      -84
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -84
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "$UPDATE_TYPE is not supported edit mode."
@@ -1487,12 +1544,12 @@ class RropNotSupported(ZoneParseError):
     """
     Our zone parser does not support the RROP: RR flag in edit mode
     
-    JSONRPC Error:      -85
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -85
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "RROP: RR flag is not supported edit mode."
@@ -1503,10 +1560,10 @@ class UpdateTypeAlreadyQueued(DMSError):
     """
     An update of the given type is already queued for the zone
 
-    JSONRPC Error:      -86
-    JSONRPC data keys:  'name'          - domain name
-                        'update_type'   - update type
-
+    * JSONRPC Error:      -86
+    * JSONRPC data keys:
+        * 'name'          - domain name
+        * 'update_type'   - update type
     """
     def __init__(self, name, update_type):
         message = ("Zone '%s' - Update type of '%s' already queued" 
@@ -1520,8 +1577,9 @@ class UpdateTypeRequired(DMSError):
     """
     An update_type is required parameter for an incremental update.
 
-    JSONRPC Error:      -87
-    JSONRPC data keys:  'name'          - domain name
+    * JSONRPC Error:      -87
+    * JSONRPC data keys:
+        * 'name'          - domain name
 
     """
     def __init__(self, name):
@@ -1535,8 +1593,9 @@ class ZoneDisabled(DMSError):
     """
     Zone disabled. Can't do operation.
     
-    JSONRPC Error:      -88
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -88
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' disabled." % name
@@ -1548,8 +1607,9 @@ class InvalidDomainName(DMSError):
     """
     Domain name is invalid.
     
-    JSONRPC Error:      -89
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -89
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = "Invalid domain name '%s'" % name
@@ -1562,8 +1622,9 @@ class IncrementalUpdatesDisabled(DMSError):
     """
     Incremental Updates are disabled for this zone.
     
-    JSONRPC Error:      -90
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -90
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' - incremental updates are disabled" % name
@@ -1575,8 +1636,9 @@ class ReverseNamesNotAccepted(InvalidDomainName):
     """
     Reverse domain names are generated from CIDR network names.
     
-    JSONRPC Error:      -91
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -91
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = ("Zone '%s' - reverse names not accepted, please use "
@@ -1590,8 +1652,9 @@ class ZoneHasNoZi(DMSError):
     """
     For a Zone, no ZI has no candidate or published ZI
     
-    JSONRPC Error: - 92
-    JSONRPC data keys: 'name'  - domain name
+    * JSONRPC Error: - 92
+    * JSONRPC data keys:
+        * 'name'  - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' - has no candidate or published ZI." % name
@@ -1603,8 +1666,9 @@ class ZoneNotDisabled(DMSError):
     """
     Zone disabled. Can't do operation.
     
-    JSONRPC Error:      -94
-    JSONRPC data keys:  'name'      - domain name
+    * JSONRPC Error:      -94
+    * JSONRPC data keys:
+        * 'name'      - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' not disabled." % name
@@ -1616,8 +1680,9 @@ class SgStillHasServers(SgStillUsed):
     """
     For a DMI, attempted deletion, SG still has servers
     
-    JSONRPC Error:      -95
-    JSONRPC data keys:  'sg_name'      - SG name
+    * JSONRPC Error:      -95
+    * JSONRPC data keys:
+        * 'sg_name'      - SG name
     """
     def __init__(self, sg_name):
         message = "SG '%s' - is still in use, has servers" % sg_name
@@ -1629,8 +1694,9 @@ class InvalidHmacType(DMSError):
     """
     Invalid Hmac type given
 
-    JSONRPC Error:      -96
-    JSONRPC data keys: 'hmac_type'      - Given hmac type
+    * JSONRPC Error:      -96
+    * JSONRPC data keys:
+        * 'hmac_type'      - Given hmac type
     """
     def __init__(self, hmac_type):
         message = "HMAC '%s' - is invalid" % hmac_type
@@ -1642,12 +1708,12 @@ class RRNoTypeGiven(ZoneParseError):
     """
     RR has no type given.
     
-    JSONRPC Error:      -97
-    JSONRPC data keys:  'name'      - domain name
-                        'rr_data'   - RR data from zi, Not RDATA!
-                        'rr_groups_index'   - index into rr_groups array.
-                        'rrs_index'         - index of RR in rrs of
-                                                rr_groups
+    * JSONRPC Error:      -97
+    * JSONRPC data keys:
+        * 'name'      - domain name
+        * 'rr_data'   - RR data from zi, Not RDATA!
+        * 'rr_groups_index'   - index into rr_groups array.
+        * 'rrs_index'         - index of RR in rrs of rr_groups
     """
     def __init__(self, domain, rr_data):
         msg = "RR has no type given - invalid."
@@ -1663,8 +1729,9 @@ class OnlyOneLoneWildcardValid(ZoneSearchPatternError):
     """
     Only one lone '*' or '%' for zone search pattern is valid
 
-    JSONRPC Error:      -98
-    JSONRPC data keys:  'search_pattern'    - Zone search pattern
+    * JSONRPC Error:      -98
+    * JSONRPC data keys:
+        * 'search_pattern'    - Zone search pattern
     """
     def __init__(self, search_pattern):
         msg = "Only one lone '*' or '%' for zone search pattern is valid"
@@ -1676,8 +1743,9 @@ class ReferenceMustBeGiven(ZoneSearchPatternError):
     """
     When giving a zone search pattern, a reference must be given
 
-    JSONRPC Error:      -99
-    JSONRPC data keys:  'search_pattern'    - Zone search pattern
+    * JSONRPC Error:      -99
+    * JSONRPC data keys:
+        * 'search_pattern'    - Zone search pattern
     """
     def __init__(self, search_pattern):
         msg = "When giving a zone search pattern, a reference must be given"
@@ -1691,8 +1759,9 @@ class ZiIdSyntaxError(DMSError):
     """
     ZI id given has invalid syntax.
 
-    JSONRPC Error:      -100
-    JSONRPC data keys:  'zi_id'     - given zi_id string
+    * JSONRPC Error:      -100
+    * JSONRPC data keys:
+        * 'zi_id'     - given zi_id string
     """
     def __init__(self, zi_id, exc_msg=None):
         if exc_msg:
@@ -1708,8 +1777,9 @@ class ZiIdAdjStringSyntaxError(ZiIdSyntaxError):
     """
     ZI id adjustment sub string has invalid syntax.
 
-    JSONRPC Error:      -101
-    JSONRPC data keys:  'zi_id'     - given zi_id string
+    * JSONRPC Error:      -101
+    * JSONRPC data keys:
+        * 'zi_id'     - given zi_id string
     """
     def __init__(self, zi_id):
         msg = "invalid syntax, use ---/+++/-n/+n as adjustment"
@@ -1720,8 +1790,9 @@ class ZiIdTimeUnitSyntaxError(ZiIdSyntaxError):
     """
     ZI id sub string has an invalid time unit specifier.
 
-    JSONRPC Error:      -102
-    JSONRPC data keys:  'zi_id'     - given zi_id string
+    * JSONRPC Error:      -102
+    * JSONRPC data keys:
+        * 'zi_id'     - given zi_id string
     """
     def __init__(self, zi_id):
         msg = "invalid time specifier, use s,m,h,d,w,M, or Y"
@@ -1732,8 +1803,9 @@ class ZiIdTimeAmountSyntaxError(ZiIdSyntaxError):
     """
     ZI id sub string has invalid time amount.
 
-    JSONRPC Error:      -103
-    JSONRPC data keys:  'zi_id'     - given zi_id string
+    * JSONRPC Error:      -103
+    * JSONRPC data keys:
+        * 'zi_id'     - given zi_id string
     """
     def __init__(self, zi_id):
         msg = "invalid time amount, numbers must be integer or decimal and within expected bounds"
@@ -1744,8 +1816,9 @@ class ZiIdHhMmSyntaxError(ZiIdSyntaxError):
     """
     ZI id sub string has an invalid HH:MM time.
 
-    JSONRPC Error:      -104
-    JSONRPC data keys:  'zi_id'     - given zi_id string
+    * JSONRPC Error:      -104
+    * JSONRPC data keys:
+        * 'zi_id'     - given zi_id string
     """
     def __init__(self, zi_id):
         msg = "invalid HH:MM time string"
@@ -1756,8 +1829,9 @@ class ZiIdDdSlashMmSyntaxError(ZiIdSyntaxError):
     """
     ZI id sub string has an invalid DD/MM date.
 
-    JSONRPC Error:      -105
-    JSONRPC data keys:  'zi_id'     - given zi_id string
+    * JSONRPC Error:      -105
+    * JSONRPC data keys:
+        * 'zi_id'     - given zi_id string
     """
     def __init__(self, zi_id):
         msg = "invalid DD/MM date string"
@@ -1768,8 +1842,9 @@ class ZiIdDdMmYyyySyntaxError(ZiIdSyntaxError):
     """
     ZI id sub string has an invalid DD/MM/YYYY date.
 
-    JSONRPC Error:      -106
-    JSONRPC data keys:  'zi_id'     - given zi_id string
+    * JSONRPC Error:      -106
+    * JSONRPC data keys:
+        * 'zi_id'     - given zi_id string
     """
     def __init__(self, zi_id):
         msg = "invalid DD/MM/YYYY date string"
@@ -1780,8 +1855,9 @@ class ZiIdIsoDateSyntaxError(ZiIdSyntaxError):
     """
     ZI id sub string has an invalid YYYY-MM-DD date.
 
-    JSONRPC Error:      -107
-    JSONRPC data keys:  'zi_id'     - given zi_id string
+    * JSONRPC Error:      -107
+    * JSONRPC data keys:
+        * 'zi_id'     - given zi_id string
     """
     def __init__(self, zi_id):
         msg = "invalid YYYY-MM-DD date string"
@@ -1797,8 +1873,9 @@ class NamedStillRunning(RestoreNamedDbError):
     """
     Named is still running
 
-    JSONRPCError:       -108
-    JSONRPC data keys:  'rndc_status_exit_code' - exit code from 'rndc status'
+    * JSONRPC Error:       -108
+    * JSONRPC data keys:
+        * 'rndc_status_exit_code' - exit code from 'rndc status'
     """
     def __init__(self, rndc_status_exit_code):
         msg = ("named is still running - rndc status exit code %s" 
@@ -1811,8 +1888,9 @@ class DmsdmdStillRunning(RestoreNamedDbError):
     """
     Dmsdmd is still running
     
-    JSONRPCError:       -109
-    JSONRPC data keys:  dmsdmd_pid - dmsdmd PID
+    * JSONRPC Error:       -109
+    * JSONRPC data keys:
+        * dmsdmd_pid - dmsdmd PID
     """
     def __init__(self, dmsdmd_pid):
         msg = ("dmsdmd is still running - PID %s" 
@@ -1825,9 +1903,10 @@ class PidFileValueError(RestoreNamedDbError):
     """
     PID file format error
     
-    JSONRPCError:       -110
-    JSONRPC data keys:  pid_file - PID file name
-                        exception - Value Error Exception
+    * JSONRPC Error:       -110
+    * JSONRPC data keys:
+        * 'pid_file' - PID file name
+        * 'exception' - Value Error Exception
     """
     def __init__(self, pid_file, exception):
         msg = ("PID file %s - format error - %s" 
@@ -1841,9 +1920,10 @@ class PidFileAccessError(RestoreNamedDbError):
     """
     PID file format error
     
-    JSONRPCError:       -111
-    JSONRPC data keys:  pid_file - PID file name
-                        exception - Value Error Exception
+    * JSONRPC Error:       -111
+    * JSONRPC data keys:
+        * 'pid_file' - PID file name
+        * 'exception' - Value Error Exception
     """
     def __init__(self, pid_file, os_error):
         msg = ("PID file %s - %s" 
@@ -1857,9 +1937,10 @@ class ZoneFileWriteError(RestoreNamedDbError):
     """
     Can't write zone file
 
-    JSONRPCError:       -112
-    JSONRPC data keys:  'name'  - domain name
-                        'internal_error' - error that occured
+    * JSONRPC Error:       -112
+    * JSONRPC data keys:
+        * 'name'  - domain name
+        * 'internal_error' - error that occured
     """
     def __init__(self, name, internal_error):
         msg = ("Zone '%s' internal write error - %s" 
@@ -1873,9 +1954,10 @@ class NamedConfWriteError(RestoreNamedDbError):
     """
     Can't write named.conf sections
 
-    JSONRPCError:       -113
-    JSONRPC data keys:  'name'  - domain name
-                        'internal_error' - error that occured
+    * JSONRPC Error:       -113
+    * JSONRPC data keys:
+        * 'name'  - domain name
+        * 'internal_error' - error that occured
     """
     def __init__(self, internal_error):
         msg = ("Named.conf includes internal write error - %s" 
@@ -1888,9 +1970,10 @@ class ReplicaSgExists(DMSError):
     """
     A master SG already exists
     
-    JSONRPC Error:      -114
-    JSONRPC data keys:  'sg_name'          - SG name
-                        'replica_sg_name'   - master SG name
+    * JSONRPC Error:      -114
+    * JSONRPC data keys:
+        * 'sg_name'          - SG name
+        * 'replica_sg_name'   - master SG name
     """
     def __init__(self, sg_name, replica_sg_name):
         message = ("SG '%s' - master SG '%s' already exists" 
@@ -1905,7 +1988,7 @@ class SOASerialOcclusionError(SOASerialError):
     SOA Serial Occlusion Error.  SOA serial as recorded in database is
     maximum of current SOA serial value in master DNS server.
 
-    JSONRPC Error: -115
+    * JSONRPC Error: -115
     """
     def __init__(self, domain):
         message = ("Zone '%s' - SOA Serial Occlusion Error - SOA serial as recorded in database is maximum of current SOA serial value in master DNS server." % domain)
@@ -1918,7 +2001,7 @@ class SOASerialPublishedError(SOASerialError):
     SOA Serial Published Error.  SOA serial number update is the same as
     published value in database.
 
-    JSONRPC Error: -116
+    * JSONRPC Error: -116
     """
     def __init__(self, domain):
         message = ("Zone '%s' - SOA Serial Published Error - SOA serial number update is the same as published value in database." % domain)
@@ -1930,8 +2013,9 @@ class ZoneNotPublished(DMSError):
     """
     Zone Not Published.  Can't poke DNS server.
 
-    JSONRPC Error: -117
-    JSONRPC data keys: 'name'  - domain name
+    * JSONRPC Error: -117
+    * JSONRPC data keys:
+        * 'name'  - domain name
     """
     def __init__(self, domain):
         message = ("Zone '%s' - Not Published - can't poke DNS server." 
@@ -1944,8 +2028,9 @@ class SOASerialCandidateIgnored(SOASerialError):
     """
     Proposed SOA Serial Candidate ignored.
 
-    JSONRPC Error: -118
-    JSONRPC data keys: 'name'  - domain name
+    * JSONRPC Error: -118
+    * JSONRPC data keys:
+        * 'name'  - domain name
     """
     def __init__(self, domain):
         message = ("Zone '%s' - Proposed candidate SOA serial number ignored." % domain)
@@ -1957,8 +2042,9 @@ class SOASerialRangeError(SOASerialError):
     """
     SOA Serial Number is out of range must be > 0 and <= 2**32 -1.
 
-    JSONRPC Error: -120
-    JSONRPC data keys: 'name'  - domain name
+    * JSONRPC Error: -120
+    * JSONRPC data keys:
+        * 'name'  - domain name
     """
     def __init__(self, domain):
         message = ("Zone '%s' - SOA serial number is out of range, must be > 0, and <= 2**32 -1." % domain)
@@ -1970,8 +2056,8 @@ class SOASerialTypeError(SOASerialError):
     """
     SOA Serial Number must be an integer.
 
-    JSONRPC Error: -121
-    JSONRPC data keys: 'name'  - domain name
+    * JSONRPC Error: -121
+    * JSONRPC data keys: 'name'  - domain name
     """
     def __init__(self, domain):
         message = ("Zone '%s' - SOA serial must be an integer." % domain)
@@ -1983,8 +2069,9 @@ class DBReadOnlyError(DMSError):
     """
     Database is in Read Only mode.
 
-    JSONRPC Error: - 122
-    JSONRPC data keys: 'exc_msg'  - original exception message
+    * JSONRPC Error: - 122
+    * JSONRPC data keys:
+        * 'exc_msg'  - original exception message
     """
     def __init__(self, exc_msg):
         message = ("DB in Read Only mode - %s" % exc_msg[:100])
@@ -1996,8 +2083,9 @@ class ZoneNoAltSgForSwap(DMSError):
     """
     Zone idoes not have an alternate SG for swapping
     
-    JSONRPC Error:      -123
-    JSONRPC data keys:  'name'          - domain name
+    * JSONRPC Error:      -123
+    * JSONRPC data keys:
+        * 'name'          - domain name
     """
     def __init__(self, name):
         message = "Zone '%s' - has no alt_sg to swap to." % name
@@ -2016,10 +2104,10 @@ class LoginIdFormatError(LoginIdError):
     and must start with a letter or numeral.  It also must be less than
     512 characters long.
 
-    JSONRPC Error:      -124
-    JSONRPC data keys:  'login_id'  - login_id
-                        'error'     - error message
-
+    * JSONRPC Error:      -124
+    * JSONRPC data keys:
+        * 'login_id'  - login_id
+        * 'error'     - error message
     """
     def __init__(self, login_id, error):
         message = "login_id '%s' - format error - %s" % (login_id, error)
@@ -2032,8 +2120,9 @@ class LoginIdInvalidError(LoginIdError):
     """
     A login_id must be given, and be less than 512 characters long.
 
-    JSONRPC Error:      -125
-    JSONRPC data keys:  'error'     - error message
+    * JSONRPC Error:      -125
+    * JSONRPC data keys:
+        * 'error'     - error message
 
     """
     def __init__(self, error):
@@ -2047,12 +2136,13 @@ class ZiTextParseError(DMSError):
     Parse Error.  The zone file text input as zi_text
     must be of a valid format
 
-    JSONRPC Error:      -126
-    JSONRPC data keys:  'parse_error'        - error message
-                        'name'               - domain name
-                        'lineno'             - line number
-                        'col'                - column
-                        'marked_iinput_line' - input line with marked error
+    * JSONRPC Error:      -126
+    * JSONRPC data keys:
+        * 'parse_error'        - error message
+        * 'name'               - domain name
+        * 'lineno'             - line number
+        * 'col'                - column
+        * 'marked_iinput_line' - input line with marked error
 
     """
     def __init__(self, domain, pp_exc):
@@ -2079,8 +2169,9 @@ class ZoneAdminPrivilegeNeeded(DMSError):
     """
     DMI has not been assigned the privilege required to edit this zone.
     
-    JSONRPC Error:      -127
-    JSONRPC data keys:  'name'          - domain name
+    * JSONRPC Error:      -127
+    * JSONRPC data keys:
+        * 'name'          - domain name
     """
     def __init__(self, name):
         message = ("Zone '%s' - DMI does not have privilege to edit this zone"
@@ -2094,7 +2185,7 @@ class NoReplicaSgFound(DMSError):
     """
     For a DMI, Master SG not found
     
-    JSONRPC Error:      -128
+    * JSONRPC Error:      -128
     """
     def __init__(self):
         message = "No Master SG found."
@@ -2105,8 +2196,9 @@ class EventNotFoundById(DMSError):
     """
     For an event_id, an event is not found
     
-    JSONRPC Error:      -129
-    JSONRPC data keys:  'event_id'      - event_id being searched for
+    * JSONRPC Error:      -129
+    * JSONRPC data keys:
+        * 'event_id'      - event_id being searched for
     """
     def __init__(self, event_id):
         message = "Event ID '%s': - no event of this ID exists" % event_id
@@ -2119,8 +2211,9 @@ class CantFailEventById(DMSError):
     For an event_id, can't fail the event because it is processed or already
     failed.
     
-    JSONRPC Error:      -130
-    JSONRPC data keys:  'event_id'      - event_id being failed
+    * JSONRPC Error:      -130
+    * JSONRPC data keys:
+        * 'event_id'      - event_id being failed
     """
     def __init__(self, event_id):
         message = "Event ID '%s': - this event can't be failed." % event_id

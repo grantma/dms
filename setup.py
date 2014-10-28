@@ -22,7 +22,7 @@
 from distutils.core import setup
 
 setup(name='DMS',
-    version='1.0.2',
+    version='1.0.3',
     description='DMS Master System',
     author='Matthew Grant',
     author_email='matt@mattgrant.net.nz',
