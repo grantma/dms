@@ -26,6 +26,8 @@ DESTDIR =
 # This is rough! FIXME!
 
 OSNAME := $(shell uname -s)
+DOCDIR := doc
+DOCTARGETS := html
 ETCDIR := /etc
 DAEMONUSER := dmsdmd
 DAEMONGROUP := dmsdmd
@@ -98,17 +100,18 @@ else
 	PGGROUP=pgsql
 endif
 SHAREDIR = $(DESTDIR)$(PREFIX)/share/dms
+DOCUMENTATIONDIR = $(DESTDIR)$(PREFIX)/share/doc/dms-doc
 BINDIR = $(DESTDIR)$(PREFIX)/bin
 SBINDIR = $(DESTDIR)$(PREFIX)/sbin
 MANDIR = $(DESTDIR)$(PREFIX)/man
 INSTALL = /usr/bin/install
 
 .PHONY: install install-dir install-conf install-python install-bin \
-	install-wsgi clean clean-python build-python
+	install-wsgi clean clean-python build-python doc
 
 all: build-python
 
-install: install-conf install-bin install-wsgi
+install: install-conf install-bin install-wsgi install-doc
 
 install-dir:
 	- $(INSTALL) -d $(BINDIR)
@@ -286,5 +289,13 @@ ifeq ($(OSNAME), Linux)
 	ln -snf $(SHAREDIR)/postgresql/pg_dumpallgz $(SBINDIR)/pg_dumpallgz
 endif
 
+doc:
+	make -C $(DOCDIR) $(DOCTARGETS)
+
+install-doc: doc
+	install -d $(DOCUMENTATIONDIR)/html
+	cp -R $(DOCDIR)/_build/html/* $(DOCUMENTATIONDIR)/html
+
 clean: clean-python
+	make -C $(DOCDIR) clean
 
