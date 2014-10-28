@@ -1,0 +1,2 @@
+# ignore doc *.jpog and *.odf files
+extend-diff-ignore = "(^|/)(\S+\.jpg|\S+\.odg|\S+\.pdf)$"
