@@ -6,7 +6,7 @@ Files: dr_scripts/dms_start_as_replica
 Copyright: 2006-2013 Matthew Grant <matt@mattgrant.net.nz>
            2011-2012 Net24 Ltd <service@net24.co.nz>
            2012-2013 Voyager Internet Ltd <service@net24.co.nz>
-License:
+License: GPL-3+
  GPL version 3 or later.
  .
  Produced with the support of Voyager Internet Ltd, http://www.voyager.co.nz
@@ -21,7 +21,7 @@ License:
 Files: *
 Copyright: 2011-2012 Net24 Ltd <service@net24.co.nz>
            2012-2013 Voyager Internet Ltd <service@net24.co.nz>
-License:
+License: GPL-3+
  GPL version 3 or later.
  .
  Produced with the support of Voyager Internet Ltd, http://www.voyager.co.nz
