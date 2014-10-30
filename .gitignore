@@ -20,6 +20,7 @@ build
 /debian/dms-wsgi/
 /debian/dms/
 /debian/tmp/
+/debian/dms-doc/
 /debian/*.debhelper*
 /debian/*.substvars
 /debian/files
