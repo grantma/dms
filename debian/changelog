@@ -1,4 +1,6 @@
-dms (1.0.3-1) UNRELEASED; urgency=medium
+dms (1.0.3-2~1.gbp9156fe) UNRELEASED; urgency=medium
+
+  ** SNAPSHOT build @9156fe6d904f3cb12be8bc41e9fed6dfcacadd9b **
 
   * Create dms-doc package
   * WIP commit - manual rewrite
@@ -24,8 +26,10 @@ dms (1.0.3-1) UNRELEASED; urgency=medium
   * Update two refs with missing links
   * Include HTML documentation as v1.0.3
   * Create dms-doc package
+  * Update Debian Control, Copyright for License ident
+  * Update git-ignore for dms-doc package
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Tue, 28 Oct 2014 15:47:00 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 31 Oct 2014 07:29:26 +1300
 
 dms (1.0.2-1) unstable; urgency=medium
 
