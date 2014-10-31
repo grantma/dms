@@ -1,26 +1,9 @@
-dms (1.0.3-2~1.gbp9156fe) UNRELEASED; urgency=medium
-
-  ** SNAPSHOT build @9156fe6d904f3cb12be8bc41e9fed6dfcacadd9b **
+dms (1.0.3-2) unstable; urgency=medium
 
   * Create dms-doc package
-  * WIP commit - manual rewrite
-  * WIP - Better Text dump of PDF
   * Update bootstrap to work with Python 3.4
   * Move things into place for using Sphinx
-  * WIP - README.Debian.rst and Master server source
-  * WIP - Working through Operational Procedures
-  * WIP - Started Administration Procedures
-  * WIP - More work on Administration Procs
-  * WIP - Administration Procedures rendering
-  * WIP - system doc + 50% format
-  * WIP - work on documentation
-  * WIP - More editing - Getting through Systems Doc
-  * WIP - More documentation reformat progress.
-  * WIP - Complete System Documentation tidy up
-  * WIP - more progress on doc, into Programming
-  * Change doc strings to RST format for sphinx
-  * WIP - almost finished reformatting API docs.
-  * Finished formating JSON RPC API documentation
+  * Get all documentation and manual into Sphinx
   * Build and install HTML documentation
   * Better version of Makefile for doc installation
   * Update two refs with missing links
@@ -29,7 +12,7 @@ dms (1.0.3-2~1.gbp9156fe) UNRELEASED; urgency=medium
   * Update Debian Control, Copyright for License ident
   * Update git-ignore for dms-doc package
 
- -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 31 Oct 2014 07:29:26 +1300
+ -- Matthew Grant <matt@mattgrant.net.nz>  Fri, 31 Oct 2014 20:47:34 +1300
 
 dms (1.0.2-1) unstable; urgency=medium
 
