@@ -47,3 +47,11 @@ override_dh_auto_clean:
 	rm -rf *.egg-info
 	find . -type f -name '*.pyc' | xargs rm -f 
 	find . -type d -name '__pycache__' | xargs rm -rf 
+
+override_dh_sphinxdoc:
+	        dh_sphinxdoc -X searchtools.js -X translations.js
+		        dh_sphinxdoc /usr/share/doc/dms-doc/html/
+
+%:
+	        dh $@ --with sphinxdoc
+
