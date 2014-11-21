@@ -104,7 +104,7 @@ class DmsDMDProcess(ProcessDaemon):
         except(IOError, OSError) as exc:
             log_error("Testing master DNS server IP address '%s:%s' - %s" 
                     % (test_hostname, settings['master_dns_port'], str(exc)))
-            sys.exit(os.EX_NOHOST)
+            systemd_exit(os.EX_NOHOST, SDEX_CONFIG)
         # If we get here without raising an exception, we can talk to
         # the server address (mostly)
         return
@@ -130,7 +130,7 @@ class DmsDMDProcess(ProcessDaemon):
                 log_error("Could not parse 'this_servers_addresses' to obtain"
                         " list of this servers DNS listening addresses - %s"
                             % str(exc))
-                sys.exit(os.EX_CONFIG)
+                systemd_exit(os.EX_CONFIG, SDEX_CONFIG)
         settings['this_servers_addresses'] = this_servers_addresses
         # Recalculate host information - this will do nothing 
         # if 'ifconfig -a' et al won't work
@@ -142,7 +142,7 @@ class DmsDMDProcess(ProcessDaemon):
             db_session.commit()
         except Exception as exc:
             log_error(str(exc))
-            sys.exit(os.EX_UNAVAILABLE)
+            systemd_exit(os.EX_UNAVAILABLE, SDEX_NOTRUNNING)
         log_info("List of local IPs, 'this_servers_addresses' - %s"
                     % ', '.join(settings['this_servers_addresses']))
         log_info("Master DNS server on this machine, 'master_dns_server' - %s"
@@ -163,7 +163,7 @@ class DmsDMDProcess(ProcessDaemon):
         # Process above error...
         if (error_str):
             log_error("%s" % error_str)
-            sys.exit(os.EX_NOHOST)
+            systemd_exit(os.EX_NOHOST, SDEX_CONFIG)
         update_engine['dyndns'] = dyndns_engine
 
     def do_garbage_collect(self):
@@ -179,7 +179,7 @@ class DmsDMDProcess(ProcessDaemon):
         # Process above error...
         if (error_str):
             log_error("Error obtaining resource usage - %s" % error_str) 
-            sys.exit(os.EX_SOFTWARE)
+            systemd_exit(os.EX_SOFTWARE, SDEX_NOTRUNNING)
         memory_exec_threshold = get_numeric_setting('memory_exec_threshold', float)
         if (rss_mem_usage > memory_exec_threshold):
             log_warning('Memory exec threshold %s MB reached, actual %s MB - execve() to reclaim.'
