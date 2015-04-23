@@ -163,6 +163,7 @@ settings['sg_config_dir'] = settings['var_lib_dir'] + '/dms-sg'
 # These 2 settings are initialized in dms/apps/dmsdmd.py
 settings['master_dns_server'] = None
 settings['master_dns_port'] = 'domain'
+settings['connect_retry_wait'] = 10
 settings['this_servers_addresses'] = []
 
 # server_sm.py

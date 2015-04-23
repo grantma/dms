@@ -96,14 +96,22 @@ class DmsDMDProcess(ProcessDaemon):
         test_hostname = settings['master_dns_server']
         if not test_hostname:
             test_hostname = socket.getfqdn()
-        try:
-            # Transform any hostname to an IP address
-            settings['master_dns_server'] = connect_test_address(
-                                            test_hostname,
-                                            port=settings['master_dns_port'])
-        except(IOError, OSError) as exc:
+        connect_retry_wait = get_numeric_setting('connect_retry_wait', float)
+        exc_msg = ''
+        for t in range(3):
+            try:
+                # Transform any hostname to an IP address
+                settings['master_dns_server'] = connect_test_address(
+                                                test_hostname,
+                                                port=settings['master_dns_port'])
+                break
+            except(IOError, OSError) as exc:
+                exc_msg = str(exc)
+                time.sleep(connect_retry_wait)
+                continue
+        else:
             log_error("Testing master DNS server IP address '%s:%s' - %s" 
-                    % (test_hostname, settings['master_dns_port'], str(exc)))
+                        % (test_hostname, settings['master_dns_port'], exc_msg))
             systemd_exit(os.EX_NOHOST, SDEX_CONFIG)
         # If we get here without raising an exception, we can talk to
         # the server address (mostly)
@@ -152,16 +160,21 @@ class DmsDMDProcess(ProcessDaemon):
         """
         Initialise the update engines used
         """
+        connect_retry_wait = get_numeric_setting('connect_retry_wait', float)
         error_str = ''
-        try:
-            dyndns_engine = DynDNSUpdate(settings['dns_server'],
-                                    settings['dyndns_key_file'],
-                                    settings['dyndns_key_name'])
-        except (DynDNSCantReadKeyError, IOError, OSError) as exc:
-            error_str = ("Can't connect to named for dynamic updates - %s" 
-                            % str(exc))
+        for t in range(3):
+            try:
+                dyndns_engine = DynDNSUpdate(settings['dns_server'],
+                                        settings['dyndns_key_file'],
+                                        settings['dyndns_key_name'])
+                break
+            except (DynDNSCantReadKeyError, IOError, OSError) as exc:
+                error_str = ("Can't connect to named for dynamic updates - %s" 
+                                % str(exc))
+                time.sleep(connect_retry_wait)
+                continue
         # Process above error...
-        if (error_str):
+        else:
             log_error("%s" % error_str)
             systemd_exit(os.EX_NOHOST, SDEX_CONFIG)
         update_engine['dyndns'] = dyndns_engine
