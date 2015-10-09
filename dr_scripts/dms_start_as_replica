@@ -60,6 +60,11 @@ if [ -n "$BIND9_DR_SERVER_OPTIONS" ] ; then
 	BIND9_DR_SERVER_OPTIONS="$BIND9_DR_SERVER_OPTIONS "
 fi
 
+# determine if running under systemd
+UNDER_SYSTEMD=0
+[ -x /bin/systemctl ] && systemctl status default.target > /dev/null 2>&1 \
+        && UNDER_SYSTEMD=1
+
 do_dms_wsgi () {
 	case $DMSWSGI in
 	[Tt]rue|[Yy]es|[Oo]n|1)
@@ -82,6 +87,20 @@ fix_up_apache2_default () {
 '		
 		echo "$EXIT_STUFF" >> $APACHE2_DEFAULT
 	fi
+}
+
+service_disable_dms_dmd () {
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl disable dmsdmd
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+}
+
+service_enable_dms_dmd () {
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl enable dmsdmd
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x
 }
 
 do_dms_drif () {
@@ -161,16 +180,18 @@ rsyslog_restart () {
 }
 
 turn_on_replica_services () {
-	set -x
 	if do_dms_drif; then
+		set -x
 		perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
 		# Extra line to deal with how humans can twiddle...
-		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
+		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK
+		set +x
 	fi
+	service_disable_dmsdmd
+	set -x
 	do_dms_wsgi && perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
-	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
 	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	set +x
 }
@@ -247,8 +268,8 @@ dms_promote_replica () {
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
 	rsyslog_restart
+	service_enable_dmsdmd
 	set -x
-	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
 	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	set +x
 	invoke-rc.d bind9 restart
@@ -305,8 +326,8 @@ dms_master_down () {
 	set +x
 	rsyslog_restart
 	invoke-rc.d postgresql stop
+	service_disable_dmsdmd
 	set -x
-	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
 	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 
 }
@@ -324,8 +345,8 @@ dms_master_up () {
 
 	set -e
 	fix_up_apache2_default
+	service_enable_dmsdmd
 	set -x
-	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
 	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
