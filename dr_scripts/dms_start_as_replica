@@ -62,7 +62,7 @@ fi
 
 # determine if running under systemd
 UNDER_SYSTEMD=0
-[ -x /bin/systemctl ] && systemctl status default.target > /dev/null 2>&1 \
+[ -x /bin/systemctl ] && test -d /run/systemd/system \
         && UNDER_SYSTEMD=1
 
 do_dms_wsgi () {
