@@ -89,6 +89,20 @@ fix_up_apache2_default () {
 	fi
 }
 
+service_disable_apache2 () {
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl disable apache2
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+}
+
+service_enable_apache2 () {
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl enable apache2
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+}
+
 service_disable_dmsdmd () {
 	[ $UNDER_SYSTEMD -gt 0 ] && systemctl disable dmsdmd
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
@@ -188,8 +202,8 @@ turn_on_replica_services () {
 		set +x
 	fi
 	service_disable_dmsdmd
+	do_dms_wsgi && service_disable_apache2
 	set -x
-	do_dms_wsgi && perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
 	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
@@ -280,7 +294,7 @@ dms_promote_replica () {
 	zone_tool write_rndc_conf
 	zone_tool reconfig_all
 	perl -pe 's/^#+(.*zone_tool vacuum_all)$/\1/' -i $DMS_CRONTAB
-	do_dms_wsgi && perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
+	do_dms_wsgi && service_enable_apache2
 	set +x
 	if do_dms_wsgi; then
 		invoke-rc.d apache2 start
@@ -308,13 +322,13 @@ dms_master_down () {
 	if do_dms_wsgi; then
 		invoke-rc.d apache2 stop
 	fi
+	do_dms_wsgi && service_disable_apache2
 	set -x
 	if do_dms_drif; then
 		perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
 		# Extra line to deal with how humans can twiddle...
 		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK
 	fi
-	do_dms_wsgi && perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
 	set +x
 	# Settle time
@@ -329,7 +343,7 @@ dms_master_down () {
 	service_disable_dmsdmd
 	set -x
 	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
-
+	set +x
 }
 
 dms_master_up_usage () {
@@ -361,7 +375,7 @@ dms_master_up () {
 	zone_tool write_rndc_conf
 	zone_tool reconfig_all
 	perl -pe 's/^#+(.*zone_tool vacuum_all)$/\1/' -i $DMS_CRONTAB
-	do_dms_wsgi && perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
+	do_dms_wsgi && service_enable_apache2
 	set +x
 	if do_dms_wsgi; then
 		invoke-rc.d apache2 start
