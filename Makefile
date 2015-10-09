@@ -37,6 +37,7 @@ CONFSUBDIRS :=  master-config-templates config-templates server-config-templates
 CONFFILES = dms.conf rsync-dnsconf-password rsync-dnssec-password pgpassfile \
 	    dr-settings.sh
 CONFBINDFILES = named.conf named.conf.options named.conf.local named-dr-replica.conf
+CONFDMSDMDFILES = envvars prepare-environment
 MASTERINCFILES = server-acl.conf zones.conf
 WSGISCRIPTS = admin_dms.wsgi helpdesk_dms.wsgi value_reseller_dms.wsgi \
 	      hosted_dms.wsgi
@@ -45,6 +46,7 @@ ifeq ($(OSNAME), Linux)
 	PREFIX=/usr/local
 	CONFDIR=$(DESTDIR)$(ETCDIR)/dms
 	CONFBINDDIR=$(DESTDIR)$(ETCDIR)/dms/bind
+	CONFDMSDMDDIR=$(DESTDIR)$(ETCDIR)/dms/dmsdmd
 	SYSCTLDIR=$(DESTDIR)$(ETCDIR)/sysctl.d
 	NAMEDDATADIR=$(DESTDIR)/var/lib/bind
 	NAMEDDYNAMICDIR=$(DESTDIR)/var/lib/bind/dynamic
@@ -62,6 +64,7 @@ ifeq ($(OSNAME), Linux)
 	LOGDIR=$(DESTDIR)/var/log/dms
 	RUNDIR=$(DESTDIR)/run/dms
 	BACKUPDIR=$(DESTDIR)/var/backups
+	SYSTEMDCONFDIR=$(DESTDIR)/lib/systemd/system
 	PYTHON_INTERPRETER ?= /usr/bin/python3
 	PYTHON_SETUP_OPTS = --install-layout=deb
 	PGUSER=postgres
@@ -70,6 +73,7 @@ else ifeq ($(OSNAME), FreeBSD)
 	PREFIX = /usr/local
 	CONFDIR = $(DESTDIR)$(PREFIX)$(ETCDIR)/dms
 	CONFBINDDIR=$(DESTDIR)$(PREFIX)$(ETCDIR)/dms/bind
+	CONFDMSDMDDIR=$(DESTDIR)$(PREFIX)$(ETCDIR)/dms/dmsdmd
 	NAMEDCONFDIR=$(DESTDIR)$(ETCDIR)/namedb/master-config
 	NAMEDSERVERCONFDIR=$(DESTDIR)$(ETCDIR)/namedb/rsync-config
 	RNDCCONFDIR=$(DESTDIR)$(ETCDIR)/nameddb
@@ -86,6 +90,7 @@ else
 	PREFIX = /usr/local
 	CONFDIR = $(DESTDIR)$(PREFIX)/dms$(ETCDIR)
 	CONFBINDDIR=$(DESTDIR)$(PREFIX)/dms$(ETCDIR)/bind
+	CONFDMSDMDDIR=$(DESTDIR)$(PREFIX)/dms$(ETCDIR)/dmsdmd
 	NAMEDCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)/master-config
 	NAMEDSERVERCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)/rsync-config
 	RNDCCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)
@@ -119,6 +124,7 @@ install-dir:
 	- $(INSTALL) -d $(MANDIR)
 	- $(INSTALL) -d $(CONFDIR)
 	- $(INSTALL) -d $(CONFBINDDIR)
+	- $(INSTALL) -d $(CONFDMSDMDDIR)
 	- $(INSTALL) -d $(NAMEDCONFDIR)
 	- $(INSTALL) -d $(NAMEDSERVERCONFDIR)
 	- $(INSTALL) -d $(NAMEDDYNAMICDIR)
@@ -135,6 +141,7 @@ install-dir:
 ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -d $(SYSCTLDIR)
 	- $(INSTALL) -d $(BACKUPDIR)
+	- $(INSTALL) -d $(SYSTEMDCONFDIR)
 endif
 ifndef DMS_DEB_BUILD
 	chown root:bind $(CONFBINDDIR)
@@ -198,6 +205,10 @@ endif
 	for f in $(CONFBINDFILES); do \
 		$(INSTALL) -m 644 etc/debian/bind/$${f} $(CONFBINDDIR); \
 	done
+	for f in $(CONFDMSDMDFILES); do \
+		$(INSTALL) -m 644 etc/dmsdmd/$${f} $(CONFDMSDMDDIR); \
+	done
+	chmod 755 $(CONFDMSDMDDIR)/prepare-environment
 ifndef DMS_DEB_BUILD
 	for f in $(MASTERINCFILES); do \
 		chown $(DAEMONUSER):bind $(NAMEDCONFDIR)/$$f; \
@@ -209,6 +220,7 @@ endif
 ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -m 644 etc/debian/sysctl.d/30-dms-core-net.conf \
 		$(SYSCTLDIR)
+	- $(INSTALL) -m 644 etc/systemd/system/dmsdmd.service $(SYSTEMDCONFDIR)
 endif
 
 install-wsgi: install-dir
