@@ -89,14 +89,14 @@ fix_up_apache2_default () {
 	fi
 }
 
-service_disable_dms_dmd () {
+service_disable_dmsdmd () {
 	[ $UNDER_SYSTEMD -gt 0 ] && systemctl disable dmsdmd
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
 	[ $UNDER_SYSTEMD -eq 0 ] && set +x
 }
 
-service_enable_dms_dmd () {
+service_enable_dmsdmd () {
 	[ $UNDER_SYSTEMD -gt 0 ] && systemctl enable dmsdmd
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
