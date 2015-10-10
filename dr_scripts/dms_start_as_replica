@@ -131,6 +131,7 @@ service_bind9_dr_config () {
 	local BIND9_STUFF="
 # Alter Bind9 start up command line
 [Service]
+ExecStart=
 ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}
 "
 	echo "$BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
@@ -151,6 +152,7 @@ service_bind9_master_config () {
 	local BIND9_STUFF="
 # Alter Bind9 start up command line
 [Service]
+ExecStart=
 ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}
 "
 	echo "$BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
