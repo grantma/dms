@@ -49,6 +49,21 @@ RECOVERYCONF="${PGDATADIR}/recovery.conf"
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
+# determine if running under systemd
+UNDER_SYSTEMD=0
+[ -x /bin/systemctl ] && test -d /run/systemd/system \
+        && UNDER_SYSTEMD=1
+
+service_do () {
+	if [ $UNDER_SYSTEMD -eq 0 ]; then
+		invoke-rc.d "$@"
+		return $?
+	else
+		systemctl --quiet "$2" "$1"
+		return $?
+	fi
+}
+
 do_createdb () {
 	pg_createcluster "$PGVERSION" "$PGCLUSTER"
 	echo "$PROGNAME: copying PG config files - DB admin is '${DBADMIN}'..."
@@ -747,7 +762,7 @@ replicadb () {
 		do_move_xlog
 	fi
 	write_recovery_conf "$MASTER_SERVER"
-	invoke-rc.d postgresql start
+	service_do postgresql start
 }
 
 case $0 in
