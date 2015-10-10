@@ -32,6 +32,7 @@ BIND9_DR_SERVER_OPTIONS=""
 BIND9_NAMED_CONF="/etc/dms/bind/named.conf"
 BIND9_DR_NAMED_CONF="/etc/dms/bind/named-dr-replica.conf"
 BIND9_DEFAULT="/etc/default/bind9"
+BIND9_SYSTEMD_D="/etc/systemd/system/bind9.service.d"
 DMSDMD_DEFAULT="/etc/default/dmsdmd"
 DMS_CRONTAB="/etc/cron.d/dms-core"
 RSYSLOG_PGSQL="/etc/rsyslog.d/pgsql.conf"
@@ -115,6 +116,44 @@ service_enable_dmsdmd () {
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
 	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+}
+
+service_bind9_dr_config () {
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+	[ $UNDER_SYSTEMD -eq 0 ] && return 0
+
+	if [ ! -e "$BIND9_SYSTEMD_D" ] ; then
+		mkdir "$BIND9_SYSTEMD_D"
+	fi
+
+	local BIND9_STUFF="
+# Alter Bind9 start up command line
+[Service]
+ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}
+"
+	echo "BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
+
+}
+
+service_bind9_master_config () {
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+	[ $UNDER_SYSTEMD -eq 0 ] && return 0
+
+	if [ ! -e "$BIND9_SYSTEMD_D" ] ; then
+		mkdir "$BIND9_SYSTEMD_D"
+	fi
+
+	local BIND9_STUFF="
+# Alter Bind9 start up command line
+[Service]
+ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}
+"
+	echo "BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
+
 }
 
 do_dms_drif () {
@@ -206,8 +245,8 @@ turn_on_replica_services () {
 	set -x
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	set +x
+	service_bind9_dr_config
 }
 
 dms_start_as_replica_usage () {
@@ -283,9 +322,7 @@ dms_promote_replica () {
 	set +x
 	rsyslog_restart
 	service_enable_dmsdmd
-	set -x
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
-	set +x
+	service_bind9_master_config
 	invoke-rc.d bind9 restart
 	# Settle time
 	sleep 7
@@ -341,9 +378,7 @@ dms_master_down () {
 	rsyslog_restart
 	invoke-rc.d postgresql stop
 	service_disable_dmsdmd
-	set -x
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
-	set +x
+	service_bind9_dr_config
 }
 
 dms_master_up_usage () {
@@ -360,8 +395,8 @@ dms_master_up () {
 	set -e
 	fix_up_apache2_default
 	service_enable_dmsdmd
+	service_bind9_master_config
 	set -x
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
 	invoke-rc.d postgresql start
