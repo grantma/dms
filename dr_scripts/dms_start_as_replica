@@ -90,29 +90,39 @@ fix_up_apache2_default () {
 	fi
 }
 
+service_do () {
+	if [ $UNDER_SYSTEMD -eq 0 ]; then
+		invoke-rc.d "$@"
+		return $?
+	else
+		systemctl --quiet "$2" "$1"
+		return $?
+	fi
+}
+
 service_disable_apache2 () {
-	[ $UNDER_SYSTEMD -gt 0 ] && systemctl disable apache2
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet disable apache2
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
 	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
 }
 
 service_enable_apache2 () {
-	[ $UNDER_SYSTEMD -gt 0 ] && systemctl enable apache2
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet enable apache2
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
 	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
 }
 
 service_disable_dmsdmd () {
-	[ $UNDER_SYSTEMD -gt 0 ] && systemctl disable dmsdmd
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet disable dmsdmd
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
 	[ $UNDER_SYSTEMD -eq 0 ] && set +x
 }
 
 service_enable_dmsdmd () {
-	[ $UNDER_SYSTEMD -gt 0 ] && systemctl enable dmsdmd
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet enable dmsdmd
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
 	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
@@ -135,7 +145,7 @@ ExecStart=
 ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}
 "
 	echo "$BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
-	systemctl daemon-reload
+	systemctl --quiet daemon-reload
 	return 0
 }
 
@@ -156,7 +166,7 @@ ExecStart=
 ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}
 "
 	echo "$BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
-	systemctl daemon-reload
+	systemctl --quiet daemon-reload
 	return 0
 }
 
@@ -231,9 +241,9 @@ dms_prepare_binddata () {
 }
 
 rsyslog_restart () {
-	invoke-rc.d rsyslog stop
+	service_do rsyslog stop
 	sleep 3
-	invoke-rc.d rsyslog start
+	service_do rsyslog start
 }
 
 turn_on_replica_services () {
@@ -299,11 +309,11 @@ dms_start_as_replica () {
 	dms_prepare_binddata -f
 	dms_write_recovery_conf "$MASTER_SERVER"
 	do_dms_drif && ifdown $DMSDRIF
-	do_dms_wsgi && invoke-rc.d apache2 stop
-	invoke-rc.d dmsdmd stop
+	do_dms_wsgi && service_do apache2 stop
+	service_do dmsdmd stop
 	turn_on_replica_services
-	invoke-rc.d postgresql start
-	invoke-rc.d bind9 start
+	service_do postgresql start
+	service_do bind9 start
 }
 
 
@@ -327,10 +337,10 @@ dms_promote_replica () {
 	rsyslog_restart
 	service_enable_dmsdmd
 	service_bind9_master_config
-	invoke-rc.d bind9 restart
+	service_do bind9 restart
 	# Settle time
 	sleep 7
-	invoke-rc.d dmsdmd start
+	service_do dmsdmd start
 	set -x
 	zone_tool write_rndc_conf
 	zone_tool reconfig_all
@@ -338,7 +348,7 @@ dms_promote_replica () {
 	do_dms_wsgi && service_enable_apache2
 	set +x
 	if do_dms_wsgi; then
-		invoke-rc.d apache2 start
+		service_do apache2 start
 	fi
 	do_dms_drif && set -x && perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
 	set +x
@@ -361,7 +371,7 @@ dms_master_down () {
 	fix_up_apache2_default
 	do_dms_drif && netscript ifdown $DMSDRIF
 	if do_dms_wsgi; then
-		invoke-rc.d apache2 stop
+		service_do apache2 stop
 	fi
 	do_dms_wsgi && service_disable_apache2
 	set -x
@@ -374,13 +384,13 @@ dms_master_down () {
 	set +x
 	# Settle time
 	sleep 5
-	invoke-rc.d dmsdmd stop
-	invoke-rc.d bind9 stop
+	service_do dmsdmd stop
+	service_do bind9 stop
 	set -x
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	set +x
 	rsyslog_restart
-	invoke-rc.d postgresql stop
+	service_do postgresql stop
 	service_disable_dmsdmd
 	service_bind9_dr_config
 }
@@ -403,11 +413,11 @@ dms_master_up () {
 	set -x
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
-	invoke-rc.d postgresql start
+	service_do postgresql start
 	rsyslog_restart
-	invoke-rc.d bind9 start
+	service_do bind9 start
 	sleep 3
-	invoke-rc.d dmsdmd start
+	service_do dmsdmd start
 	# Settle time
 	sleep 5
 	set -x
@@ -417,7 +427,7 @@ dms_master_up () {
 	do_dms_wsgi && service_enable_apache2
 	set +x
 	if do_dms_wsgi; then
-		invoke-rc.d apache2 start
+		service_do apache2 start
 	fi
 	do_dms_drif && set -x && perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
 	set +x
