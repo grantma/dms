@@ -94,14 +94,14 @@ service_disable_apache2 () {
 	[ $UNDER_SYSTEMD -gt 0 ] && systemctl disable apache2
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
-	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
 }
 
 service_enable_apache2 () {
 	[ $UNDER_SYSTEMD -gt 0 ] && systemctl enable apache2
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
-	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
 }
 
 service_disable_dmsdmd () {
@@ -115,7 +115,7 @@ service_enable_dmsdmd () {
 	[ $UNDER_SYSTEMD -gt 0 ] && systemctl enable dmsdmd
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
-	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
 }
 
 service_bind9_dr_config () {
@@ -133,8 +133,9 @@ service_bind9_dr_config () {
 [Service]
 ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}
 "
-	echo "BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
-
+	echo "$BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
+	systemctl daemon-reload
+	return 0
 }
 
 service_bind9_master_config () {
@@ -152,8 +153,9 @@ service_bind9_master_config () {
 [Service]
 ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}
 "
-	echo "BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
-
+	echo "$BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
+	systemctl daemon-reload
+	return 0
 }
 
 do_dms_drif () {
@@ -389,7 +391,7 @@ dms_master_up_usage () {
 dms_master_up () {
 
 	if [ $# -ne 0 ]; then
-		dms_master_down_usage
+		dms_master_up_usage
 	fi;
 
 	set -e
