@@ -118,7 +118,7 @@ service_disable_dmsdmd () {
 	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet disable dmsdmd
 	[ $UNDER_SYSTEMD -eq 0 ] && set -x
 	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
-	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
 }
 
 service_enable_dmsdmd () {
@@ -308,7 +308,7 @@ dms_start_as_replica () {
 	dms_pg_basebackup -f "$MASTER_SERVER"
 	dms_prepare_binddata -f
 	dms_write_recovery_conf "$MASTER_SERVER"
-	do_dms_drif && ifdown $DMSDRIF
+	do_dms_drif && netscript ifdown $DMSDRIF
 	do_dms_wsgi && service_do apache2 stop
 	service_do dmsdmd stop
 	turn_on_replica_services
