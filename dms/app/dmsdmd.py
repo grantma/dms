@@ -56,7 +56,6 @@ from dms.globals_ import update_engine
 from dms.dyndns_update import DynDNSUpdate
 from dms.exceptions import DynDNSCantReadKeyError
 
-
 USAGE_MESSAGE = "Usage: %s [-dhv] [-c config_file]"
 COMMAND_DESCRIPTION = "DMS DNS Management Daemon"
 
@@ -185,6 +184,10 @@ class DmsDMDProcess(ProcessDaemon):
         """
         error_str = ''
         try:
+            rss_mem_usage = (float(self.proc_monitor.memory_info().rss)
+                                    /1024/1024)
+        except AttributeError:
+            # Deal with a change in name of get_memory_info() method
             rss_mem_usage = (float(self.proc_monitor.get_memory_info().rss)
                                     /1024/1024)
         except Exception as exc:
