@@ -22,7 +22,7 @@
 # Blow up on any errors
 set -e
 
-PYTHON_VERSION=3.5
+PYTHON_VERSION=`python3 -V | perl -pe 's/^\S+\s+([0-9]+\.[0-9]+)\.[0-9]+$/\1/'`
 OS=`uname`
 [ "$OS" = "Linux" ] && LINUX_DIST=`cat /etc/issue | cut -d ' ' -f 1`
 if [ "$OS" = "FreeBSD" ]; then
@@ -39,61 +39,73 @@ else
 	# Hopefully everything else is like this
 	PYTHON_SITE_PACKAGES="/usr/local/lib/python${PYTHON_VERSION}/dist-packages"
 fi
-PYTHON_SETUPTOOLS_VERSION="1.4.1"
-PYTHON_SETUPTOOLS_NAME="setuptools-${PYTHON_SETUPTOOLS_VERSION}"
-PYTHON_SETUPTOOLS_TARGZ="${PYTHON_SETUPTOOLS_NAME}.tar.gz"
-PYTHON_SETUPTOOLS_URL="https://pypi.python.org/packages/source/s/setuptools/${PYTHON_SETUPTOOLS_TARGZ}"
+
+PIP3_BIN="pip3"
+PIP3_ARGS="--compile --upgrade --target $PYTHON_SITE_PACKAGES"
+PIP3_INSTALL="$PIP3_BIN install $PIP3_ARGS"
+PYTHON_GET_PIP_URL="https://bootstrap.pypa.io/get-pip.py"
 
 clean_site_packages () {
 	(cd  $PYTHON_SITE_PACKAGES; rm -rf `ls -1 | grep -v 'README'`)
 }
 
-install_python_setuptools () {
+install_python_pip3 () {
 	local SCRATCH="scratch-$$"
+
+	if type -f pip3 > /dev/null; then
+		# Later python 3s come with pip and setuptools as part
+		# of standard distribution
+		pip3 install --upgrade --compile -U pip setuptools wheel
+		return 0
+	fi
+	
 	mkdir $SCRATCH
-	(cd $SCRATCH && curl -O "$PYTHON_SETUPTOOLS_URL" && tar xzf $PYTHON_SETUPTOOLS_TARGZ)
-	(cd $SCRATCH/$PYTHON_SETUPTOOLS_NAME && "python${PYTHON_VERSION}" ./setup.py install)
+	(cd $SCRATCH && curl -O "$PYTHON_GET_PIP_URL")
+	(cd $SCRATCH && "python${PYTHON_VERSION}" get-pip.py)
+	if [ -f /usr/local/bin/pip ]; then
+		mv /usr/local/bin/pip /usr/local/bin/pip3
+	fi
 	rm -rf $SCRATCH
 }
 
 
 install_python_sqlalchemy () {
-	easy_install-${PYTHON_VERSION} psycopg2 sqlalchemy
-	#easy_install-${PYTHON_VERSION} py-postgresql sqlalchemy
+	$PIP3_INSTALL psycopg2 sqlalchemy
+	#$PIP3_INSTALL py-postgresql sqlalchemy
 }
 
 install_python_setproctitle () {
-	easy_install-${PYTHON_VERSION} setproctitle
+	$PIP3_INSTALL setproctitle
 }
 
 install_python_winpdb () {
-	easy_install-${PYTHON_VERSION} winpdb
+	$PIP3_INSTALL winpdb
 }
 
 install_python_pyparsing () {
-	easy_install-${PYTHON_VERSION} pyparsing
+	$PIP3_INSTALL pyparsing
 }
 
 install_python_psutil () {
-	easy_install-${PYTHON_VERSION} psutil
+	$PIP3_INSTALL psutil
 }
 
-install_python_dnspython3 () {
-	easy_install-${PYTHON_VERSION} dnspython3
+install_python_dnspython () {
+	$PIP3_INSTALL dnspython
 
 }
 
 install_magcode_core () {
-	easy_install-${PYTHON_VERSION} magcode-core
+	$PIP3_INSTALL magcode-core
 }
 
 clean_site_packages
-install_python_setuptools
+install_python_pip3
 install_python_sqlalchemy
 install_python_setproctitle
 install_python_winpdb
 install_python_pyparsing
-install_python_dnspython3
+install_python_dnspython
 install_python_psutil
 install_magcode_core
 
