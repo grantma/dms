@@ -21,7 +21,8 @@
 set -e
 set -x
 
-if [ `uname -s` != 'Linux' -o ! -f /etc/issue ] ||  ! grep -q Debian /etc/issue ; then	exit 1
+if [ `uname -s` != 'Linux' -o ! -f /etc/debian_version ]; then
+	exit 1
 fi  
 
 adduser --system --home / --shell /bin/false --no-create-home --group --disabled-login dmsdmd
