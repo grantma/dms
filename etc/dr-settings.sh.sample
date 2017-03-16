@@ -49,8 +49,10 @@ $UPDATE_TYPE wsgi-failover
 # Should not have to change settings below here
 #----------------------------------------------
 
-# PostgresQL version used
-PGVERSION="9.4"
+# PostgresQL version used. Override setting
+# Only set if needed.  Can be used by debian install scripts to override
+# PostgresQL version used.
+PGVERSION=""
 
-# PstgresQL catalog cluster name
+# PostgresQL catalog cluster name
 PGCLUSTER="dms"

@@ -24,21 +24,38 @@ set -e
 PROGNAME="`basename $0`"
 DBNAME="dms"
 DBADMIN="root"
+PGVERSION=''
 PGCLUSTER="dms"
-PGVERSION="9.4"
 PGPASSWORDFILE="/etc/dms/pgpassfile"
 DBREPLICA="ip6-localhost"
 DBLIBDIR="/usr/local/share/dms/postgresql"
 VARDIR="/var/lib/dms/postgresql"
 DBDUMPDIR="/var/backups"
-DBSCHEMA="dms-schema-pg94.sql"
-DBSEEDDATA="dms-init-pg94.sql"
+DBSCHEMA="dms-schema-pg.sql"
+DBSEEDDATA="dms-init-pg.sql"
 DBALTXLOGDIR="/srv/postgresql"
 DBMOVEXLOG=false
 SETTINGSFILE="/etc/dms/dr-settings.sh"
 
 # Read in settings
 [ -f "$SETTINGSFILE" ] && . "$SETTINGSFILE"
+
+# Work out PG Version
+get_pgversion () {
+	local VER=`pg_lsclusters -h| grep dms | cut -f 1 -d ' '`
+	if [ -n "$VER" ]; then
+		echo "$VER"
+		return 0
+	fi
+	if [ -z "$PGVERSION" ]; then
+		VER=`/usr/share/postgresql-common/supported-versions | tail -1`
+		echo "$VER"
+		return 0
+	fi
+	echo "$PGVERSION"
+	return 0
+}
+PGVERSION=`get_pgversion`
 
 # Settings that depend on settings file
 PGETCDIR="/etc/postgresql/$PGVERSION/$PGCLUSTER"

@@ -20,7 +20,7 @@
 #    along with py-magcode-core.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-PGVERSION="9.4"
+PGVERSION=""
 PGCLUSTER="dms"
 PGPASSWORDFILE="/etc/dms/pgpassfile"
 BIND9DYNAMICDIR="/var/lib/bind/dynamic"
@@ -42,6 +42,23 @@ SETTINGSFILE="/etc/dms/dr-settings.sh"
 
 # Read in settings
 [ -f "$SETTINGSFILE" ] && . "$SETTINGSFILE"
+
+# Work out PGVERSION
+get_pgversion () {
+	local VER=`pg_lsclusters -h| grep dms | cut -f 1 -d ' '`
+	if [ -n "$VER" ]; then
+		echo "$VER"
+		return 0
+	fi
+	if [ -z "$PGVERSION" ]; then
+		VER=`/usr/share/postgresql-common/supported-versions | tail -1`
+		echo "$VER"
+		return 0
+	fi
+	echo "$PGVERSION"
+	return 0
+}
+PGVERSION=`get_pgversion`
 
 # Settings that depend on configuration file
 PGDATADIR="/var/lib/postgresql/${PGVERSION}/${PGCLUSTER}"
