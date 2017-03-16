@@ -41,7 +41,7 @@ else
 fi
 
 PIP3_BIN="pip3"
-PIP3_ARGS="--compile --upgrade --target $PYTHON_SITE_PACKAGES"
+PIP3_ARGS="--compile --target $PYTHON_SITE_PACKAGES"
 PIP3_INSTALL="$PIP3_BIN install $PIP3_ARGS"
 PYTHON_GET_PIP_URL="https://bootstrap.pypa.io/get-pip.py"
 
@@ -55,7 +55,7 @@ install_python_pip3 () {
 	if type -f pip3 > /dev/null; then
 		# Later python 3s come with pip and setuptools as part
 		# of standard distribution
-		pip3 install --upgrade --compile -U pip setuptools wheel
+		$PIP3_INSTALL pip setuptools wheel
 		return 0
 	fi
 	
