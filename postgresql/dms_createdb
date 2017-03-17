@@ -37,6 +37,8 @@ DBALTXLOGDIR="/srv/postgresql"
 DBMOVEXLOG=false
 SETTINGSFILE="/etc/dms/dr-settings.sh"
 
+declare -A DMS_PGCONF           # Create bash array 
+
 # Read in settings
 [ -f "$SETTINGSFILE" ] && . "$SETTINGSFILE"
 
@@ -81,11 +83,20 @@ service_do () {
 	fi
 }
 
+do_configdbfile () {
+	local SETTING
+	local PGCONFFILE="${PGETCDIR}/postgresql.conf"
+	echo "$PROGNAME: configuring ${PGCONFFILE}..."
+	for SETTING in "${!DMS_PGCONF[@]}"; do
+		pg_conftool "$PGVERSION" "$PGCLUSTER" "$PGCONFFILE" set "$SETTING" "${DMS_PGCONF[$SETTING]}"
+	done
+}
+
 do_createdb () {
 	pg_createcluster "$PGVERSION" "$PGCLUSTER"
 	echo "$PROGNAME: copying PG config files - DB admin is '${DBADMIN}'..."
 	local PORT=`get_pgport`
-	perl -pe "s/\@\@CLUSTER\@\@/$PGCLUSTER/g" <  $DBLIBDIR/postgresql.conf | perl -pe "s/\@\@PORT\@\@/$PORT/g" > $PGETCDIR/postgresql.conf
+	do_configdbfile
 	perl -pe "s/\@\@USER\@\@/$DBADMIN/g" <  $DBLIBDIR/pg_ident.conf > $PGETCDIR/pg_ident.conf
 	sha1sum $PGETCDIR/pg_ident.conf > $VARDIR/pg_ident.conf.sha1sum
 	perl -pe "s~\@\@REPLICA\@\@~$DBREPLICA~g" <  $DBLIBDIR/pg_hba.conf > $PGETCDIR/pg_hba.conf
