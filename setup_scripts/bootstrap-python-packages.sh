@@ -44,18 +44,29 @@ PIP3_BIN="pip3"
 PIP3_ARGS="--compile --target $PYTHON_SITE_PACKAGES"
 PIP3_INSTALL="$PIP3_BIN install $PIP3_ARGS"
 PYTHON_GET_PIP_URL="https://bootstrap.pypa.io/get-pip.py"
+PYTHON_MODULE_TEST='pip3 show'
+
+qt () { "$@" >/dev/null 2>&1 ; }
 
 clean_site_packages () {
 	(cd  $PYTHON_SITE_PACKAGES; rm -rf `ls -1 | grep -v 'README'`)
 }
 
+install_if_not_there () {
+	for P in "$@"; do
+		if ! qt $PYTHON_MODULE_TEST $P; then
+			$PIP3_INSTALL $P;
+		fi
+	done
+}
+
 install_python_pip3 () {
 	local SCRATCH="scratch-$$"
 
-	if type -f pip3 > /dev/null; then
+	if qt type pip3 ; then
 		# Later python 3s come with pip and setuptools as part
 		# of standard distribution
-		$PIP3_INSTALL pip setuptools wheel
+		install_if_not_there setuptools wheel
 		return 0
 	fi
 	
@@ -70,33 +81,32 @@ install_python_pip3 () {
 
 
 install_python_sqlalchemy () {
-	$PIP3_INSTALL psycopg2 sqlalchemy
-	#$PIP3_INSTALL py-postgresql sqlalchemy
+	install_if_not_there psycopg2 sqlalchemy
+	#install_if_not_there py-postgresql sqlalchemy
 }
 
 install_python_setproctitle () {
-	$PIP3_INSTALL setproctitle
+	install_if_not_there setproctitle
 }
 
 install_python_winpdb () {
-	$PIP3_INSTALL winpdb
+	install_if_not_there winpdb
 }
 
 install_python_pyparsing () {
-	$PIP3_INSTALL pyparsing
+	install_if_not_there pyparsing
 }
 
 install_python_psutil () {
-	$PIP3_INSTALL psutil
+	install_if_not_there psutil
 }
 
 install_python_dnspython () {
-	$PIP3_INSTALL dnspython
-
+	install_if_not_there dnspython
 }
 
 install_magcode_core () {
-	$PIP3_INSTALL magcode-core
+	install_if_not_there magcode-core
 }
 
 clean_site_packages
