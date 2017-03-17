@@ -42,7 +42,7 @@ SETTINGSFILE="/etc/dms/dr-settings.sh"
 
 # Work out PG Version
 get_pgversion () {
-	local VER=`pg_lsclusters -h| grep "$DBNAME" | cut -f 1 -d ' '`
+	local VER=`pg_lsclusters -h| grep "$PGCLUSTER" | cut -f 1 -d ' '`
 	if [ -n "$VER" ]; then
 		echo "$VER"
 		return 0
