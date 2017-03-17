@@ -290,6 +290,11 @@ ifeq ($(OSNAME), Linux)
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_createdb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_admindb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_dropdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_reconfigdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_startdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_stopdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_statusdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_showconfigdb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_restoredb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_dumpdb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_sqldb

@@ -381,6 +381,226 @@ dropdb () {
 	do_dropdb
 }
 
+reconfigdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+reconfigdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	reconfigdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+reconfigdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			reconfigdb_vusage
+			exit 1
+			;;
+		\?)
+			reconfigdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		reconfigdb_usage
+		exit 1
+	fi
+
+	do_configdbfile
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" reload
+}
+
+startdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+startdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	startdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+startdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			startdb_vusage
+			exit 1
+			;;
+		\?)
+			startdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		startdb_usage
+		exit 1
+	fi
+
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" start
+}
+
+stopdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+stopdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	stopdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+stopdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			stopdb_vusage
+			exit 1
+			;;
+		\?)
+			stopdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		stopdb_usage
+		exit 1
+	fi
+
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" stop
+}
+
+statusdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+statusdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	statusdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+statusdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			statusdb_vusage
+			exit 1
+			;;
+		\?)
+			statusdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		statusdb_usage
+		exit 1
+	fi
+
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" status
+}
+
+showconfigdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+showconfigdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	showconfigdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+showconfigdb () {
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			showconfigdb_vusage
+			exit 1
+			;;
+		\?)
+			showconfigdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		showconfigdb_usage
+		exit 1
+	fi
+
+	pg_conftool "$PGVERSION" "$PGCLUSTER" show all
+}
+
 restoredb_usage () {
 	local BLAH="
   Usage: $PROGNAME [-fh] <pg_dumpallgz-dump>
@@ -787,6 +1007,21 @@ case $0 in
 	;;
 *dropdb)
 	dropdb "$@"
+	;;
+*reconfigdb)
+	reconfigdb "$@"
+	;;
+*startdb)
+	startdb "$@"
+	;;
+*stopdb)
+	stopdb "$@"
+	;;
+*statusdb)
+	statusdb "$@"
+	;;
+*showconfigdb)
+	showconfigdb "$@"
 	;;
 *restoredb)
 	restoredb "$@"
