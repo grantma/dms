@@ -68,21 +68,6 @@ RECOVERYCONF="${PGDATADIR}/recovery.conf"
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
-# determine if running under systemd
-UNDER_SYSTEMD=0
-[ -x /bin/systemctl ] && test -d /run/systemd/system \
-        && UNDER_SYSTEMD=1
-
-service_do () {
-	if [ $UNDER_SYSTEMD -eq 0 ]; then
-		invoke-rc.d "$@"
-		return $?
-	else
-		systemctl --quiet "$2" "$1"
-		return $?
-	fi
-}
-
 do_configdbfile () {
 	local SETTING
 	local PGCONFFILE="${PGETCDIR}/postgresql.conf"
@@ -790,7 +775,7 @@ replicadb () {
 		do_move_xlog
 	fi
 	write_recovery_conf "$MASTER_SERVER"
-	service_do postgresql start
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" start
 }
 
 case $0 in
