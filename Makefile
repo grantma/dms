@@ -297,6 +297,7 @@ ifeq ($(OSNAME), Linux)
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_showconfigdb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_restoredb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_dumpdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_upgradedb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_sqldb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_pg_basebackup
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_write_recovery_conf

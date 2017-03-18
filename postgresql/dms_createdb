@@ -49,12 +49,8 @@ get_pgversion () {
 		echo "$VER"
 		return 0
 	fi
-	if [ -z "$PGVERSION" ]; then
-		VER=`/usr/share/postgresql-common/supported-versions | tail -1`
-		echo "$VER"
-		return 0
-	fi
-	echo "$PGVERSION"
+	VER=`/usr/share/postgresql-common/supported-versions | tail -1`
+	echo "$VER"
 	return 0
 }
 PGVERSION=`get_pgversion`
@@ -716,6 +712,57 @@ dumpdb () {
 	fi
 }
 
+upgradedb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-fh] [pg-version]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+upgradedb_vusage () {
+	local BLAH="
+         -h        print this help
+         -f        force upgrade of existing database
+
+"
+
+	upgradedb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+upgradedb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts fh F; do
+		case $F in
+		f)
+			FORCE=1
+			;;
+		h)
+			upgradedb_vusage
+			exit 1
+			;;
+		\?)
+			upgradedb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 -a $# -ne 1 ]; then
+		upgradedb_usage
+		exit 1
+	fi
+	check_with_user $FORCE "Operation will upgrade database to new PostgresQL version."
+	if [ $# -eq 1 ]; then
+		pg_upgradecluster -v "$1" "$PGVERSION" "$PGCLUSTER"
+	fi
+	pg_upgradecluster "$PGVERSION" "$PGCLUSTER"
+}
+
 
 sqldb () {
 	export PGPORT=`get_pgport`
@@ -1028,6 +1075,9 @@ case $0 in
 	;;
 *dumpdb)
 	dumpdb "$@"
+	;;
+*upgradedb)
+	upgradedb "$@"
 	;;
 *sqldb)
 	sqldb "$@"

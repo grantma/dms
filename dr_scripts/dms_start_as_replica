@@ -50,12 +50,8 @@ get_pgversion () {
 		echo "$VER"
 		return 0
 	fi
-	if [ -z "$PGVERSION" ]; then
-		VER=`/usr/share/postgresql-common/supported-versions | tail -1`
-		echo "$VER"
-		return 0
-	fi
-	echo "$PGVERSION"
+	VER=`/usr/share/postgresql-common/supported-versions | tail -1`
+	echo "$VER"
 	return 0
 }
 PGVERSION=`get_pgversion`

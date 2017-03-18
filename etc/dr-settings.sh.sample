@@ -65,7 +65,8 @@ DMS_PGCONF=(
 # PostgresQL version used. Override setting
 # Only set if needed.  Can be used by debian install scripts to override
 # PostgresQL version used.
-PGVERSION=""
+# NOT USED ANYMORE.  OF NO EFFECT
+# PGVERSION=""
 
 # PostgresQL catalog cluster name
 PGCLUSTER="dms"
