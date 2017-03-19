@@ -24,7 +24,6 @@ set -e
 PROGNAME="`basename $0`"
 DBNAME="dms"
 DBADMIN="root"
-PGVERSION=''
 PGCLUSTER="dms"
 PGPASSWORDFILE="/etc/dms/pgpassfile"
 DBREPLICA="ip6-localhost"
@@ -35,9 +34,8 @@ DBSCHEMA="dms-schema-pg.sql"
 DBSEEDDATA="dms-init-pg.sql"
 DBALTXLOGDIR="/srv/postgresql"
 DBMOVEXLOG=false
+DBCONF=""
 SETTINGSFILE="/etc/dms/dr-settings.sh"
-
-declare -A DMS_PGCONF           # Create bash array 
 
 # Read in settings
 [ -f "$SETTINGSFILE" ] && . "$SETTINGSFILE"
@@ -64,13 +62,27 @@ RECOVERYCONF="${PGDATADIR}/recovery.conf"
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
-do_configdbfile () {
-	local SETTING
+read_config () {
+	local SETTING EQ VALUE
 	local PGCONFFILE="${PGETCDIR}/postgresql.conf"
-	echo "$PROGNAME: configuring ${PGCONFFILE}..."
-	for SETTING in "${!DMS_PGCONF[@]}"; do
-		pg_conftool "$PGVERSION" "$PGCLUSTER" "$PGCONFFILE" set "$SETTING" "${DMS_PGCONF[$SETTING]}"
+	while read SETTING EQ VALUE; do
+		if [ "$EQ" != '=' ]; then
+			echo "$PROGNAME: \$DBCONF syntax - should be '=' not '$EQ'."
+			exit 1
+			break
+		fi
+		if [ -z "$SETTING" ]; then
+			echo "$PROGNAME: \$DBCONF syntax - a postgresql.conf setting name is required."
+			exit 1
+			break
+		fi
+		pg_conftool "$PGVERSION" "$PGCLUSTER" "$PGCONFFILE" set "$SETTING" "$VALUE"
 	done
+}
+
+do_configdbfile () {
+	echo "$PROGNAME: configuring ${PGCONFFILE}..."
+	echo "$DBCONF"| grep -v '^$\|^[[:space:]]*#.*$' |perl -pe 's/(.*)#.*$/$1/' | read_config
 }
 
 do_createdb () {

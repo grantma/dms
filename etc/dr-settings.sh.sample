@@ -47,17 +47,21 @@ $UPDATE_TYPE wsgi-failover
 '
 
 # Postgresql.conf settings
-declare -A DMS_PGCONF    # Create bash array - here so this file can be sourced.
-DMS_PGCONF=(
-[max_wal_senders]=3
-[wal_keep_segments]=64   # On DMS this would be set to 256, 4096 GB
-[wal_level]="hot_standby"
-[hot_standby]="on"       # Turn on Hot standby
-[ssl]="false"            # DMS uses IPSEC
-[listen_addresses]="*"   # Listen on all addresses
-[log_timezone]="UTC"     # Set your timezones as needed.
-[timezone]="UTC"
-)
+DBCONF="
+
+   # Blah blah
+   #
+
+# BEEP BEEP
+max_wal_senders = 3
+wal_keep_segments = 64   # On DMS this would be set to 256, 4096 GB
+wal_level = hot_standby
+hot_standby = on       # Turn on Hot standby
+ssl = false            # DMS uses IPSEC
+listen_addresses = '*'   # Listen on all addresses
+log_timezone = UTC     # Set your timezones as needed.
+timezone = UTC
+"
 
 # Should not have to change settings below here
 #----------------------------------------------
