@@ -429,6 +429,94 @@ dropdb () {
 	do_dropdb
 }
 
+editconfigdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+editconfigdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	editconfigdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+editconfigdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			editconfigdb_vusage
+			exit 1
+			;;
+		\?)
+			editconfigdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		editconfigdb_usage
+		exit 1
+	fi
+
+	pg_conftool "$PGVERSION" "$PGCLUSTER" edit
+}
+
+rmconfigdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h] <postgresql.conf-parameter>
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+rmconfigdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	rmconfigdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+rmconfigdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			rmconfigdb_vusage
+			exit 1
+			;;
+		\?)
+			rmconfigdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 1 ]; then
+		rmconfigdb_usage
+		exit 1
+	fi
+
+	pg_conftool "$PGVERSION" "$PGCLUSTER" remove "$1"
+}
+
 reconfigdb_usage () {
 	local BLAH="
   Usage: $PROGNAME [-h]
@@ -1115,6 +1203,12 @@ case $0 in
 	;;
 *dropdb)
 	dropdb "$@"
+	;;
+*editconfigdb)
+	editconfigdb "$@"
+	;;
+*rmconfigdb)
+	rmconfigdb "$@"
 	;;
 *reconfigdb)
 	reconfigdb "$@"
