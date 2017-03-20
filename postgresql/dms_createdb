@@ -66,21 +66,21 @@ do_set_pg_vars
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
 read_config () {
-	local SETTING EQ VALUE
+	local PARAM EQ VALUE
 	local PGCONFFILE="${PGETCDIR}/postgresql.conf"
 	echo "$PROGNAME: configuring ${PGCONFFILE}..."
-	while read SETTING EQ VALUE; do
+	while read PARAM EQ VALUE; do
 		if [ "$EQ" != '=' ]; then
 			echo "$PROGNAME: \$DBCONF syntax - should be '=' not '$EQ'." 1>&2
 			exit 1
 			break
 		fi
-		if [ -z "$SETTING" ]; then
-			echo "$PROGNAME: \$DBCONF syntax - a postgresql.conf setting name is required." 1>&2
+		if [ -z "$PARAM" ]; then
+			echo "$PROGNAME: \$DBCONF syntax - a postgresql.conf  parameter is required." 1>&2
 			exit 1
 			break
 		fi
-		pg_conftool "$PGVERSION" "$PGCLUSTER" "$PGCONFFILE" set "$SETTING" "$VALUE"
+		pg_conftool "$PGVERSION" "$PGCLUSTER" "$PGCONFFILE" set "$PARAM" "$VALUE"
 	done
 }
 

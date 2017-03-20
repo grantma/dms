@@ -46,7 +46,7 @@ $UPDATE_TYPE wsgi-failover
 @@DMS_WSGI_LABEL@@  @@DMS_WSGI_TTL@@  IN      CNAME      @@DMS_MASTER@@
 '
 
-# Postgresql.conf settings
+# Postgresql.conf parameters
 DBCONF="
 max_wal_senders = 3
 wal_keep_segments = 64   # On DMS this would be set to 256, 4096 GB
