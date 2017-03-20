@@ -53,26 +53,30 @@ get_pgversion () {
 }
 PGVERSION=`get_pgversion`
 
-# Settings that depend on settings file
-PGETCDIR="/etc/postgresql/$PGVERSION/$PGCLUSTER"
-PGDATADIR="/var/lib/postgresql/$PGVERSION/$PGCLUSTER"
-PGPIDFILE="/var/run/postgresql/${PGVERSION}-${PGCLUSTER}.pid"
-DBDUMPFILE="postgresql-${PGVERSION}-${PGCLUSTER}.sql.gz"
-RECOVERYCONF="${PGDATADIR}/recovery.conf"
+do_set_pg_vars () {
+	# Settings that depend on settings file
+	PGETCDIR="/etc/postgresql/$PGVERSION/$PGCLUSTER"
+	PGDATADIR="/var/lib/postgresql/$PGVERSION/$PGCLUSTER"
+	PGPIDFILE="/var/run/postgresql/${PGVERSION}-${PGCLUSTER}.pid"
+	DBDUMPFILE="postgresql-${PGVERSION}-${PGCLUSTER}.sql.gz"
+	RECOVERYCONF="${PGDATADIR}/recovery.conf"
+}
+do_set_pg_vars
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
 read_config () {
 	local SETTING EQ VALUE
 	local PGCONFFILE="${PGETCDIR}/postgresql.conf"
+	echo "$PROGNAME: configuring ${PGCONFFILE}..."
 	while read SETTING EQ VALUE; do
 		if [ "$EQ" != '=' ]; then
-			echo "$PROGNAME: \$DBCONF syntax - should be '=' not '$EQ'."
+			echo "$PROGNAME: \$DBCONF syntax - should be '=' not '$EQ'." 1>&2
 			exit 1
 			break
 		fi
 		if [ -z "$SETTING" ]; then
-			echo "$PROGNAME: \$DBCONF syntax - a postgresql.conf setting name is required."
+			echo "$PROGNAME: \$DBCONF syntax - a postgresql.conf setting name is required." 1>&2
 			exit 1
 			break
 		fi
@@ -81,12 +85,29 @@ read_config () {
 }
 
 do_configdbfile () {
-	echo "$PROGNAME: configuring ${PGCONFFILE}..."
 	echo "$DBCONF"| grep -v '^$\|^[[:space:]]*#.*$' |perl -pe 's/(.*)#.*$/$1/' | read_config
 }
 
 do_createdb () {
-	pg_createcluster "$PGVERSION" "$PGCLUSTER"
+	local LOCALE=''
+	local ARGS=''
+	OPTIND=1
+	while getopts l: F ; do
+		case $F in
+			l)
+				LOCALE="$OPTARG"
+				;;
+			\?)
+				echo "$PROGNAME: do_createdb() illegal option." 1>&2
+				exit 2
+				;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+	if [ -n "$LOCALE" ]; then
+		ARGS="$ARGS --locale $LOCALE"
+	fi
+	pg_createcluster $ARGS "$PGVERSION" "$PGCLUSTER"
 	echo "$PROGNAME: copying PG config files - DB admin is '${DBADMIN}'..."
 	local PORT=`get_pgport`
 	do_configdbfile
@@ -277,7 +298,8 @@ admindb () {
 
 createdb_usage () {
 	local BLAH="
-  Usage: $PROGNAME [-hf] [-u DB-admin] [pg_dumpallgz-dump]
+  Usage: $PROGNAME [-hf] [-l locale] [-u DB-admin] -v [pg-version]
+                   [pg_dumpallgz-dump]
 
 "
 	echo -n "$BLAH" 1>&2
@@ -287,7 +309,9 @@ createdb_vusage () {
 	local BLAH="
          -h        print this help
          -f        force drop of existing database before creating
+	 -l        set database locale
          -u        set database administrator ID
+	 -v        set database postgresQL version to use 
 
 "
 
@@ -298,8 +322,11 @@ createdb_vusage () {
 createdb () {
 	check_root
 	local FORCE=0
+	local SEPGVARS=0
+	local LOCALE=''
+	local ARGS=''
 	OPTIND=1
-	while getopts hfu: F; do
+	while getopts hfl:u:v: F; do
 		case $F in
 		f)	
 			FORCE=1
@@ -308,8 +335,15 @@ createdb () {
 			createdb_vusage
 			exit 1
 			;;
+		l)
+			LOCALE="$OPTARG"
+			;;
 		u)
 			DBADMIN="$OPTARG" 
+			;;
+		v)
+			PGVERSION="$OPTARG"
+			SETPGVARS=1
 			;;
 		\?)
 			createdb_usage
@@ -323,6 +357,12 @@ createdb () {
 		createdb_usage
 		exit 1
 	fi
+	if [ -n "$LOCALE" ]; then
+		ARGS="$ARGS -l $LOCALE"
+	fi
+	if [ $SETPGVARS -ge 1 ]; then
+		do_set_pg_vars
+	fi
 
 	if [ -e "$PGETCDIR" ]; then
 		if [ $FORCE -lt 1 ]; then
@@ -333,7 +373,7 @@ createdb () {
 		fi
 	fi
 	
-	do_createdb "$1"
+	do_createdb $ARGS "$1"
 }
 
 dropdb_usage () {
@@ -726,7 +766,7 @@ dumpdb () {
 
 upgradedb_usage () {
 	local BLAH="
-  Usage: $PROGNAME [-fh] [pg-version]
+  Usage: $PROGNAME [-fh] [-l locale] [pg-version]
 
 "
 	echo -n "$BLAH" 1>&2
@@ -734,8 +774,9 @@ upgradedb_usage () {
 
 upgradedb_vusage () {
 	local BLAH="
-         -h        print this help
-         -f        force upgrade of existing database
+         -h          print this help
+         -f          force upgrade of existing database
+	 -l locale   set locale for upgraded database
 
 "
 
@@ -746,11 +787,16 @@ upgradedb_vusage () {
 upgradedb () {
 	check_root
 	local FORCE=0
+	local LOCALE=''
+	local ARGS=''
 	OPTIND=1
-	while getopts fh F; do
+	while getopts fhl: F; do
 		case $F in
 		f)
 			FORCE=1
+			;;
+		l)
+			LOCALE="$OPTARG"
 			;;
 		h)
 			upgradedb_vusage
@@ -769,10 +815,13 @@ upgradedb () {
 		exit 1
 	fi
 	check_with_user $FORCE "Operation will upgrade database to new PostgresQL version."
-	if [ $# -eq 1 ]; then
-		pg_upgradecluster -v "$1" "$PGVERSION" "$PGCLUSTER"
+	if [ -n "$LOCALE" ]; then
+		ARGS="$ARGS --locale $LOCALE"
 	fi
-	pg_upgradecluster "$PGVERSION" "$PGCLUSTER"
+	if [ $# -eq 1 ]; then
+		ARGS="$ARGS -v $1"
+	fi
+	pg_upgradecluster $ARGS "$PGVERSION" "$PGCLUSTER"
 }
 
 
