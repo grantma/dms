@@ -97,13 +97,15 @@ class MasterSMLoadKeys(SMEvent):
     """
     rndc operation, Master Server only, DNSSEC loadkeys
     """
-@eventregister
-class MasterSMSignZone(SMSyncEvent):
-    """
-    rndc operation, Master Server only, DNSSEC sign zone
-
-    Can either be synchronous or scheduled.
-    """
+# Commenting out as duplicate declaration casuing SAWarnings.  One below
+# is the one being actually used in state machines....
+#@eventregister
+#class MasterSMSignZone(SMSyncEvent):
+#    """
+#    rndc operation, Master Server only, DNSSEC sign zone
+#
+#    Can either be synchronous or scheduled.
+#    """
 @eventregister
 class MasterSMSignZone(SMEvent):
     """
