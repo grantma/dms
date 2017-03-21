@@ -54,8 +54,11 @@ wal_level = hot_standby
 hot_standby = on       # Turn on Hot standby
 ssl = false            # DMS uses IPSEC
 listen_addresses = *   # Listen on all addresses
-log_timezone = UTC     # Set your timezones as needed.
-timezone = UTC
+		       # Addresses will get handled correctly and grouped in
+		       # single quotes in postgresql.conf
+#listen_addresses = ip6-localhost, localhost
+#log_timezone = UTC     # Set your timezones as needed.
+#timezone = UTC
 "
 
 # Should not have to change settings below here
