@@ -31,6 +31,7 @@ from io import StringIO
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy import desc
+from sqlalchemy import text
 from pyparsing import ParseBaseException
 
 from magcode.core.globals_ import *
@@ -236,12 +237,12 @@ class ZoneEngine(ZoneDataUtil):
             query = self.db_session.query(ZoneSM)
             if network_address_flag:
                 query = query.join(ReverseNetwork)\
-                        .filter( ':name <<= reverse_networks.network')\
+                        .filter( text(':name <<= reverse_networks.network'))\
                         .params(name=name)\
                         .order_by(ReverseNetwork.network)
             elif network:
                 query = query.join(ReverseNetwork)\
-                        .filter( ':network >>= reverse_networks.network')\
+                        .filter( text(':network >>= reverse_networks.network'))\
                         .params(network=network)\
                         .order_by(ReverseNetwork.network)
             else:
@@ -295,19 +296,19 @@ class ZoneEngine(ZoneDataUtil):
             query = db_session.query(ZoneSM)
             if network_address_flag and not exact_network:
                 query = query.join(ReverseNetwork)\
-                        .filter( ':inet <<= reverse_networks.network')\
+                        .filter( text(':inet <<= reverse_networks.network'))\
                         .params(inet=name)\
                         .order_by(ReverseNetwork.network.desc())
             elif network_address_flag and exact_network:
                 raise ZoneNotFound(name)
             elif network and not exact_network:
                 query = query.join(ReverseNetwork)\
-                        .filter( ':inet <<= reverse_networks.network')\
+                        .filter( text(':inet <<= reverse_networks.network'))\
                         .params(inet=network)\
                         .order_by(ReverseNetwork.network.desc())
             elif network and exact_network:
                 query = query.join(ReverseNetwork)\
-                        .filter( ':inet = reverse_networks.network')\
+                        .filter( text(':inet = reverse_networks.network'))\
                         .params(inet=network)\
                         .order_by(ReverseNetwork.network.desc())
             else:
