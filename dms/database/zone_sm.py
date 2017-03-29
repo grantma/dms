@@ -1365,7 +1365,7 @@ class DynDNSZoneSM(ZoneSM):
         """
         if not self.edit_lock_token:
             if self.lock_state != ZLSTATE_EDIT_UNLOCK:
-                raise ZoneSmLockFailure(
+                raise ZoneSMLockFailure(
                         "Zone '%s' - lock mechanism in bad state"
                         % self.name)
             return (RCODE_OK, "Zone '%s' - exit edit, zone not locked"
