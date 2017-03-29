@@ -3505,7 +3505,10 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
             self.exit_code =os.EX_USAGE
             self.do_help('ls_sg')
             return
-        result = engine.list_sg()
+        try:
+            result = engine.list_sg()
+        except NoSgFound as exc:
+            result = []
         out = []
         out += [ self.indent + '%-32s' % str(x['sg_name']) +' ' 
                 + '%-4s' % str(x['sg_id']) + ' ' + str(x['config_dir']) 
