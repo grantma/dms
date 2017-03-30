@@ -33,6 +33,7 @@ BIND9_NAMED_CONF="/etc/dms/bind/named.conf"
 BIND9_DR_NAMED_CONF="/etc/dms/bind/named-dr-replica.conf"
 BIND9_DEFAULT="/etc/default/bind9"
 BIND9_SYSTEMD_D="/etc/systemd/system/bind9.service.d"
+BIND9_DR_NAMED_REPLICA_CONF="/var/lib/dms/rsync-config/bind9-replica.conf"
 DMSDMD_DEFAULT="/etc/default/dmsdmd"
 DMS_CRONTAB="/etc/cron.d/dms-core"
 RSYSLOG_PGSQL="/etc/rsyslog.d/pgsql.conf"
@@ -241,7 +242,12 @@ dms_prepare_binddata () {
 	fi
 	set -e
 	check_if_named_running
-	check_with_user $FORCE "Operation will destroy bind9 .jnl files." 
+	check_with_user $FORCE "Operation will destroy bind9 .jnl files."
+	# Fix bind9-recovery.conf missing
+	if [ ! -f "$BIND9_DR_NAMED_REPLICA_CONF" ]; then
+		touch "$BIND9_DR_NAMED_REPLICA_CONF"
+		chown bind:bind "$BIND9_DR_NAMED_REPLICA_CONF"
+	fi
 	# Remove journal files and chown zone files so that DR replica 
 	# secondary will update zone files
 	# * is needed in following ls - watch it!  Its to detect if files
