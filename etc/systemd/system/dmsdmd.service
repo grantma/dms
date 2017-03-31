@@ -8,6 +8,7 @@ After = bind9.service
 EnvironmentFile=/etc/dms/dmsdmd/envvars
 ExecStartPre=/etc/dms/dmsdmd/prepare-environment
 ExecStart=/usr/local/sbin/dmsdmd --systemd
+ExecStartPost=/etc/dms/dmsdmd/post-start
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-abnormal
 
