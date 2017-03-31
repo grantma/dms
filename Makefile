@@ -37,7 +37,7 @@ CONFSUBDIRS :=  master-config-templates config-templates server-config-templates
 CONFFILES = dms.conf rsync-dnsconf-password rsync-dnssec-password pgpassfile \
 	    dr-settings.sh
 CONFBINDFILES = named.conf named.conf.options named.conf.local named-dr-replica.conf
-CONFDMSDMDFILES = envvars prepare-environment
+CONFDMSDMDFILES = envvars prepare-environment post-start
 MASTERINCFILES = server-acl.conf zones.conf
 WSGISCRIPTS = admin_dms.wsgi helpdesk_dms.wsgi value_reseller_dms.wsgi \
 	      hosted_dms.wsgi
@@ -209,6 +209,7 @@ endif
 		$(INSTALL) -m 644 etc/dmsdmd/$${f} $(CONFDMSDMDDIR); \
 	done
 	chmod 755 $(CONFDMSDMDDIR)/prepare-environment
+	chmod 755 $(CONFDMSDMDDIR)/post-start
 ifndef DMS_DEB_BUILD
 	for f in $(MASTERINCFILES); do \
 		chown $(DAEMONUSER):bind $(NAMEDCONFDIR)/$$f; \
