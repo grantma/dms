@@ -192,6 +192,28 @@ do_dms_drif () {
 	return 1
 }
 
+dms_drif_auto_up () {
+	set -x
+	perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
+	set + x
+}
+
+dms_drif_noauto_up () {
+	set -x
+	perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
+	# Extra line to deal with how humans can twiddle...
+	perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK
+	set +x
+}
+
+dms_drif_up () {
+	netscript ifup "$DMSDRIF"
+}
+
+dms_drif_down () {
+	netscript ifdown "$DMSDRIF"
+}
+
 get_pgport () {
 	grep '^port' $PGETCDIR/postgresql.conf | perl -pe 's/^.* (\d+)\s*.*$/$1/' || true
 }
@@ -268,13 +290,7 @@ rsyslog_restart () {
 }
 
 turn_on_replica_services () {
-	if do_dms_drif; then
-		set -x
-		perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
-		# Extra line to deal with how humans can twiddle...
-		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK
-		set +x
-	fi
+	do_dms_drif && dms_drif_noauto_up
 	service_disable_dmsdmd
 	do_dms_wsgi && service_disable_apache2
 	set -x
@@ -329,7 +345,7 @@ dms_start_as_replica () {
 	dms_pg_basebackup -f "$MASTER_SERVER"
 	dms_prepare_binddata -f
 	dms_write_recovery_conf "$MASTER_SERVER"
-	do_dms_drif && netscript ifdown $DMSDRIF
+	do_dms_drif && dms_drif_down
 	do_dms_wsgi && service_do apache2 stop
 	service_do dmsdmd stop
 	turn_on_replica_services
@@ -371,9 +387,8 @@ dms_promote_replica () {
 	if do_dms_wsgi; then
 		service_do apache2 start
 	fi
-	do_dms_drif && set -x && perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
-	set +x
-	do_dms_drif && netscript ifup $DMSDRIF
+	do_dms_drif && dms_drif_auto_up
+	do_dms_drif && dms_drif_up
 	# dms_update_wsgi_dns done in dmsdmd init script
 }
 
@@ -390,17 +405,13 @@ dms_master_down () {
 
 	set -e
 	fix_up_apache2_default
-	do_dms_drif && netscript ifdown $DMSDRIF
+	do_dms_drif && dms_drif_down
 	if do_dms_wsgi; then
 		service_do apache2 stop
 	fi
 	do_dms_wsgi && service_disable_apache2
+	do_dms_drif && dms_drif_auto_down
 	set -x
-	if do_dms_drif; then
-		perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
-		# Extra line to deal with how humans can twiddle...
-		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK
-	fi
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
 	set +x
 	# Settle time
@@ -450,9 +461,8 @@ dms_master_up () {
 	if do_dms_wsgi; then
 		service_do apache2 start
 	fi
-	do_dms_drif && set -x && perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
-	set +x
-	do_dms_drif && netscript ifup $DMSDRIF
+	do_dms_drif && dms_drif_auto_up
+	do_dms_drif && dms_drif_up
 	dms_update_wsgi_dns
 
 }
