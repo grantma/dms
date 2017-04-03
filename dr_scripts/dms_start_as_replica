@@ -200,7 +200,7 @@ get_dms_drif_type () {
 		echo "$DMSDRIF_TYPE"
 		return 0
 	fi
-	if dpkg --status netscript-2.4 | grep 'Status:' | grep -q installed; then
+	if dpkg --status netscript-2.4 2>/dev/null | grep 'Status:' | grep -q installed ; then
 		echo "netscript"
 		return 0
 	fi
@@ -209,7 +209,6 @@ get_dms_drif_type () {
 }
 
 get_dms_drif_file () {
-	set -x
 	if ! do_dms_drif; then
 		echo ''
 		return 0
@@ -226,15 +225,18 @@ get_dms_drif_file () {
 			exit 2
 			;;
 	esac
-	set +x
 }
 
 DMSDRIF_TYPE=`get_dms_drif_type`
-DMSDRIF_FILE=`get_dms_drif_file`
+DMSDRIF_FILE=`get_dms_drif_file | perl -pe 's/\n/ /gm'`
 
-if [ $DMSDRIF_FILE -gt 1 ]; then
-	echo "$PROGNAME: More than one file set for DMSDRIF_FILE: ${DMSDRIF_FILE}" 1>&2
-	exit 2
+if do_dms_drif; then
+	NUM_IF=`echo "$DMSDRIF_FILE" | wc -w`
+       	if [ $NUM_IF -gt 1 ]; then
+		echo "$PROGNAME: More than one file set for DMSDRIF_FILE: '${DMSDRIF_FILE}'" 1>&2
+		exit 2
+	fi
+	unset NUM_IF
 fi
 
 echo "DMSDRIF_TYPE: $DMSDRIF_TYPE"
