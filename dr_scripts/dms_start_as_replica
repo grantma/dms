@@ -37,7 +37,10 @@ BIND9_DR_NAMED_REPLICA_CONF="/var/lib/dms/rsync-config/bind9-replica.conf"
 DMSDMD_DEFAULT="/etc/default/dmsdmd"
 DMS_CRONTAB="/etc/cron.d/dms-core"
 RSYSLOG_PGSQL="/etc/rsyslog.d/pgsql.conf"
-NETSCRIPT_NETWORK="/etc/netscript/network.conf"
+DMSDRIF_FILE="/etc/netscript/network.conf"
+DMSDRIF=''
+DMSDRIF_TYPE=''
+DMSDRIF_FILE=''
 
 SETTINGSFILE="/etc/dms/dr-settings.sh"
 
@@ -192,17 +195,63 @@ do_dms_drif () {
 	return 1
 }
 
+get_dms_drif_type () {
+	if [ -n "$DMSDRIF_TYPE" ] ; then
+		echo "$DMSDRIF_TYPE"
+		return 0
+	fi
+	if dpkg --status netscript-2.4 | grep 'Status:' | grep -q installed; then
+		echo "netscript"
+		return 0
+	fi
+	echo "ifupdown"
+	return 0
+}
+
+get_dms_drif_file () {
+	set -x
+	if ! do_dms_drif; then
+		echo ''
+		return 0
+	fi
+	case $DMSDRIF_TYPE in
+		netscript)
+			grep -Ezrl "IF_AUTO=.*${DMSDRIF}_IPADDR" /etc/netscript/network.conf /etc/netscript/network.conf.d
+			;;
+		ifupdown)
+			grep -Ezrl "auto.*iface[[:space:]]+${DMSDRIF}" /etc/network/interfaces /etc/network/interfaces.d
+			;;
+		*)
+			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
+	set +x
+}
+
+DMSDRIF_TYPE=`get_dms_drif_type`
+DMSDRIF_FILE=`get_dms_drif_file`
+
+if [ $DMSDRIF_FILE -gt 1 ]; then
+	echo "$PROGNAME: More than one file set for DMSDRIF_FILE: ${DMSDRIF_FILE}" 1>&2
+	exit 2
+fi
+
+echo "DMSDRIF_TYPE: $DMSDRIF_TYPE"
+echo "DMSDRIF_FILE: $DMSDRIF_FILE"
+exit 0
+
 dms_drif_auto_up () {
 	set -x
-	perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
+	perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $DMSDRIF_FILE
 	set + x
 }
 
 dms_drif_noauto_up () {
 	set -x
-	perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
+	perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $DMSDRIF_FILE 
 	# Extra line to deal with how humans can twiddle...
-	perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK
+	perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $DMSDRIF_FILE
 	set +x
 }
 
