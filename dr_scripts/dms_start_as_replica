@@ -247,30 +247,70 @@ get_dms_drif_file () {
 DMSDRIF_TYPE=`get_dms_drif_type`
 get_dms_drif_file
 
-echo "DMSDRIF_TYPE: $DMSDRIF_TYPE"
-echo "DMSDRIF_FILE: $DMSDRIF_FILE"
-exit 0
-
 dms_drif_auto_up () {
-	set -x
-	perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $DMSDRIF_FILE
-	set + x
+	case $DMSDRIF_TYPE in
+		netscript)
+			set -x
+			perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $DMSDRIF_FILE
+			set + x
+			;;
+		ifupdown)
+			perl -pe "s/^#\s*(auto\s+${DMSDRIF}\s*.*)$/\1/g" -i $DMSDRIF_FILE
+			;;
+		*)
+			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
 }
 
 dms_drif_noauto_up () {
-	set -x
-	perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $DMSDRIF_FILE 
-	# Extra line to deal with how humans can twiddle...
-	perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $DMSDRIF_FILE
-	set +x
+	case $DMSDRIF_TYPE in
+		netscript)
+			set -x
+			perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $DMSDRIF_FILE
+			# Extra line to deal with how humans can twiddle...
+			perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $DMSDRIF_FILE
+			set +x
+			;;
+		ifupdown)
+			perl -pe "s/^\s*(auto\s+${DMSDRIF}\s*.*)$/#\1/g" -i $DMSDRIF_FILE
+			;;
+		*)
+			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
 }
 
 dms_drif_up () {
-	netscript ifup "$DMSDRIF"
+	case $DMSDRIF_TYPE in
+		netscript)
+			netscript ifup "$DMSDRIF"
+			;;
+		ifupdown)
+			ifup "$DMSDRIF"
+			;;
+		*)
+			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
 }
 
 dms_drif_down () {
-	netscript ifdown "$DMSDRIF"
+	case $DMSDRIF_TYPE in
+		netscript)
+			netscript ifdown "$DMSDRIF"
+			;;
+		ifupdown)
+			ifdown "$DMSDRIF"
+			;;
+		*)
+			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
 }
 
 get_pgport () {
