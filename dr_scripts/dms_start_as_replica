@@ -201,7 +201,7 @@ get_dms_drif_type () {
 		return 0
 	fi
 	# Check that dpkg is on the system
-	if [ -x "`which dpkg`" ] ; then
+	if [ ! -x "`which dpkg`" ] ; then
 		echo "$DMSDRIF_TYPE"
 		return 0
 	fi
@@ -252,13 +252,13 @@ dms_drif_auto_up () {
 		netscript)
 			set -x
 			perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $DMSDRIF_FILE
-			set + x
+			set +x
 			;;
 		ifupdown)
 			perl -pe "s/^#\s*(auto\s+${DMSDRIF}\s*.*)$/\1/g" -i $DMSDRIF_FILE
 			;;
 		*)
-			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			echo "$PROGNAME: dms_drif_auto_up() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
 			exit 2
 			;;
 	esac
@@ -277,7 +277,7 @@ dms_drif_noauto_up () {
 			perl -pe "s/^\s*(auto\s+${DMSDRIF}\s*.*)$/#\1/g" -i $DMSDRIF_FILE
 			;;
 		*)
-			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			echo "$PROGNAME: dms_drif_noauto_up() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
 			exit 2
 			;;
 	esac
@@ -292,7 +292,7 @@ dms_drif_up () {
 			ifup "$DMSDRIF"
 			;;
 		*)
-			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			echo "$PROGNAME: dms_drif_up() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
 			exit 2
 			;;
 	esac
@@ -307,7 +307,7 @@ dms_drif_down () {
 			ifdown "$DMSDRIF"
 			;;
 		*)
-			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			echo "$PROGNAME: dms_drif_down() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
 			exit 2
 			;;
 	esac
@@ -509,7 +509,7 @@ dms_master_down () {
 		service_do apache2 stop
 	fi
 	do_dms_wsgi && service_disable_apache2
-	do_dms_drif && dms_drif_auto_down
+	do_dms_drif && dms_drif_noauto_up
 	set -x
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
 	set +x
