@@ -1,5 +1,5 @@
 //
-// Net24 DMS ACL set up for master server
+// DMS ACL set up for master server
 //
 // ACLs need to be configured here for use in options...
 
@@ -27,7 +27,7 @@ options {
 	// you will need to update your keys.  See https://www.isc.org/bind-keys
 	//========================================================================
 	//
-        // Net24 DMS options set up for master server
+        // DMS options set up for master server
         //
 	dnssec-validation auto;
 

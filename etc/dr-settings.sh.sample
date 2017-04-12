@@ -1,4 +1,4 @@
-# Settings file for dr-scripts and Net24 PG database scripts
+# Settings file for dr-scripts and DMS PG database scripts
 
 # DR Partner server host name
 # ie default dms_start_as_replica master
