@@ -3785,7 +3785,7 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
         try:
             arg_dict = parse_line(syntax, line)
         except DoHelp:
-            self.do_help('set_sg_master')
+            self.do_help('set_sg_master_address')
             self.exit_code = os.EX_USAGE
             return
         except DoNothing:
@@ -3817,7 +3817,7 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
         try:
             arg_dict = parse_line(syntax, line)
         except DoHelp:
-            self.do_help('set_sg_master_alt')
+            self.do_help('set_sg_master_alt_address')
             self.exit_code = os.EX_USAGE
             return
         except DoNothing:
