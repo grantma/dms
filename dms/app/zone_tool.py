@@ -913,6 +913,12 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
 
     def __init__(self, *args, **kwargs):
         global _stdout
+        # Remove '-' from readline word delimiter string
+        # import readline
+        # delims = readline.get_completer_delims()
+        # delims = delims.replace('-', '')
+        # readline.set_completer_delims(delims)
+        # print(readline.get_completer_delims())
         super().__init__(*args, **kwargs)
         self.exit_code = os.EX_OK
         _stdout = self.stdout 
@@ -1343,7 +1349,6 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
         self.exit_code = self.pager(out)
 
 
-
 #    def precmd(self, line):
 #        """
 #        Turn '-' into '_' on first command verb
@@ -1356,9 +1361,8 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
 #    def completenames(self, text, *ignored):
 #        dotext = 'do_'+text
 #        names = [a[3:] for a in self.get_names() if a.startswith(dotext)]
-#        print (names)
-#        #names2 = [a.replace('-','_') for a in names if a.find('_') > 0]
-#        #names = names.extend(names2)
+#        names2 = [a.replace('_','-') for a in names if a.find('_') > 0]
+#        names.extend(names2)
 #        return names
 
 
