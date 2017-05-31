@@ -281,7 +281,6 @@ endif
 	ln -snf $(SHAREDIR)/zone_tool~rvim $(BINDIR)
 	ln -snf $(SHAREDIR)/dr_scripts/etckeeper_git_shell $(SBINDIR)
 	ln -snf $(SHAREDIR)/dr_scripts/dms_start_as_replica $(SBINDIR)
-	ln -snf $(SHAREDIR)/dr_scripts/dms_start_as_replica $(SBINDIR)/dms_basebackup
 	ln -snf $(SHAREDIR)/dr_scripts/dms_start_as_replica $(SBINDIR)/dms_promote_replica
 	ln -snf $(SHAREDIR)/dr_scripts/dms_start_as_replica $(SBINDIR)/dms_prepare_binddata
 	ln -snf $(SHAREDIR)/dr_scripts/dms_start_as_replica $(SBINDIR)/dms_master_down
