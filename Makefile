@@ -37,6 +37,7 @@ CONFSUBDIRS :=  master-config-templates config-templates server-config-templates
 CONFFILES = dms.conf rsync-dnsconf-password rsync-dnssec-password pgpassfile \
 	    dr-settings.sh
 CONFBINDFILES = named.conf named.conf.options named.conf.local named-dr-replica.conf
+CONFDMSDMDFILES = envvars prepare-environment post-start
 MASTERINCFILES = server-acl.conf zones.conf
 WSGISCRIPTS = admin_dms.wsgi helpdesk_dms.wsgi value_reseller_dms.wsgi \
 	      hosted_dms.wsgi
@@ -45,6 +46,7 @@ ifeq ($(OSNAME), Linux)
 	PREFIX=/usr/local
 	CONFDIR=$(DESTDIR)$(ETCDIR)/dms
 	CONFBINDDIR=$(DESTDIR)$(ETCDIR)/dms/bind
+	CONFDMSDMDDIR=$(DESTDIR)$(ETCDIR)/dms/dmsdmd
 	SYSCTLDIR=$(DESTDIR)$(ETCDIR)/sysctl.d
 	NAMEDDATADIR=$(DESTDIR)/var/lib/bind
 	NAMEDDYNAMICDIR=$(DESTDIR)/var/lib/bind/dynamic
@@ -62,6 +64,7 @@ ifeq ($(OSNAME), Linux)
 	LOGDIR=$(DESTDIR)/var/log/dms
 	RUNDIR=$(DESTDIR)/run/dms
 	BACKUPDIR=$(DESTDIR)/var/backups
+	SYSTEMDCONFDIR=$(DESTDIR)/lib/systemd/system
 	PYTHON_INTERPRETER ?= /usr/bin/python3
 	PYTHON_SETUP_OPTS = --install-layout=deb
 	PGUSER=postgres
@@ -70,6 +73,7 @@ else ifeq ($(OSNAME), FreeBSD)
 	PREFIX = /usr/local
 	CONFDIR = $(DESTDIR)$(PREFIX)$(ETCDIR)/dms
 	CONFBINDDIR=$(DESTDIR)$(PREFIX)$(ETCDIR)/dms/bind
+	CONFDMSDMDDIR=$(DESTDIR)$(PREFIX)$(ETCDIR)/dms/dmsdmd
 	NAMEDCONFDIR=$(DESTDIR)$(ETCDIR)/namedb/master-config
 	NAMEDSERVERCONFDIR=$(DESTDIR)$(ETCDIR)/namedb/rsync-config
 	RNDCCONFDIR=$(DESTDIR)$(ETCDIR)/nameddb
@@ -86,6 +90,7 @@ else
 	PREFIX = /usr/local
 	CONFDIR = $(DESTDIR)$(PREFIX)/dms$(ETCDIR)
 	CONFBINDDIR=$(DESTDIR)$(PREFIX)/dms$(ETCDIR)/bind
+	CONFDMSDMDDIR=$(DESTDIR)$(PREFIX)/dms$(ETCDIR)/dmsdmd
 	NAMEDCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)/master-config
 	NAMEDSERVERCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)/rsync-config
 	RNDCCONFDIR=$(DESTDIR)$(PREFIX)/namedb$(ETCDIR)
@@ -119,6 +124,7 @@ install-dir:
 	- $(INSTALL) -d $(MANDIR)
 	- $(INSTALL) -d $(CONFDIR)
 	- $(INSTALL) -d $(CONFBINDDIR)
+	- $(INSTALL) -d $(CONFDMSDMDDIR)
 	- $(INSTALL) -d $(NAMEDCONFDIR)
 	- $(INSTALL) -d $(NAMEDSERVERCONFDIR)
 	- $(INSTALL) -d $(NAMEDDYNAMICDIR)
@@ -135,6 +141,7 @@ install-dir:
 ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -d $(SYSCTLDIR)
 	- $(INSTALL) -d $(BACKUPDIR)
+	- $(INSTALL) -d $(SYSTEMDCONFDIR)
 endif
 ifndef DMS_DEB_BUILD
 	chown root:bind $(CONFBINDDIR)
@@ -198,6 +205,11 @@ endif
 	for f in $(CONFBINDFILES); do \
 		$(INSTALL) -m 644 etc/debian/bind/$${f} $(CONFBINDDIR); \
 	done
+	for f in $(CONFDMSDMDFILES); do \
+		$(INSTALL) -m 644 etc/dmsdmd/$${f} $(CONFDMSDMDDIR); \
+	done
+	chmod 755 $(CONFDMSDMDDIR)/prepare-environment
+	chmod 755 $(CONFDMSDMDDIR)/post-start
 ifndef DMS_DEB_BUILD
 	for f in $(MASTERINCFILES); do \
 		chown $(DAEMONUSER):bind $(NAMEDCONFDIR)/$$f; \
@@ -209,6 +221,7 @@ endif
 ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -m 644 etc/debian/sysctl.d/30-dms-core-net.conf \
 		$(SYSCTLDIR)
+	- $(INSTALL) -m 644 etc/systemd/system/dmsdmd.service $(SYSTEMDCONFDIR)
 endif
 
 install-wsgi: install-dir
@@ -247,8 +260,8 @@ install-bin: install-python
 	done;
 	- $(INSTALL) -m 755 dr_scripts/etckeeper_git_shell $(SHAREDIR)/dr_scripts \
 	 	&& perl -pe 's~^#!/\S+/python3.[0-9]\s+.*$$~#!$(PYTHON_INTERPRETER)~' -i $(SHAREDIR)/dr_scripts/etckeeper_git_shell
-	- $(INSTALL) -m 644 postgresql/dms-schema-pg94.sql $(SHAREDIR)/postgresql
-	- $(INSTALL) -m 644 postgresql/dms-init-pg94.sql $(SHAREDIR)/postgresql
+	- $(INSTALL) -m 644 postgresql/dms-schema-pg.sql $(SHAREDIR)/postgresql
+	- $(INSTALL) -m 644 postgresql/dms-init-pg.sql $(SHAREDIR)/postgresql
 ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -m 755 postgresql/dms_createdb $(SHAREDIR)/postgresql \
 		&& perl -pe 's~^DBLIBDIR=.*$$~DBLIBDIR=$(PREFIX)/share/dms/postgresql~' -i $(SHAREDIR)/postgresql/dms_createdb
@@ -278,8 +291,16 @@ ifeq ($(OSNAME), Linux)
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_createdb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_admindb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_dropdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_editconfigdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_rmconfigdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_reconfigdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_startdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_stopdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_statusdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_showconfigdb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_restoredb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_dumpdb
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_upgradedb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_sqldb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_pg_basebackup
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_write_recovery_conf

@@ -7,6 +7,8 @@ log/
 var/
 dnspython-tests/
 /zone_tool~*
+# Ignore when py-magcode-core symlinked in for work
+magcode
 # Passwords can be found in here - we don't woant to commit them!
 etc/dms.conf
 etc/rsync-slave-password

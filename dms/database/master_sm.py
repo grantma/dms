@@ -97,13 +97,15 @@ class MasterSMLoadKeys(SMEvent):
     """
     rndc operation, Master Server only, DNSSEC loadkeys
     """
-@eventregister
-class MasterSMSignZone(SMSyncEvent):
-    """
-    rndc operation, Master Server only, DNSSEC sign zone
-
-    Can either be synchronous or scheduled.
-    """
+# Commenting out as duplicate declaration casuing SAWarnings.  One below
+# is the one being actually used in state machines....
+#@eventregister
+#class MasterSMSignZone(SMSyncEvent):
+#    """
+#    rndc operation, Master Server only, DNSSEC sign zone
+#
+#    Can either be synchronous or scheduled.
+#    """
 @eventregister
 class MasterSMSignZone(SMEvent):
     """
@@ -654,7 +656,7 @@ def get_master_sm(db_session):
     except MultipleResultsFound as exc:
         # Blow up REAL BIG!
         log_critical("More than one MasterSM found in database, giving up")
-        sys.exit(os.EX_SOFTWARE)
+        systemd_exit(os.EX_SOFTWARE, SDEX_GENERIC)
     except NoResultFound:
         master_sm = MasterSM()
         db_session.add(master_sm)
@@ -724,7 +726,7 @@ def zone_sm_reconfig_schedule(db_session, zone_sm, zone_sm_event=None,
         return
     else:
         log_critical('MasterSM - unrecognized state, exiting')
-        sys.exit(os.EX_SOFTWARE)
+        systemd_exit(os.EX_SOFTWARE, SDEX_GENERIC)
     return
 
 def zone_sm_dnssec_schedule(db_session, zone_sm, operation):

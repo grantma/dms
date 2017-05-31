@@ -25,35 +25,92 @@ PROGNAME="`basename $0`"
 DBNAME="dms"
 DBADMIN="root"
 PGCLUSTER="dms"
-PGVERSION="9.4"
 PGPASSWORDFILE="/etc/dms/pgpassfile"
 DBREPLICA="ip6-localhost"
 DBLIBDIR="/usr/local/share/dms/postgresql"
 VARDIR="/var/lib/dms/postgresql"
 DBDUMPDIR="/var/backups"
-DBSCHEMA="dms-schema-pg94.sql"
-DBSEEDDATA="dms-init-pg94.sql"
+DBSCHEMA="dms-schema-pg.sql"
+DBSEEDDATA="dms-init-pg.sql"
 DBALTXLOGDIR="/srv/postgresql"
 DBMOVEXLOG=false
+DBCONF=""
 SETTINGSFILE="/etc/dms/dr-settings.sh"
 
 # Read in settings
 [ -f "$SETTINGSFILE" ] && . "$SETTINGSFILE"
 
-# Settings that depend on settings file
-PGETCDIR="/etc/postgresql/$PGVERSION/$PGCLUSTER"
-PGDATADIR="/var/lib/postgresql/$PGVERSION/$PGCLUSTER"
-PGPIDFILE="/var/run/postgresql/${PGVERSION}-${PGCLUSTER}.pid"
-DBDUMPFILE="postgresql-${PGVERSION}-${PGCLUSTER}.sql.gz"
-RECOVERYCONF="${PGDATADIR}/recovery.conf"
+# Work out PG Version
+get_pgversion () {
+	local VER=`pg_lsclusters -h| grep "$PGCLUSTER" | cut -f 1 -d ' '`
+	if [ -n "$VER" ]; then
+		echo "$VER"
+		return 0
+	fi
+	VER=`/usr/share/postgresql-common/supported-versions | tail -1`
+	echo "$VER"
+	return 0
+}
+PGVERSION=`get_pgversion`
+
+do_set_pg_vars () {
+	# Settings that depend on settings file
+	PGETCDIR="/etc/postgresql/$PGVERSION/$PGCLUSTER"
+	PGDATADIR="/var/lib/postgresql/$PGVERSION/$PGCLUSTER"
+	PGPIDFILE="/var/run/postgresql/${PGVERSION}-${PGCLUSTER}.pid"
+	DBDUMPFILE="postgresql-${PGVERSION}-${PGCLUSTER}.sql.gz"
+	RECOVERYCONF="${PGDATADIR}/recovery.conf"
+}
+do_set_pg_vars
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin"
 
+read_config () {
+	local PARAM EQ VALUE
+	local PGCONFFILE="${PGETCDIR}/postgresql.conf"
+	echo "$PROGNAME: configuring ${PGCONFFILE}..."
+	while read PARAM EQ VALUE; do
+		if [ "$EQ" != '=' ]; then
+			echo "$PROGNAME: \$DBCONF syntax - should be '=' not '$EQ'." 1>&2
+			exit 1
+			break
+		fi
+		if [ -z "$PARAM" ]; then
+			echo "$PROGNAME: \$DBCONF syntax - a postgresql.conf  parameter is required." 1>&2
+			exit 1
+			break
+		fi
+		pg_conftool "$PGVERSION" "$PGCLUSTER" "$PGCONFFILE" set "$PARAM" "$VALUE"
+	done
+}
+
+do_configdbfile () {
+	echo "$DBCONF"| grep -v '^$\|^[[:space:]]*#.*$' |perl -pe 's/(.*)#.*$/$1/' | read_config
+}
+
 do_createdb () {
-	pg_createcluster "$PGVERSION" "$PGCLUSTER"
+	local LOCALE=''
+	local ARGS=''
+	OPTIND=1
+	while getopts l: F ; do
+		case $F in
+			l)
+				LOCALE="$OPTARG"
+				;;
+			\?)
+				echo "$PROGNAME: do_createdb() illegal option." 1>&2
+				exit 2
+				;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+	if [ -n "$LOCALE" ]; then
+		ARGS="$ARGS --locale $LOCALE"
+	fi
+	pg_createcluster $ARGS "$PGVERSION" "$PGCLUSTER"
 	echo "$PROGNAME: copying PG config files - DB admin is '${DBADMIN}'..."
 	local PORT=`get_pgport`
-	perl -pe "s/\@\@CLUSTER\@\@/$PGCLUSTER/g" <  $DBLIBDIR/postgresql.conf | perl -pe "s/\@\@PORT\@\@/$PORT/g" > $PGETCDIR/postgresql.conf
+	do_configdbfile
 	perl -pe "s/\@\@USER\@\@/$DBADMIN/g" <  $DBLIBDIR/pg_ident.conf > $PGETCDIR/pg_ident.conf
 	sha1sum $PGETCDIR/pg_ident.conf > $VARDIR/pg_ident.conf.sha1sum
 	perl -pe "s~\@\@REPLICA\@\@~$DBREPLICA~g" <  $DBLIBDIR/pg_hba.conf > $PGETCDIR/pg_hba.conf
@@ -241,7 +298,8 @@ admindb () {
 
 createdb_usage () {
 	local BLAH="
-  Usage: $PROGNAME [-hf] [-u DB-admin] [pg_dumpallgz-dump]
+  Usage: $PROGNAME [-hf] [-l locale] [-u DB-admin] -v [pg-version]
+                   [pg_dumpallgz-dump]
 
 "
 	echo -n "$BLAH" 1>&2
@@ -251,7 +309,9 @@ createdb_vusage () {
 	local BLAH="
          -h        print this help
          -f        force drop of existing database before creating
+	 -l        set database locale
          -u        set database administrator ID
+	 -v        set database postgresQL version to use 
 
 "
 
@@ -262,8 +322,11 @@ createdb_vusage () {
 createdb () {
 	check_root
 	local FORCE=0
+	local SEPGVARS=0
+	local LOCALE=''
+	local ARGS=''
 	OPTIND=1
-	while getopts hfu: F; do
+	while getopts hfl:u:v: F; do
 		case $F in
 		f)	
 			FORCE=1
@@ -272,8 +335,15 @@ createdb () {
 			createdb_vusage
 			exit 1
 			;;
+		l)
+			LOCALE="$OPTARG"
+			;;
 		u)
 			DBADMIN="$OPTARG" 
+			;;
+		v)
+			PGVERSION="$OPTARG"
+			SETPGVARS=1
 			;;
 		\?)
 			createdb_usage
@@ -287,6 +357,12 @@ createdb () {
 		createdb_usage
 		exit 1
 	fi
+	if [ -n "$LOCALE" ]; then
+		ARGS="$ARGS -l $LOCALE"
+	fi
+	if [ $SETPGVARS -ge 1 ]; then
+		do_set_pg_vars
+	fi
 
 	if [ -e "$PGETCDIR" ]; then
 		if [ $FORCE -lt 1 ]; then
@@ -297,7 +373,7 @@ createdb () {
 		fi
 	fi
 	
-	do_createdb "$1"
+	do_createdb $ARGS "$1"
 }
 
 dropdb_usage () {
@@ -351,6 +427,314 @@ dropdb () {
 	fi
 	
 	do_dropdb
+}
+
+editconfigdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+editconfigdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	editconfigdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+editconfigdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			editconfigdb_vusage
+			exit 1
+			;;
+		\?)
+			editconfigdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		editconfigdb_usage
+		exit 1
+	fi
+
+	pg_conftool "$PGVERSION" "$PGCLUSTER" edit
+}
+
+rmconfigdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h] <postgresql.conf-parameter>
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+rmconfigdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	rmconfigdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+rmconfigdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			rmconfigdb_vusage
+			exit 1
+			;;
+		\?)
+			rmconfigdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 1 ]; then
+		rmconfigdb_usage
+		exit 1
+	fi
+
+	pg_conftool "$PGVERSION" "$PGCLUSTER" remove "$1"
+}
+
+reconfigdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+reconfigdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	reconfigdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+reconfigdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			reconfigdb_vusage
+			exit 1
+			;;
+		\?)
+			reconfigdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		reconfigdb_usage
+		exit 1
+	fi
+
+	do_configdbfile
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" reload
+}
+
+startdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+startdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	startdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+startdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			startdb_vusage
+			exit 1
+			;;
+		\?)
+			startdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		startdb_usage
+		exit 1
+	fi
+
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" start
+}
+
+stopdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+stopdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	stopdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+stopdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			stopdb_vusage
+			exit 1
+			;;
+		\?)
+			stopdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		stopdb_usage
+		exit 1
+	fi
+
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" stop
+}
+
+statusdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+statusdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	statusdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+statusdb () {
+	check_root
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			statusdb_vusage
+			exit 1
+			;;
+		\?)
+			statusdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		statusdb_usage
+		exit 1
+	fi
+
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" status
+}
+
+showconfigdb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-h]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+showconfigdb_vusage () {
+	local BLAH="
+         -h        print this help
+
+"
+
+	showconfigdb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+showconfigdb () {
+	local FORCE=0
+	OPTIND=1
+	while getopts h F; do
+		case $F in
+		h)
+			showconfigdb_vusage
+			exit 1
+			;;
+		\?)
+			showconfigdb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 ]; then
+		showconfigdb_usage
+		exit 1
+	fi
+
+	pg_conftool "$PGVERSION" "$PGCLUSTER" show all
 }
 
 restoredb_usage () {
@@ -466,6 +850,66 @@ dumpdb () {
 	else
 		pg_dumpallgz -p "$PORT" -c -f "$1"
 	fi
+}
+
+upgradedb_usage () {
+	local BLAH="
+  Usage: $PROGNAME [-fh] [-l locale] [pg-version]
+
+"
+	echo -n "$BLAH" 1>&2
+}
+
+upgradedb_vusage () {
+	local BLAH="
+         -h          print this help
+         -f          force upgrade of existing database
+	 -l locale   set locale for upgraded database
+
+"
+
+	upgradedb_usage
+	echo -n "$BLAH" 1>&2
+}
+
+upgradedb () {
+	check_root
+	local FORCE=0
+	local LOCALE=''
+	local ARGS=''
+	OPTIND=1
+	while getopts fhl: F; do
+		case $F in
+		f)
+			FORCE=1
+			;;
+		l)
+			LOCALE="$OPTARG"
+			;;
+		h)
+			upgradedb_vusage
+			exit 1
+			;;
+		\?)
+			upgradedb_usage
+			exit 1
+			;;
+		esac
+	done
+	shift $(( $OPTIND - 1 ))
+
+	if [ $# -ne 0 -a $# -ne 1 ]; then
+		upgradedb_usage
+		exit 1
+	fi
+	check_with_user $FORCE "Operation will upgrade database to new PostgresQL version."
+	if [ -n "$LOCALE" ]; then
+		ARGS="$ARGS --locale $LOCALE"
+	fi
+	if [ $# -eq 1 ]; then
+		ARGS="$ARGS -v $1"
+	fi
+	pg_upgradecluster $ARGS "$PGVERSION" "$PGCLUSTER"
 }
 
 
@@ -747,7 +1191,7 @@ replicadb () {
 		do_move_xlog
 	fi
 	write_recovery_conf "$MASTER_SERVER"
-	invoke-rc.d postgresql start
+	pg_ctlcluster "$PGVERSION" "$PGCLUSTER" start
 }
 
 case $0 in
@@ -760,11 +1204,35 @@ case $0 in
 *dropdb)
 	dropdb "$@"
 	;;
+*editconfigdb)
+	editconfigdb "$@"
+	;;
+*rmconfigdb)
+	rmconfigdb "$@"
+	;;
+*reconfigdb)
+	reconfigdb "$@"
+	;;
+*startdb)
+	startdb "$@"
+	;;
+*stopdb)
+	stopdb "$@"
+	;;
+*statusdb)
+	statusdb "$@"
+	;;
+*showconfigdb)
+	showconfigdb "$@"
+	;;
 *restoredb)
 	restoredb "$@"
 	;;
 *dumpdb)
 	dumpdb "$@"
+	;;
+*upgradedb)
+	upgradedb "$@"
 	;;
 *sqldb)
 	sqldb "$@"

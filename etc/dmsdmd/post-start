@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -eu
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/sbin
+
+# Update WSGI DNS Fail over RR as needed
+[ -x "`which dms_update_wsgi_dns`" ] && sleep 10 && dms_update_wsgi_dns 
+RETVAL=$?
+[ $RETVAL -eq 1 ] && exit 0
+[ $RETVAL -eq 76 ] && exit 0
+[ $RETVAL -eq 0 ] || exit 1
+
+:

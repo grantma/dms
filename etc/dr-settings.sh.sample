@@ -1,4 +1,4 @@
-# Settings file for dr-scripts and Net24 PG database scripts
+# Settings file for dr-scripts and DMS PG database scripts
 
 # DR Partner server host name
 # ie default dms_start_as_replica master
@@ -46,11 +46,29 @@ $UPDATE_TYPE wsgi-failover
 @@DMS_WSGI_LABEL@@  @@DMS_WSGI_TTL@@  IN      CNAME      @@DMS_MASTER@@
 '
 
+# Postgresql.conf parameters
+DBCONF="
+max_wal_senders = 3
+wal_keep_segments = 64   # On DMS this would be set to 256, 4096 GB
+wal_level = hot_standby
+hot_standby = on       # Turn on Hot standby
+ssl = false            # DMS uses IPSEC
+listen_addresses = *   # Listen on all addresses
+		       # Addresses will get handled correctly and grouped in
+		       # single quotes in postgresql.conf
+#listen_addresses = ip6-localhost, localhost
+#log_timezone = UTC     # Set your timezones as needed.
+#timezone = UTC
+"
+
 # Should not have to change settings below here
 #----------------------------------------------
 
-# PostgresQL version used
-PGVERSION="9.4"
+# PostgresQL version used. Override setting
+# Only set if needed.  Can be used by debian install scripts to override
+# PostgresQL version used.
+# NOT USED ANYMORE.  OF NO EFFECT
+# PGVERSION=""
 
-# PstgresQL catalog cluster name
+# PostgresQL catalog cluster name
 PGCLUSTER="dms"

@@ -913,6 +913,12 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
 
     def __init__(self, *args, **kwargs):
         global _stdout
+        # Remove '-' from readline word delimiter string
+        # import readline
+        # delims = readline.get_completer_delims()
+        # delims = delims.replace('-', '')
+        # readline.set_completer_delims(delims)
+        # print(readline.get_completer_delims())
         super().__init__(*args, **kwargs)
         self.exit_code = os.EX_OK
         _stdout = self.stdout 
@@ -1343,7 +1349,6 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
         self.exit_code = self.pager(out)
 
 
-
 #    def precmd(self, line):
 #        """
 #        Turn '-' into '_' on first command verb
@@ -1356,9 +1361,8 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
 #    def completenames(self, text, *ignored):
 #        dotext = 'do_'+text
 #        names = [a[3:] for a in self.get_names() if a.startswith(dotext)]
-#        print (names)
-#        #names2 = [a.replace('-','_') for a in names if a.find('_') > 0]
-#        #names = names.extend(names2)
+#        names2 = [a.replace('_','-') for a in names if a.find('_') > 0]
+#        names.extend(names2)
 #        return names
 
 
@@ -3505,7 +3509,10 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
             self.exit_code =os.EX_USAGE
             self.do_help('ls_sg')
             return
-        result = engine.list_sg()
+        try:
+            result = engine.list_sg()
+        except NoSgFound as exc:
+            result = []
         out = []
         out += [ self.indent + '%-32s' % str(x['sg_name']) +' ' 
                 + '%-4s' % str(x['sg_id']) + ' ' + str(x['config_dir']) 
@@ -3782,7 +3789,7 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
         try:
             arg_dict = parse_line(syntax, line)
         except DoHelp:
-            self.do_help('set_sg_master')
+            self.do_help('set_sg_master_address')
             self.exit_code = os.EX_USAGE
             return
         except DoNothing:
@@ -3814,7 +3821,7 @@ class ZoneToolCmd(cmd.Cmd, SystemEditorPager):
         try:
             arg_dict = parse_line(syntax, line)
         except DoHelp:
-            self.do_help('set_sg_master_alt')
+            self.do_help('set_sg_master_alt_address')
             self.exit_code = os.EX_USAGE
             return
         except DoNothing:

@@ -30,6 +30,7 @@ from copy import copy
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import text
 
 from magcode.core.globals_ import *
 from magcode.core.database import sql_types
@@ -604,7 +605,7 @@ class ZoneDataUtil(object):
             # Ignore addresses we don't have reverse zone for
             query = db_session.query(ZoneSM)\
                     .join(ReverseNetwork)\
-                    .filter(":address  <<= reverse_networks.network")\
+                    .filter(text(":address  <<= reverse_networks.network"))\
                     .params(address = ptr_data['address'])
             query = ZoneSM.query_is_not_deleted(query)
             query = ZoneSM.query_inc_updates(query)

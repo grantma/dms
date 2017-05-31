@@ -1,0 +1,28 @@
+#!/bin/sh
+
+set -eu
+
+DMSDMD_RUN_DIR=/run/dms
+. /etc/dms/dmsdmd/envvars
+
+
+mkdir --parents "$DMSDMD_RUN_DIR";
+
+if [ -n "$DMSDMD_RUN_USER" ]; then
+    if ! getent passwd $DMSDMD_RUN_USER >/dev/null; then
+	echo "Configured user '$DMSDMD_RUN_USER' doesn't exist."
+	exit 1
+    fi
+fi
+
+if [ -n "$DMSDMD_RUN_GROUP" ]; then
+    if ! getent group $DMSDMD_RUN_GROUP >/dev/null; then
+	echo "Configured group '$DMSDMD_RUN_GROUP' doesn't exist."
+	exit 1
+    fi
+fi
+
+chown --silent "$DMSDMD_RUN_USER:$DMSDMD_RUN_GROUP" "$DMSDMD_RUN_DIR"
+chmod 775 "$DMSDMD_RUN_DIR"
+
+:

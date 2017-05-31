@@ -56,7 +56,6 @@ from dms.globals_ import update_engine
 from dms.dyndns_update import DynDNSUpdate
 from dms.exceptions import DynDNSCantReadKeyError
 
-
 USAGE_MESSAGE = "Usage: %s [-dhv] [-c config_file]"
 COMMAND_DESCRIPTION = "DMS DNS Management Daemon"
 
@@ -96,15 +95,23 @@ class DmsDMDProcess(ProcessDaemon):
         test_hostname = settings['master_dns_server']
         if not test_hostname:
             test_hostname = socket.getfqdn()
-        try:
-            # Transform any hostname to an IP address
-            settings['master_dns_server'] = connect_test_address(
-                                            test_hostname,
-                                            port=settings['master_dns_port'])
-        except(IOError, OSError) as exc:
+        connect_retry_wait = get_numeric_setting('connect_retry_wait', float)
+        exc_msg = ''
+        for t in range(3):
+            try:
+                # Transform any hostname to an IP address
+                settings['master_dns_server'] = connect_test_address(
+                                                test_hostname,
+                                                port=settings['master_dns_port'])
+                break
+            except(IOError, OSError) as exc:
+                exc_msg = str(exc)
+                time.sleep(connect_retry_wait)
+                continue
+        else:
             log_error("Testing master DNS server IP address '%s:%s' - %s" 
-                    % (test_hostname, settings['master_dns_port'], str(exc)))
-            sys.exit(os.EX_NOHOST)
+                        % (test_hostname, settings['master_dns_port'], exc_msg))
+            systemd_exit(os.EX_NOHOST, SDEX_CONFIG)
         # If we get here without raising an exception, we can talk to
         # the server address (mostly)
         return
@@ -130,7 +137,7 @@ class DmsDMDProcess(ProcessDaemon):
                 log_error("Could not parse 'this_servers_addresses' to obtain"
                         " list of this servers DNS listening addresses - %s"
                             % str(exc))
-                sys.exit(os.EX_CONFIG)
+                systemd_exit(os.EX_CONFIG, SDEX_CONFIG)
         settings['this_servers_addresses'] = this_servers_addresses
         # Recalculate host information - this will do nothing 
         # if 'ifconfig -a' et al won't work
@@ -142,7 +149,7 @@ class DmsDMDProcess(ProcessDaemon):
             db_session.commit()
         except Exception as exc:
             log_error(str(exc))
-            sys.exit(os.EX_UNAVAILABLE)
+            systemd_exit(os.EX_UNAVAILABLE, SDEX_NOTRUNNING)
         log_info("List of local IPs, 'this_servers_addresses' - %s"
                     % ', '.join(settings['this_servers_addresses']))
         log_info("Master DNS server on this machine, 'master_dns_server' - %s"
@@ -152,18 +159,23 @@ class DmsDMDProcess(ProcessDaemon):
         """
         Initialise the update engines used
         """
+        connect_retry_wait = get_numeric_setting('connect_retry_wait', float)
         error_str = ''
-        try:
-            dyndns_engine = DynDNSUpdate(settings['dns_server'],
-                                    settings['dyndns_key_file'],
-                                    settings['dyndns_key_name'])
-        except (DynDNSCantReadKeyError, IOError, OSError) as exc:
-            error_str = ("Can't connect to named for dynamic updates - %s" 
-                            % str(exc))
+        for t in range(3):
+            try:
+                dyndns_engine = DynDNSUpdate(settings['dns_server'],
+                                        settings['dyndns_key_file'],
+                                        settings['dyndns_key_name'])
+                break
+            except (DynDNSCantReadKeyError, IOError, OSError) as exc:
+                error_str = ("Can't connect to named for dynamic updates - %s" 
+                                % str(exc))
+                time.sleep(connect_retry_wait)
+                continue
         # Process above error...
-        if (error_str):
+        else:
             log_error("%s" % error_str)
-            sys.exit(os.EX_NOHOST)
+            systemd_exit(os.EX_NOHOST, SDEX_CONFIG)
         update_engine['dyndns'] = dyndns_engine
 
     def do_garbage_collect(self):
@@ -172,6 +184,10 @@ class DmsDMDProcess(ProcessDaemon):
         """
         error_str = ''
         try:
+            rss_mem_usage = (float(self.proc_monitor.memory_info().rss)
+                                    /1024/1024)
+        except AttributeError:
+            # Deal with a change in name of get_memory_info() method
             rss_mem_usage = (float(self.proc_monitor.get_memory_info().rss)
                                     /1024/1024)
         except Exception as exc:
@@ -179,7 +195,7 @@ class DmsDMDProcess(ProcessDaemon):
         # Process above error...
         if (error_str):
             log_error("Error obtaining resource usage - %s" % error_str) 
-            sys.exit(os.EX_SOFTWARE)
+            systemd_exit(os.EX_SOFTWARE, SDEX_NOTRUNNING)
         memory_exec_threshold = get_numeric_setting('memory_exec_threshold', float)
         if (rss_mem_usage > memory_exec_threshold):
             log_warning('Memory exec threshold %s MB reached, actual %s MB - execve() to reclaim.'

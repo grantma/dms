@@ -22,7 +22,7 @@
 # Blow up on any errors
 set -e
 
-PYTHON_VERSION=3.4
+PYTHON_VERSION=`python3 -V | perl -pe 's/^\S+\s+([0-9]+\.[0-9]+)\.[0-9]+$/\1/'`
 OS=`uname`
 [ "$OS" = "Linux" ] && LINUX_DIST=`cat /etc/issue | cut -d ' ' -f 1`
 if [ "$OS" = "FreeBSD" ]; then
@@ -39,61 +39,83 @@ else
 	# Hopefully everything else is like this
 	PYTHON_SITE_PACKAGES="/usr/local/lib/python${PYTHON_VERSION}/dist-packages"
 fi
-PYTHON_SETUPTOOLS_VERSION="1.4.1"
-PYTHON_SETUPTOOLS_NAME="setuptools-${PYTHON_SETUPTOOLS_VERSION}"
-PYTHON_SETUPTOOLS_TARGZ="${PYTHON_SETUPTOOLS_NAME}.tar.gz"
-PYTHON_SETUPTOOLS_URL="https://pypi.python.org/packages/source/s/setuptools/${PYTHON_SETUPTOOLS_TARGZ}"
+
+PIP3_BIN="pip3"
+PIP3_ARGS="--compile --target $PYTHON_SITE_PACKAGES"
+PIP3_INSTALL="$PIP3_BIN install $PIP3_ARGS"
+PYTHON_GET_PIP_URL="https://bootstrap.pypa.io/get-pip.py"
+PYTHON_MODULE_TEST='pip3 show'
+
+qt () { "$@" >/dev/null 2>&1 ; }
 
 clean_site_packages () {
 	(cd  $PYTHON_SITE_PACKAGES; rm -rf `ls -1 | grep -v 'README'`)
 }
 
-install_python_setuptools () {
+install_if_not_there () {
+	for P in "$@"; do
+		if ! qt $PYTHON_MODULE_TEST $P; then
+			$PIP3_INSTALL $P;
+		fi
+	done
+}
+
+install_python_pip3 () {
 	local SCRATCH="scratch-$$"
+
+	if qt type pip3 ; then
+		# Later python 3s come with pip and setuptools as part
+		# of standard distribution
+		install_if_not_there setuptools wheel
+		return 0
+	fi
+	
 	mkdir $SCRATCH
-	(cd $SCRATCH && curl -O "$PYTHON_SETUPTOOLS_URL" && tar xzf $PYTHON_SETUPTOOLS_TARGZ)
-	(cd $SCRATCH/$PYTHON_SETUPTOOLS_NAME && "python${PYTHON_VERSION}" ./setup.py install)
+	(cd $SCRATCH && curl -O "$PYTHON_GET_PIP_URL")
+	(cd $SCRATCH && "python${PYTHON_VERSION}" get-pip.py)
+	if [ -f /usr/local/bin/pip ]; then
+		mv /usr/local/bin/pip /usr/local/bin/pip3
+	fi
 	rm -rf $SCRATCH
 }
 
 
 install_python_sqlalchemy () {
-	easy_install-${PYTHON_VERSION} psycopg2 sqlalchemy
-	#easy_install-${PYTHON_VERSION} py-postgresql sqlalchemy
+	install_if_not_there psycopg2 sqlalchemy
+	#install_if_not_there py-postgresql sqlalchemy
 }
 
 install_python_setproctitle () {
-	easy_install-${PYTHON_VERSION} setproctitle
+	install_if_not_there setproctitle
 }
 
 install_python_winpdb () {
-	easy_install-${PYTHON_VERSION} winpdb
+	install_if_not_there winpdb
 }
 
 install_python_pyparsing () {
-	easy_install-${PYTHON_VERSION} pyparsing
+	install_if_not_there pyparsing
 }
 
 install_python_psutil () {
-	easy_install-${PYTHON_VERSION} psutil
+	install_if_not_there psutil
 }
 
-install_python_dnspython3 () {
-	easy_install-${PYTHON_VERSION} dnspython3
-
+install_python_dnspython () {
+	install_if_not_there dnspython
 }
 
 install_magcode_core () {
-	easy_install-${PYTHON_VERSION} magcode-core
+	install_if_not_there magcode-core
 }
 
 clean_site_packages
-install_python_setuptools
+install_python_pip3
 install_python_sqlalchemy
 install_python_setproctitle
 install_python_winpdb
 install_python_pyparsing
-install_python_dnspython3
+install_python_dnspython
 install_python_psutil
 install_magcode_core
 

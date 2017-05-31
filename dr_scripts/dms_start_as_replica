@@ -20,7 +20,7 @@
 #    along with py-magcode-core.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-PGVERSION="9.4"
+PGVERSION=""
 PGCLUSTER="dms"
 PGPASSWORDFILE="/etc/dms/pgpassfile"
 BIND9DYNAMICDIR="/var/lib/bind/dynamic"
@@ -32,15 +32,33 @@ BIND9_DR_SERVER_OPTIONS=""
 BIND9_NAMED_CONF="/etc/dms/bind/named.conf"
 BIND9_DR_NAMED_CONF="/etc/dms/bind/named-dr-replica.conf"
 BIND9_DEFAULT="/etc/default/bind9"
+BIND9_SYSTEMD_D="/etc/systemd/system/bind9.service.d"
+BIND9_DR_NAMED_REPLICA_CONF="/var/lib/dms/rsync-config/bind9-replica.conf"
 DMSDMD_DEFAULT="/etc/default/dmsdmd"
 DMS_CRONTAB="/etc/cron.d/dms-core"
 RSYSLOG_PGSQL="/etc/rsyslog.d/pgsql.conf"
-NETSCRIPT_NETWORK="/etc/netscript/network.conf"
+DMSDRIF_FILE="/etc/netscript/network.conf"
+DMSDRIF=''
+DMSDRIF_TYPE=''
+DMSDRIF_FILE=''
 
 SETTINGSFILE="/etc/dms/dr-settings.sh"
 
 # Read in settings
 [ -f "$SETTINGSFILE" ] && . "$SETTINGSFILE"
+
+# Work out PGVERSION
+get_pgversion () {
+	local VER=`pg_lsclusters -h| grep "$PGCLUSTER" | cut -f 1 -d ' '`
+	if [ -n "$VER" ]; then
+		echo "$VER"
+		return 0
+	fi
+	VER=`/usr/share/postgresql-common/supported-versions | tail -1`
+	echo "$VER"
+	return 0
+}
+PGVERSION=`get_pgversion`
 
 # Settings that depend on configuration file
 PGDATADIR="/var/lib/postgresql/${PGVERSION}/${PGCLUSTER}"
@@ -59,6 +77,11 @@ fi
 if [ -n "$BIND9_DR_SERVER_OPTIONS" ] ; then
 	BIND9_DR_SERVER_OPTIONS="$BIND9_DR_SERVER_OPTIONS "
 fi
+
+# determine if running under systemd
+UNDER_SYSTEMD=0
+[ -x /bin/systemctl ] && test -d /run/systemd/system \
+        && UNDER_SYSTEMD=1
 
 do_dms_wsgi () {
 	case $DMSWSGI in
@@ -84,10 +107,210 @@ fix_up_apache2_default () {
 	fi
 }
 
+service_do () {
+	if [ $UNDER_SYSTEMD -eq 0 ]; then
+		invoke-rc.d "$@"
+		return $?
+	else
+		systemctl --quiet "$2" "$1"
+		return $?
+	fi
+}
+
+service_disable_apache2 () {
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet disable apache2
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
+}
+
+service_enable_apache2 () {
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet enable apache2
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
+}
+
+service_disable_dmsdmd () {
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet disable dmsdmd
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	[ -f "$DMSDMD_DEFAULT" ] && \
+		perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i "$DMSDMD_DEFAULT"
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
+}
+
+service_enable_dmsdmd () {
+	[ $UNDER_SYSTEMD -gt 0 ] && systemctl --quiet enable dmsdmd
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	[ -f "$DMSDMD_DEFAULT" ] && \
+		perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i "$DMSDMD_DEFAULT"
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x || true
+}
+
+service_bind9_dr_config () {
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+	[ $UNDER_SYSTEMD -eq 0 ] && return 0
+
+	if [ ! -e "$BIND9_SYSTEMD_D" ] ; then
+		mkdir "$BIND9_SYSTEMD_D"
+	fi
+
+	local BIND9_STUFF="
+# Alter Bind9 start up command line
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}
+"
+	echo "$BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
+	systemctl --quiet daemon-reload
+	return 0
+}
+
+service_bind9_master_config () {
+	[ $UNDER_SYSTEMD -eq 0 ] && set -x
+	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
+	[ $UNDER_SYSTEMD -eq 0 ] && set +x
+	[ $UNDER_SYSTEMD -eq 0 ] && return 0
+
+	if [ ! -e "$BIND9_SYSTEMD_D" ] ; then
+		mkdir "$BIND9_SYSTEMD_D"
+	fi
+
+	local BIND9_STUFF="
+# Alter Bind9 start up command line
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/named -f ${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}
+"
+	echo "$BIND9_STUFF" > "${BIND9_SYSTEMD_D}/bind9_exec.conf"
+	systemctl --quiet daemon-reload
+	return 0
+}
+
 do_dms_drif () {
 	[ -n "$DMSDRIF" ] && return 0	
 	# if DMSDRIF var empty, don't do anything
 	return 1
+}
+
+get_dms_drif_type () {
+	if [ -n "$DMSDRIF_TYPE" ] ; then
+		echo "$DMSDRIF_TYPE"
+		return 0
+	fi
+	# Check that dpkg is on the system
+	if [ ! -x "`which dpkg`" ] ; then
+		echo "$DMSDRIF_TYPE"
+		return 0
+	fi
+	if dpkg --status netscript-2.4 2>/dev/null | grep 'Status:' | grep -q installed ; then
+		echo "netscript"
+		return 0
+	fi
+	echo "ifupdown"
+	return 0
+}
+
+get_dms_drif_file () {
+	local DRIF_CONF_FILE=''
+	local NUM_IF=''
+
+	if ! do_dms_drif; then
+		echo ''
+		return 0
+	fi
+	case $DMSDRIF_TYPE in
+		netscript)
+			DRIF_CONF_FILE=`grep -Ezrl "IF_AUTO=.*${DMSDRIF}_IPADDR" /etc/netscript/network.conf /etc/netscript/network.conf.d`
+			;;
+		ifupdown)
+			DRIF_CONF_FILE=`grep -Ezrl "auto.*iface[[:space:]]+${DMSDRIF}" /etc/network/interfaces /etc/network/interfaces.d`
+			;;
+		*)
+			echo "$PROGNAME: get_dms_drif_file() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
+	NUM_IF=`echo -n "$DRIF_CONF_FILE" | wc -w`
+       	if [ $NUM_IF -gt 1 ]; then
+		DRIF_CONF_FILE=`echo -n $DRIF_CONF_FILE | perl -pe 's/\n/ /gm'`
+		echo "$PROGNAME: More than one file set for DMSDRIF_FILE: '${DRIF_CONF_FILE}'" 1>&2
+		exit 2
+	fi
+
+	DMSDRIF_FILE="$DRIF_CONF_FILE"
+}
+
+# Fill out DMSDRIF variables...
+DMSDRIF_TYPE=`get_dms_drif_type`
+get_dms_drif_file
+
+dms_drif_auto_up () {
+	case $DMSDRIF_TYPE in
+		netscript)
+			set -x
+			perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $DMSDRIF_FILE
+			set +x
+			;;
+		ifupdown)
+			perl -pe "s/^#\s*(auto\s+${DMSDRIF}\s*.*)$/\1/g" -i $DMSDRIF_FILE
+			;;
+		*)
+			echo "$PROGNAME: dms_drif_auto_up() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
+}
+
+dms_drif_noauto_up () {
+	case $DMSDRIF_TYPE in
+		netscript)
+			set -x
+			perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $DMSDRIF_FILE
+			# Extra line to deal with how humans can twiddle...
+			perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $DMSDRIF_FILE
+			set +x
+			;;
+		ifupdown)
+			perl -pe "s/^\s*(auto\s+${DMSDRIF}\s*.*)$/#\1/g" -i $DMSDRIF_FILE
+			;;
+		*)
+			echo "$PROGNAME: dms_drif_noauto_up() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
+}
+
+dms_drif_up () {
+	case $DMSDRIF_TYPE in
+		netscript)
+			netscript ifup "$DMSDRIF"
+			;;
+		ifupdown)
+			ifup "$DMSDRIF"
+			;;
+		*)
+			echo "$PROGNAME: dms_drif_up() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
+}
+
+dms_drif_down () {
+	case $DMSDRIF_TYPE in
+		netscript)
+			netscript ifdown "$DMSDRIF"
+			;;
+		ifupdown)
+			ifdown "$DMSDRIF"
+			;;
+		*)
+			echo "$PROGNAME: dms_drif_down() Bad setting for DMSDRIF_TYPE: '$DMSDRIF_TYPE'" 1>&2
+			exit 2
+			;;
+	esac
 }
 
 get_pgport () {
@@ -142,7 +365,12 @@ dms_prepare_binddata () {
 	fi
 	set -e
 	check_if_named_running
-	check_with_user $FORCE "Operation will destroy bind9 .jnl files." 
+	check_with_user $FORCE "Operation will destroy bind9 .jnl files."
+	# Fix bind9-recovery.conf missing
+	if [ ! -f "$BIND9_DR_NAMED_REPLICA_CONF" ]; then
+		touch "$BIND9_DR_NAMED_REPLICA_CONF"
+		chown bind:bind "$BIND9_DR_NAMED_REPLICA_CONF"
+	fi
 	# Remove journal files and chown zone files so that DR replica 
 	# secondary will update zone files
 	# * is needed in following ls - watch it!  Its to detect if files
@@ -155,24 +383,20 @@ dms_prepare_binddata () {
 }
 
 rsyslog_restart () {
-	invoke-rc.d rsyslog stop
+	service_do rsyslog stop
 	sleep 3
-	invoke-rc.d rsyslog start
+	service_do rsyslog start
 }
 
 turn_on_replica_services () {
+	do_dms_drif && dms_drif_noauto_up
+	service_disable_dmsdmd
+	do_dms_wsgi && service_disable_apache2
 	set -x
-	if do_dms_drif; then
-		perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
-		# Extra line to deal with how humans can twiddle...
-		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
-	fi
-	do_dms_wsgi && perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
-	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	set +x
+	service_bind9_dr_config
 }
 
 dms_start_as_replica_usage () {
@@ -220,12 +444,12 @@ dms_start_as_replica () {
 	dms_pg_basebackup -f "$MASTER_SERVER"
 	dms_prepare_binddata -f
 	dms_write_recovery_conf "$MASTER_SERVER"
-	do_dms_drif && ifdown $DMSDRIF
-	do_dms_wsgi && invoke-rc.d apache2 stop
-	invoke-rc.d dmsdmd stop
+	do_dms_drif && dms_drif_down
+	do_dms_wsgi && service_do apache2 stop
+	service_do dmsdmd stop
 	turn_on_replica_services
-	invoke-rc.d postgresql start
-	invoke-rc.d bind9 start
+	service_do postgresql start
+	service_do bind9 start
 }
 
 
@@ -247,26 +471,23 @@ dms_promote_replica () {
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
 	rsyslog_restart
-	set -x
-	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
-	set +x
-	invoke-rc.d bind9 restart
+	service_enable_dmsdmd
+	service_bind9_master_config
+	service_do bind9 restart
 	# Settle time
 	sleep 7
-	invoke-rc.d dmsdmd start
+	service_do dmsdmd start
 	set -x
 	zone_tool write_rndc_conf
 	zone_tool reconfig_all
 	perl -pe 's/^#+(.*zone_tool vacuum_all)$/\1/' -i $DMS_CRONTAB
-	do_dms_wsgi && perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
+	do_dms_wsgi && service_enable_apache2
 	set +x
 	if do_dms_wsgi; then
-		invoke-rc.d apache2 start
+		service_do apache2 start
 	fi
-	do_dms_drif && set -x && perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
-	set +x
-	do_dms_drif && netscript ifup $DMSDRIF
+	do_dms_drif && dms_drif_auto_up
+	do_dms_drif && dms_drif_up
 	# dms_update_wsgi_dns done in dmsdmd init script
 }
 
@@ -283,32 +504,26 @@ dms_master_down () {
 
 	set -e
 	fix_up_apache2_default
-	do_dms_drif && netscript ifdown $DMSDRIF
+	do_dms_drif && dms_drif_down
 	if do_dms_wsgi; then
-		invoke-rc.d apache2 stop
+		service_do apache2 stop
 	fi
+	do_dms_wsgi && service_disable_apache2
+	do_dms_drif && dms_drif_noauto_up
 	set -x
-	if do_dms_drif; then
-		perl -pe "s/^(IF_AUTO.*)\s+${DMSDRIF}(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK 
-		# Extra line to deal with how humans can twiddle...
-		perl -pe "s/^(IF_AUTO=\")${DMSDRIF}\s+(.*$)/\1\2/g" -i $NETSCRIPT_NETWORK
-	fi
-	do_dms_wsgi && perl -pe 's/^#(\s*exit\s+0.*$)/\1/' -i $APACHE2_DEFAULT
 	perl -pe 's/^([^#].*zone_tool vacuum_all)$/#\1/' -i $DMS_CRONTAB
 	set +x
 	# Settle time
 	sleep 5
-	invoke-rc.d dmsdmd stop
-	invoke-rc.d bind9 stop
+	service_do dmsdmd stop
+	service_do bind9 stop
 	set -x
 	perl -pe 's/^(local7.* :ompgsql:\S+,dms,rsyslog,.*$)/#\1/' -i $RSYSLOG_PGSQL
 	set +x
 	rsyslog_restart
-	invoke-rc.d postgresql stop
-	set -x
-	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=false/' -i $DMSDMD_DEFAULT
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}${BIND9_DR_SERVER_OPTIONS}-u bind -c ${BIND9_DR_NAMED_CONF}\"@" -i $BIND9_DEFAULT
-
+	service_do postgresql stop
+	service_disable_dmsdmd
+	service_bind9_dr_config
 }
 
 dms_master_up_usage () {
@@ -319,35 +534,34 @@ dms_master_up_usage () {
 dms_master_up () {
 
 	if [ $# -ne 0 ]; then
-		dms_master_down_usage
+		dms_master_up_usage
 	fi;
 
 	set -e
 	fix_up_apache2_default
+	service_enable_dmsdmd
+	service_bind9_master_config
 	set -x
-	perl -pe 's/^DMSDMD_ENABLE=.*$/DMSDMD_ENABLE=true/' -i $DMSDMD_DEFAULT
-	perl -pe "s@^OPTIONS=.*\$@OPTIONS=\"${BIND9_EXTRA_OPTIONS}-u bind -c ${BIND9_NAMED_CONF}\"@" -i $BIND9_DEFAULT
 	perl -pe 's/^#(\s*local7.* :ompgsql:\S+,dms,rsyslog,.*$)/\1/' -i $RSYSLOG_PGSQL
 	set +x
-	invoke-rc.d postgresql start
+	service_do postgresql start
 	rsyslog_restart
-	invoke-rc.d bind9 start
+	service_do bind9 start
 	sleep 3
-	invoke-rc.d dmsdmd start
+	service_do dmsdmd start
 	# Settle time
 	sleep 5
 	set -x
 	zone_tool write_rndc_conf
 	zone_tool reconfig_all
 	perl -pe 's/^#+(.*zone_tool vacuum_all)$/\1/' -i $DMS_CRONTAB
-	do_dms_wsgi && perl -pe 's/^(\s*exit\s+0.*$)/#\1/' -i $APACHE2_DEFAULT
+	do_dms_wsgi && service_enable_apache2
 	set +x
 	if do_dms_wsgi; then
-		invoke-rc.d apache2 start
+		service_do apache2 start
 	fi
-	do_dms_drif && set -x && perl -pe "s/^(IF_AUTO=.*)\"\$/\1 $DMSDRIF\"/g" -i $NETSCRIPT_NETWORK
-	set +x
-	do_dms_drif && netscript ifup $DMSDRIF
+	do_dms_drif && dms_drif_auto_up
+	do_dms_drif && dms_drif_up
 	dms_update_wsgi_dns
 
 }
