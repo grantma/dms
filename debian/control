@@ -36,6 +36,7 @@ Depends: ${misc:Depends}, ${python3:Depends},
   adduser,
   diffutils|diff,
   oping
+  locales-all
 Description: bind9 DNS Management System, core system
  This is the bind9 DNS Management System, core backend.
  .
