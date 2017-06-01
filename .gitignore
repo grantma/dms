@@ -27,3 +27,5 @@ build
 /debian/files
 # Sphinx doc files to ignore
 doc/_build/
+# Ignore python dist directory
+dist
