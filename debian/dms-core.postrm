@@ -18,7 +18,7 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-PGVER="9.3"
+PGVER=`pg_lsclusters -h | perl -pe 's/^(\S+\s+\S+)\s+.*$/\1/' | grep dms | perl -pe 's/^(\S+)\s+.*$/\1/'`
 
 case "$1" in
     	purge)
