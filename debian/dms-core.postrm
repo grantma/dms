@@ -33,6 +33,7 @@ case "$1" in
 		rm -rf /var/lib/dms/dms-sg
 		rm -rf /var/lib/dms/master-config
 		rm -rf /var/lib/dms/rndc
+		rm -rf /var/lib/dms/postgresql
 		rm -rf /var/log/dms
 
 		if which deluser > /dev/null 2>&1; then
