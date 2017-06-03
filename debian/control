@@ -13,7 +13,8 @@ Vcs-Browser: https://github.com/grantma/dms
 
 Package: dms-core
 Architecture: any
-Suggests: vim-nox|vim, nano
+Suggests: vim-nox|vim, nano,
+  locales-all
 Recommends:
   less,
   colordiff,
@@ -35,8 +36,7 @@ Depends: ${misc:Depends}, ${python3:Depends},
   bind9,
   adduser,
   diffutils|diff,
-  oping,
-  locales-all
+  oping
 Description: bind9 DNS Management System, core system
  This is the bind9 DNS Management System, core backend.
  .

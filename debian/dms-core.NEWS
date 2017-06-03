@@ -1,0 +1,66 @@
+dms-core (1.0.4-1) unstable; urgency=medium
+
+    PostgresQL upgrade now happens as in the rest of Debian, as per the
+    default main PostgresQL DB cluster.  You will have to remove the old
+    dms PostgresQL cluster once you are happy with the integrity and
+    correctness of the upgraded DB cluster.  Refer to
+    /usr/share/doc/postgresql-9.x/README.Debian.gz for more information.
+
+    This version changes over to versionless PostgresQL support by removing
+    DMS use of its own templated postgresql.conf file, and changing to the
+    support provided by the postgresql-common package.  The upgrade PostgresQL
+    procedure below is now redundant.
+
+    IMPORTANT if upgrading from earlier version of dms-core.
+
+    The old DB postgresql.conf template also had the en_NZ.UTF-8 locale
+    hardwired into it.  To get dms-core to function, and
+    thence upgrade either:
+
+    a. Add the en_NZ.UTF-8 locale to the list of
+       system locales by running dpkg-reconfigure locales,
+    b. edit the postgresql.conf locale settings
+    c. or install the locales-all package.
+
+    From analysing this bug, in almost all installs of dms-core you
+    would have needed to have added en_NZ.UTF-8 locale to the system or
+    edited the postgresql.conf locale settings to get an earlier version
+    of dms-core to run in a non New Zealand system environment!
+    This closes bug #852519
+
+ -- Matt Grant <matt@mattgrant.net.nz>  Sat, 03 Jun 2017 15:30:00 +1200
+
+dms-core (1.0.2-1) unstable; urgency=medium
+
+    This version is an upgrade to support Postgresql-9.4. Please following the
+    following process when upgrading on the DMS master server to upgrade from
+    Postgresql 9.3.  For a single DMS server, just follow the Master procedure
+    below, and ignore the DR server section below.
+ 
+    1. Stop named, rsyslog and dmsdmd.
+    2. Run dms_dumpdb as root to backup the dms cluster data to /var/backups.
+       New dump there will be very obvious when using 'ls -l', typically
+       'postgresql-9.3-dms.sql.gz'
+    3. Upgrade packages
+    4. Set PGVERSION="9.4" in /etc/dms/dr-settings.sh
+    5  Run 'pg_upgradecluster 9.3 dms' as root
+    7. Start named, rsyslog, and dmsdmd.
+    8. Once happy, remove old cluster with 'pg_dropcluster 9.3 dms'.  
+       Afterwards, purge postgresql-9.3 with dpkg --purge postgresql-9.3
+
+    On the DR server:
+
+    1. Stop named, rsyslog and dmsdmd.
+    2. Upgrade packages
+    3. Set PGVERSION="9.4" in /etc/dms/dr-settings.sh
+    4  Run 'pg_upgradecluster 9.3 dms' as root
+    5. Stop postgresql It will be started in the next step.
+    6. As root, run dms_start_as_replica to replicate the master DB, and start
+       postgresql in hot-standby mode.
+    8. Once happy, remove old cluster with 'pg_dropcluster 9.3 dms'.  
+       Afterwards, purge postgresql-9.3 with dpkg --purge postgresql-9.3
+
+    After this on the master server, run zone_tool show_dms_status to check
+    that everything is alright.
+
+ -- Matt Grant <matt@mattgrant.net.nz>  Sat, 02 Aug 2014 12:42:58 +1200
