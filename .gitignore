@@ -25,6 +25,7 @@ build
 /debian/*.debhelper*
 /debian/*.substvars
 /debian/files
+/debian/debhelper-build-stamp
 # Sphinx doc files to ignore
 doc/_build/
 # Ignore python dist directory
