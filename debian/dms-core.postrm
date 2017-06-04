@@ -38,6 +38,7 @@ case "$1" in
 		rm -rf /var/lib/bind
 		rm -rf /usr/share/dms/dms/database
 		rm -rf /usr/share/dms/dms/app
+		rm -rf /usr/share/dms/dms
 
 		if which deluser > /dev/null 2>&1; then
 			deluser --quiet dmsdmd bind > /dev/null || true
