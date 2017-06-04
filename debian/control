@@ -24,7 +24,8 @@ Recommends:
   strongswan|racoon|ike-server,
   bind9-host,
   dnsutils
-Depends: ${misc:Depends}, ${python3:Depends},
+Depends:
+  ${misc:Depends}, ${python3:Depends},
   python3-magcode-core,
   postgresql (>= 9.3),
   python3-sqlalchemy (>= 0.7),
