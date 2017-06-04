@@ -57,7 +57,7 @@ Repeat on DR master server as well.
 less
 ----
 
-Set the follwoing environment variable in /etc/profile, or /etc/bashrc
+Set the following environment variable in /etc/profile, or /etc/bashrc
 
 LESS=-MMRi
 
@@ -75,7 +75,7 @@ and vice-versa.
 
 The following is a safeguard against Murphies law (ie Back hoe fade, backups
 required at disconnected data centre or offline storage 2 days away). My own
-experience is my witness.  This protects aginst the /etc on the master being
+experience is my witness.  This protects against the /etc on the master being
 updated, the replica being missed, and then finding that things aren't working
 on the replica when the master dies , with no record of the updates needed to
 machine configuration. 
@@ -495,7 +495,7 @@ replica server will configured to run in 'hot-standby' mode so that we can
 verify mirroring by read-only means using zone_tool.
 
 Though the master and replica can run the PGSQL dms cluster on port 5433 or
-other port, it is reccommended to swap the ports with the main cluster, and
+other port, it is recommended to swap the ports with the main cluster, and
 revert the main cluster to manual start up.
 
 Edit postgresql.conf /etc/postgresql/9.3/main and /etc/postgresql/9.3/dms, 

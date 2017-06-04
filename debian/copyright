@@ -3,7 +3,7 @@ Upstream-Name: dms
 Source: < https://github.com/grantma/dms.git>
 
 Files: dr_scripts/dms_start_as_replica
-Copyright: 2006-2013 Matthew Grant <matt@mattgrant.net.nz>
+Copyright: 2006-2017 Matthew Grant <matt@mattgrant.net.nz>
            2011-2012 Net24 Ltd <service@net24.co.nz>
            2012-2013 Voyager Internet Ltd <service@net24.co.nz>
 License: GPL-3+
@@ -19,7 +19,8 @@ License: GPL-3+
 
 
 Files: *
-Copyright: 2011-2012 Net24 Ltd <service@net24.co.nz>
+Copyright: Portions 2014-2017 Matthew Grant <matt@mattgrant.net.nz>
+           2011-2012 Net24 Ltd <service@net24.co.nz>
            2012-2013 Voyager Internet Ltd <service@net24.co.nz>
 License: GPL-3+
  GPL version 3 or later.
