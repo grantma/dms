@@ -1,2 +1,3 @@
 dms-core: new-package-should-close-itp-bug
 dms-core: file-in-unusual-dir
+dms-core: command-with-path-in-maintainer-script

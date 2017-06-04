@@ -25,7 +25,8 @@ Recommends:
   bind9-host,
   dnsutils
 Depends:
-  ${python3:Depends}, ${misc:Depends}, 
+  ${misc:Depends},
+  python3:any (>= 3.3.2~),    
   python3-magcode-core,
   postgresql (>= 9.3),
   python3-sqlalchemy (>= 0.7),
@@ -51,7 +52,7 @@ Description: bind9 DNS Management System, core system
 
 Package: dms-wsgi
 Architecture: any
-Depends: ${python3:Depends}, ${misc:Depends}, dms-core (= ${binary:Version}), apache2, libapache2-mod-wsgi-py3
+Depends: ${misc:Depends}, python3:any (>= 3.3.2~), dms-core (= ${binary:Version}), apache2, libapache2-mod-wsgi-py3
 Description: bind9 DNS Management System, WSGI JSON http RPC backend. 
  This is the bind9 DNS Management system, WSGI JSON RPC layer.
  .
@@ -63,7 +64,7 @@ Description: bind9 DNS Management System, WSGI JSON http RPC backend.
 
 Package: dms-dr
 Architecture: any
-Depends: ${misc:Depends}, python3:any (>= 3.3.2-2~), python3:any (>= 3.2~), dms-core (= ${binary:Version}), adduser, rsyslog-pgsql
+Depends: ${misc:Depends}, python3:any (>= 3.3.2~), dms-core (= ${binary:Version}), adduser, rsyslog-pgsql
 Suggests: netscript-2.4
 Description: bind9 DNS Management System, DR scripts and setup.
  This is the bind9 DNS Management System, DR recovery scripts for running a 
