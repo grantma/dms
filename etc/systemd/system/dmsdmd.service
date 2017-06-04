@@ -2,7 +2,7 @@
 Description=Bind DMS DNS Management Daemon
 #Documentation=man:dmsdmd(8)
 Wants=bind9.service postgresql.service network.target
-After = bind9.service
+After=bind9.service
 
 [Service]
 EnvironmentFile=/etc/dms/dmsdmd/envvars
