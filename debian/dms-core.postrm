@@ -29,12 +29,15 @@ case "$1" in
 			rm -rf /var/lib/postgresql/${PGVER}/dms
 			rm -rf /etc/postgresql/${PGVER}/dms
 		fi
-		# Clean up Slave include  and log dirs
+		# Clean up stragglers, Slave include, log dirs etc
 		rm -rf /var/lib/dms/dms-sg
 		rm -rf /var/lib/dms/master-config
 		rm -rf /var/lib/dms/rndc
 		rm -rf /var/lib/dms/postgresql
 		rm -rf /var/log/dms
+		rm -rf /var/lib/bind
+		rm -rf /usr/share/dms/dms/database
+		rm -rf /usr/share/dms/dms/app
 
 		if which deluser > /dev/null 2>&1; then
 			deluser --quiet dmsdmd bind > /dev/null || true
