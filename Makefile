@@ -221,7 +221,8 @@ endif
 ifeq ($(OSNAME), Linux)
 	- $(INSTALL) -m 644 etc/debian/sysctl.d/30-dms-core-net.conf \
 		$(SYSCTLDIR)
-	- $(INSTALL) -m 644 etc/systemd/system/dmsdmd.service $(SYSTEMDCONFDIR)
+	- $(INSTALL) -m 644 etc/systemd/system/dmsdmd.service $(SYSTEMDCONFDIR) \
+			&& perl -pe 's~^ExecStart=/\S+/dmsdmd\s+(.*)$$~ExecStart=$(PREFIX)/sbin/dmsdmd \1~' -i $(SYSTEMDCONFDIR)/dmsdmd.service;
 endif
 
 install-wsgi: install-dir
