@@ -7,7 +7,7 @@ dms (1.0.4.2-1~2.gbp2d6497) UNRELEASED; urgency=medium
   * PostgresQL upgrades using Debian postgresql-common management scripts
     instead of using own templated postgresql.conf file.  Includes ability
     to upgrade from debian pkg scripts. postgresql.conf parameters set from
-    /etc/dms/dr-settings.sh (Closes: #811162)
+    /etc/dms/dr-settings.sh (Closes: #811162, #794929)
   * New dms_ PostgresQL cluster management commands
   * Fixes and support for Python 3.5, SQLAlchemy 1.0.x, 1.1, and 1.2
   * Support for ifupdown interfaces in DR management commands and scripts.
