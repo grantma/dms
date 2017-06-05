@@ -24,11 +24,13 @@ case "$1" in
 	    # do a last backup of cluster
 	    dms_dumpdb > /dev/null 2>&1 || true
 	    # Turn off PGSQL dms cluster
-	    pg_ctlcluster ${PGVER} dms stop || true
-	    if [ -f /etc/postgresql/${PGVER}/dms/start.conf ]; then
-	        perl -pe 's/^auto/manual/' \
+	    if [ -n "$PGVER" ]; then
+	    	pg_ctlcluster ${PGVER} dms stop || true
+		if [ -f /etc/postgresql/${PGVER}/dms/start.conf ]; then
+		    perl -pe 's/^auto/manual/' \
 			-i /etc/postgresql/${PGVER}/dms/start.conf \
-	            || true
+		    || true
+		fi
 	    fi
 	fi
     ;;
