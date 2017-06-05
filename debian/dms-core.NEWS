@@ -1,4 +1,4 @@
-dms-core (1.0.7-1) unstable; urgency=medium
+dms-core (1.0.8-1) unstable; urgency=medium
 
     PostgresQL upgrade now happens as in the rest of Debian, as per the
     default main PostgresQL DB cluster.  You will have to remove the old
