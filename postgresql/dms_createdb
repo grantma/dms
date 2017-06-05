@@ -1257,4 +1257,7 @@ case $0 in
 *promotedb)
 	promotedb "$@"
 	;;
+*pgversion)
+	get_pgversion
+	;;
 esac

@@ -307,6 +307,7 @@ ifeq ($(OSNAME), Linux)
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_replicadb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_promotedb
 	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_move_xlog
+	ln -snf $(SHAREDIR)/postgresql/dms_createdb $(SBINDIR)/dms_pgversion
 	ln -snf $(SHAREDIR)/postgresql/pg_dumpallgz $(SBINDIR)/pg_dumpallgz
 endif
 
