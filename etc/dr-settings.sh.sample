@@ -67,7 +67,7 @@ listen_addresses = *   # Listen on all addresses
 # PostgresQL version used. Override setting
 # Only set if needed.  Can be used by debian install scripts to override
 # PostgresQL version used.
-# NOT USED ANYMORE.  OF NO EFFECT
+# SETTING THIS NOT RECOMMENDED - ONLY USE IF LAST RESORT
 # PGVERSION=""
 
 # PostgresQL catalog cluster name
