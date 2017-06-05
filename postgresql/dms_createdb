@@ -322,7 +322,7 @@ createdb_vusage () {
 createdb () {
 	check_root
 	local FORCE=0
-	local SEPGVARS=0
+	local SETPGVARS=0
 	local LOCALE=''
 	local ARGS=''
 	OPTIND=1
