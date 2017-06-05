@@ -1,8 +1,8 @@
-dms (1.0.6-1~4.gbp2d6497) UNRELEASED; urgency=medium
+dms (1.0.7-1~1.gbp2d6497) UNRELEASED; urgency=medium
 
   ** SNAPSHOT build @2d64979eb3e11bfe601110ca5f69996331559293 **
 
-  * Version 1.0.6 release.
+  * Version 1.0.7 release.
   * systemd support for dmsdmd and in dms-dr management scripts.
   * PostgresQL upgrades using Debian postgresql-common management scripts
     instead of using own templated postgresql.conf file.  Includes ability
