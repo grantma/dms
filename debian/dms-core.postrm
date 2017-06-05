@@ -24,7 +24,9 @@ case "$1" in
 		# Clean up postgresql database cluster. PostgresQL may not be installed...
 		if [ -x /usr/bin/pg_dropcluster ]; then
 			PGVER=`pg_lsclusters -h | perl -pe 's/^(\S+\s+\S+)\s+.*$/\1/' | grep dms | perl -pe 's/^(\S+)\s+.*$/\1/'`
-			pg_dropcluster --stop-server ${PGVER} dms
+			if [ -n "$PGVER" ]; then
+				pg_dropcluster --stop-server ${PGVER} dms
+			fi
 			unset PGVER
 		else
 			PGVER=`find /etc/postgresql -name dms | perl -pe 's~^[a-z/]+([0-9.]+)[a-z/]+~\1~'`
