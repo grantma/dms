@@ -16,7 +16,7 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-PGVER=`pg_lsclusters -h | perl -pe 's/^(\S+\s+\S+)\s+.*$/\1/' | grep dms | perl -pe 's/^(\S+)\s+.*$/\1/'`
+PGVER=`dms_pgversion`
 
 case "$1" in
     remove)
