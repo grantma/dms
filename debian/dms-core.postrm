@@ -18,16 +18,19 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-PGVER=`pg_lsclusters -h | perl -pe 's/^(\S+\s+\S+)\s+.*$/\1/' | grep dms | perl -pe 's/^(\S+)\s+.*$/\1/'`
 
 case "$1" in
     	purge)
-		# Clean up postgresql database cluster
+		# Clean up postgresql database cluster. PostgresQL may not be installed...
 		if [ -x /usr/bin/pg_dropcluster ]; then
+			PGVER=`pg_lsclusters -h | perl -pe 's/^(\S+\s+\S+)\s+.*$/\1/' | grep dms | perl -pe 's/^(\S+)\s+.*$/\1/'`
 			pg_dropcluster --stop-server ${PGVER} dms
+			unset PGVER
 		else
+			PGVER=`find /etc/postgresql -name dms | perl -pe 's~^[a-z/]+([0-9.]+)[a-z/]+~\1~'`
 			rm -rf /var/lib/postgresql/${PGVER}/dms
 			rm -rf /etc/postgresql/${PGVER}/dms
+			unset PGVER
 		fi
 		# Clean up stragglers, Slave include, log dirs etc
 		rm -rf /var/lib/dms/dms-sg
