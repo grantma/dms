@@ -28,7 +28,7 @@ Depends:
   ${misc:Depends},
   python3:any (>= 3.3.2~),    
   python3-magcode-core,
-  postgresql (>= 9.3),
+  postgresql (>= 9.3)|postgresql-9.3|postgresql-9.4|postgresql-9.5|postgresql-9.6,
   python3-sqlalchemy (>= 0.7),
   python3-psycopg2 (>= 2.4.5),
   python3-psutil (>= 0.4.1),
