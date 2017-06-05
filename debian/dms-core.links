@@ -23,6 +23,7 @@ usr/share/dms/postgresql/dms_createdb usr/sbin/dms_write_recovery_conf
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_replicadb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_promotedb
 usr/share/dms/postgresql/dms_createdb usr/sbin/dms_move_xlog
+usr/share/dms/postgresql/dms_createdb usr/sbin/dms_pgversion
 usr/share/dms/postgresql/pg_dumpallgz usr/sbin/pg_dumpallgz
 etc/bind/master var/lib/bind/master
 var/cache/bind/slave var/lib/bind/slave
