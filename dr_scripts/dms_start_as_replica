@@ -55,9 +55,11 @@ get_pgversion () {
 	fi
 	local VER=`pg_lsclusters -h| grep "$PGCLUSTER" | cut -f 1 -d ' '`
 	local SUPPORTED_VERS=`/usr/share/postgresql-common/supported-versions`
-	if echo "SUPPORTED_VERS" | fgrep -q "$VER"; then
-		echo "$VER"
-		return 0
+	if [ -n "$VER" ]; then
+		if echo "SUPPORTED_VERS" | fgrep -q "$VER"; then
+			echo "$VER"
+			return 0
+		fi
 	fi
 	VER=`/usr/share/postgresql-common/supported-versions | tail -1`
 	echo "$VER"
