@@ -1,6 +1,4 @@
-dms (1.0.8-1~1.gbp2d6497) UNRELEASED; urgency=medium
-
-  ** SNAPSHOT build @2d64979eb3e11bfe601110ca5f69996331559293 **
+dms (1.0.8-1) unstable; urgency=medium
 
   * Version 1.0.8 release.
   * systemd support for dmsdmd and in dms-dr management scripts.
@@ -17,7 +15,7 @@ dms (1.0.8-1~1.gbp2d6497) UNRELEASED; urgency=medium
     past. (Closes: #852519)
   * Clean up /var/lib/dms/postgresql/*.sha1sum files on dms-core purge.
     (Closes: #771093)
- -- Matthew Grant <matt@mattgrant.net.nz>  Sat, 03 Jun 2017 12:12:26 +1200
+ -- Matthew Grant <matt@mattgrant.net.nz>  Thu, 08 Jun 2017 21:59:37 +1200
 
 dms (1.0.3-2) unstable; urgency=medium
 
